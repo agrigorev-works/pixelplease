@@ -90,6 +90,7 @@ const sourceModeGoogle = getElement<HTMLInputElement>("source-mode-google");
 const sourceModeUpload = getElement<HTMLInputElement>("source-mode-upload");
 const googleFontField = getElement<HTMLElement>("google-font-field");
 const googleFontSelect = getElement<HTMLSelectElement>("google-font-select");
+const replaceFontButton = getElement<HTMLButtonElement>("replace-font-button");
 const sourceEditorField = getElement<HTMLElement>("source-editor-field");
 const resetButton = getElement<HTMLButtonElement>("reset-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
@@ -116,6 +117,7 @@ uploadZone.addEventListener("drop", handleDrop);
 sourceModeGoogle.addEventListener("change", handleSourceModeChange);
 sourceModeUpload.addEventListener("change", handleSourceModeChange);
 googleFontSelect.addEventListener("change", handleGoogleFontChange);
+replaceFontButton.addEventListener("click", handleReplaceFontClick);
 resetButton.addEventListener("click", resetControlsToDefaults);
 sampleText.addEventListener("input", syncSampleText);
 pixelsPerEm.addEventListener("input", handleControlInput);
@@ -164,6 +166,10 @@ function handleGoogleFontChange(): void {
   if (font) {
     void applyDemoFont(font);
   }
+}
+
+function handleReplaceFontClick(): void {
+  uploadInput.click();
 }
 
 function handleSourceModeChange(): void {
@@ -353,6 +359,7 @@ function syncSourceModeUI(): void {
   sourceModeGoogle.checked = isGoogleMode;
   sourceModeUpload.checked = state.sourceMode === "upload";
   googleFontField.classList.toggle("is-hidden", !isGoogleMode);
+  replaceFontButton.classList.toggle("is-hidden", !hasUploadedFont);
   sourceEditorField.classList.toggle("is-hidden", !shouldShowSourceEditor);
   uploadZone.classList.toggle("is-hidden", !shouldShowUploadZone);
   sampleText.disabled = !shouldShowSourceEditor;

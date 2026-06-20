@@ -42,7 +42,6 @@ label {
 .intro-copy,
 .upload-copy,
 .license-reminder,
-.font-select-field span,
 .segment-option span,
 .field span {
   font-size: 12px;
@@ -150,15 +149,18 @@ h2 {
 
 .upload-copy,
 .license-reminder,
-.font-select-field span,
 .field span {
   color: #555555;
 }
 
+.source-toolbar {
+  display: grid;
+  min-height: 34px;
+  min-width: 0;
+}
+
 .font-select-field {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
   align-items: center;
   min-height: 34px;
   min-width: 0;
@@ -177,7 +179,7 @@ select {
 
 .control-stack {
   display: grid;
-  gap: 16px;
+  gap: 22px;
 }
 
 .field {
@@ -199,7 +201,8 @@ select {
 }
 
 .secondary-action,
-.download-action {
+.download-action,
+.replace-font-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -212,6 +215,14 @@ select {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+}
+
+.replace-font-button {
+  min-height: 34px;
+  border-color: #d8d8d4;
+  border-radius: 0;
+  background: #ffffff;
+  color: #111111;
 }
 
 .action-stack {
@@ -318,7 +329,7 @@ textarea {
   max-width: 34ch;
 }
 
-.upload-zone input {
+.font-upload-input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -332,12 +343,6 @@ textarea {
 
 .is-hidden {
   display: none;
-}
-
-.source-panel .font-select-field.is-hidden {
-  display: grid;
-  visibility: hidden;
-  pointer-events: none;
 }
 
 .sr-only {

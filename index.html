@@ -37,10 +37,15 @@
             </label>
           </fieldset>
 
-          <label id="google-font-field" class="font-select-field" for="google-font-select">
-            <span>google font</span>
-            <select id="google-font-select" aria-label="Google Font for demo preview"></select>
-          </label>
+          <div class="source-toolbar">
+            <label id="google-font-field" class="font-select-field" for="google-font-select">
+              <select id="google-font-select" aria-label="Google Font for demo preview"></select>
+            </label>
+
+            <button id="replace-font-button" class="replace-font-button is-hidden" type="button">
+              upload new font
+            </button>
+          </div>
 
           <label id="source-editor-field" class="source-editor-field" for="sample-text">
             <span class="sr-only">sample text</span>
@@ -51,8 +56,8 @@
             <span class="upload-title">choose font file</span>
             <span class="upload-copy">drop a TTF/OTF here or click anywhere in this area</span>
             <span class="license-reminder">Please use only fonts you have a license to edit.</span>
-            <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
           </label>
+          <input id="font-upload" class="font-upload-input" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
         </section>
 
         <section class="output-panel preview-pane" aria-label="Pixelized font preview">

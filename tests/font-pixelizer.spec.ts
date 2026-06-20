@@ -52,6 +52,7 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();
   await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#google-font-field span")).toHaveCount(0);
   await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.locator("#coverage-label")).toHaveCount(0);
   await expect(page.locator("#glyph-grid")).toHaveCount(0);
@@ -118,6 +119,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#sample-text")).toBeFocused();
   await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#google-font-field span")).toHaveCount(0);
   await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
   await expect(page.locator("#after-preview")).toBeVisible();
@@ -125,6 +127,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
 
   const sourcePanelBox = await page.locator(".source-panel").boundingBox();
   const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
+  const googleSelectBox = await page.locator("#google-font-select").boundingBox();
   const outputBeforeModeSwitch = await page.locator("#after-preview").evaluate((preview) => {
     const styles = getComputedStyle(preview);
     return {
@@ -185,13 +188,16 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await page.locator("#font-upload").setInputFiles(sourcePath);
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
+  await expect(page.getByRole("button", { name: "upload new font" })).toBeVisible();
   await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
 
   const uploadedPanelBox = await page.locator(".source-panel").boundingBox();
   const uploadedPreviewBox = await page.locator("#sample-text").boundingBox();
+  const replaceButtonBox = await page.getByRole("button", { name: "upload new font" }).boundingBox();
   expect(Math.abs((sourcePanelBox?.width ?? 0) - (uploadedPanelBox?.width ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePanelBox?.height ?? 0) - (uploadedPanelBox?.height ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadedPreviewBox?.height ?? 0))).toBeLessThan(2);
+  expect(Math.abs((googleSelectBox?.height ?? 0) - (replaceButtonBox?.height ?? 0))).toBeLessThan(1);
 });
 
 test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
@@ -322,6 +328,9 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
     }
     return actionStack.top - controlStack.bottom;
   });
+  const controlGap = await page
+    .locator(".control-stack")
+    .evaluate((stack) => getComputedStyle(stack).rowGap);
 
   expect(downloadStyles.backgroundColor).toBe("rgb(17, 17, 17)");
   expect(downloadStyles.color).toBe("rgb(255, 255, 255)");
@@ -329,6 +338,7 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
   expect(downloadStyles.borderRadius).toBe("999px");
   expect(resetStyles.borderRadius).toBe("999px");
   expect(actionGap).toBeGreaterThanOrEqual(32);
+  expect(controlGap).toBe("22px");
 });
 
 test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
