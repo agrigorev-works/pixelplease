@@ -42,13 +42,9 @@ label {
 .intro-copy,
 .upload-copy,
 .license-reminder,
-.legal-note,
 .font-select-field span,
 .segment-option span,
-.field span,
-.pane-header span,
-.section-heading span,
-.summary-strip span {
+.field span {
   font-size: 12px;
   line-height: 1.45;
 }
@@ -96,6 +92,7 @@ h2 {
 .controls-panel,
 .preview-pane {
   background: transparent;
+  min-width: 0;
 }
 
 .controls-panel {
@@ -109,6 +106,7 @@ h2 {
 .source-mode-control {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 1px solid #111111;
@@ -150,16 +148,9 @@ h2 {
 
 .upload-copy,
 .license-reminder,
-.legal-note,
 .font-select-field span,
-.field span,
-.pane-header span,
-.section-heading span {
+.field span {
   color: #555555;
-}
-
-.legal-note {
-  max-width: 32ch;
 }
 
 .font-select-field {
@@ -167,6 +158,8 @@ h2 {
   grid-template-columns: auto minmax(0, 1fr);
   gap: 10px;
   align-items: center;
+  min-height: 34px;
+  min-width: 0;
 }
 
 select {
@@ -203,7 +196,7 @@ select {
   accent-color: #111111;
 }
 
-.primary-action,
+.secondary-action,
 .download-action {
   display: inline-flex;
   align-items: center;
@@ -219,32 +212,27 @@ select {
   cursor: pointer;
 }
 
-.download-action {
+.secondary-action {
   background: #ffffff;
   color: #111111;
 }
 
-.primary-action:disabled,
+.secondary-action:disabled {
+  color: #8a8a84;
+  border-color: #d8d8d4;
+  cursor: not-allowed;
+}
+
+.download-action {
+  background: #111111;
+  color: #ffffff;
+}
+
 .download-action.is-disabled {
   background: #ffffff;
   color: #8a8a84;
   cursor: not-allowed;
   pointer-events: none;
-}
-
-.summary-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-}
-
-.summary-strip span {
-  color: #555555;
-}
-
-.summary-strip strong {
-  font-weight: 600;
-  color: #111111;
 }
 
 .source-editor-field {
@@ -268,8 +256,7 @@ textarea {
   padding: 0;
 }
 
-.pane-header,
-.section-heading {
+.pane-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -307,6 +294,7 @@ textarea {
   gap: 10px;
   align-content: center;
   justify-items: center;
+  min-width: 0;
   padding: 16px;
   border-style: dashed;
   color: #111111;
@@ -345,8 +333,10 @@ textarea {
   display: none;
 }
 
-.error-text {
-  color: #111111;
+.source-panel .font-select-field.is-hidden {
+  display: grid;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .sr-only {

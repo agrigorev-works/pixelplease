@@ -27,7 +27,6 @@
         <section class="source-panel preview-pane" aria-label="Source font and text">
           <div class="pane-header">
             <h2>source</h2>
-            <span id="before-label">system mono demo</span>
           </div>
 
           <fieldset class="source-mode-control" aria-label="Source mode">
@@ -58,16 +57,11 @@
             <span class="license-reminder">Please use only fonts you have a license to edit.</span>
             <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
           </label>
-
-          <p class="legal-note">
-            Processed locally. Only upload fonts you have the right to modify and export.
-          </p>
         </section>
 
         <section class="output-panel preview-pane" aria-label="Pixelized font preview">
           <div class="pane-header">
             <h2>pixel output</h2>
-            <span id="after-label">live demo effect</span>
           </div>
           <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label="Pixelized demo preview"></canvas>
           <p id="after-preview" class="preview-text generated-preview is-hidden">
@@ -78,12 +72,6 @@
         <aside class="controls-panel" aria-label="Settings">
           <div class="pane-header">
             <h2>settings</h2>
-            <span>live controls</span>
-          </div>
-
-          <div class="summary-strip" id="font-summary">
-            <span>Demo preview active</span>
-            <span>No font loaded</span>
           </div>
 
           <div class="control-stack">
@@ -118,12 +106,12 @@
             </label>
           </div>
 
-          <button id="generate-button" class="primary-action" type="button" disabled>
-            generate ttf
+          <button id="reset-button" class="secondary-action" type="button">
+            reset defaults
           </button>
 
           <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
-            download ttf
+            Download TTF
           </a>
         </aside>
       </div>

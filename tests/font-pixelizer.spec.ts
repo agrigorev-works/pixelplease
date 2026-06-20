@@ -32,6 +32,9 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.locator(".terminal-bar")).toHaveCount(0);
   await expect(page.getByText("pixelplease.local")).toHaveCount(0);
   await expect(page.locator("#app-status")).toBeHidden();
+  await expect(page.locator(".pane-header span")).toHaveCount(0);
+  await expect(page.locator("#font-summary")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
 
   const gridColumns = await page
     .locator(".workspace")
@@ -81,6 +84,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#google-font-select")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
 
+  const sourcePanelBox = await page.locator(".source-panel").boundingBox();
   const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
 
   await page.getByLabel("Your Font").check();
@@ -88,20 +92,26 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#sample-text")).toBeHidden();
   await expect(page.locator("#google-font-select")).toBeHidden();
   await expect(page.locator("#upload-zone")).toBeVisible();
-  await expect(page.locator("#before-label")).toHaveText("upload local font");
-  await expect(page.locator("#font-summary")).toContainText("No font loaded");
   await expect(page.getByText("choose font file")).toBeVisible();
   await expect(page.getByText(/license to edit/i)).toBeVisible();
   await expect(page.locator(".upload-button")).toHaveCount(0);
 
+  const uploadPanelBox = await page.locator(".source-panel").boundingBox();
   const uploadBox = await page.locator("#upload-zone").boundingBox();
+  expect(Math.abs((sourcePanelBox?.width ?? 0) - (uploadPanelBox?.width ?? 0))).toBeLessThan(1);
+  expect(Math.abs((sourcePanelBox?.height ?? 0) - (uploadPanelBox?.height ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadBox?.height ?? 0))).toBeLessThan(2);
 
   await page.locator("#font-upload").setInputFiles(sourcePath);
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
-  await expect(page.locator("#font-summary")).toContainText("Fixture Sans");
-  await expect(page.locator("#app-status")).toHaveText("Ready to generate");
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+
+  const uploadedPanelBox = await page.locator(".source-panel").boundingBox();
+  const uploadedPreviewBox = await page.locator("#sample-text").boundingBox();
+  expect(Math.abs((sourcePanelBox?.width ?? 0) - (uploadedPanelBox?.width ?? 0))).toBeLessThan(1);
+  expect(Math.abs((sourcePanelBox?.height ?? 0) - (uploadedPanelBox?.height ?? 0))).toBeLessThan(1);
+  expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadedPreviewBox?.height ?? 0))).toBeLessThan(2);
 });
 
 test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
@@ -123,16 +133,11 @@ test("focuses source text at the end and offers curated Google demo fonts", asyn
   await expect(page.locator("#google-font-select")).toBeVisible();
   const fontOptions = await page.locator("#google-font-select option").allTextContents();
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
-  await expect(page.locator("#before-label")).toContainText(/Google Fonts/i);
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  const initialBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
 
   const currentFont = await page.locator("#google-font-select").inputValue();
   await page.locator("#sample-text").fill("MMMM iiiiii 123");
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-  });
-  const beforeCanvas = await page.locator("#demo-preview-canvas").evaluate((canvas) =>
-    (canvas as HTMLCanvasElement).toDataURL(),
-  );
   const nextFont = await page.locator("#google-font-select").evaluate((select) => {
     const element = select as HTMLSelectElement;
     return Array.from(element.options).find((option) => option.value !== element.value)?.value;
@@ -140,51 +145,89 @@ test("focuses source text at the end and offers curated Google demo fonts", asyn
   expect(nextFont).toBeTruthy();
 
   await page.locator("#google-font-select").selectOption(nextFont as string);
-  await expect(page.locator("#before-label")).toContainText(nextFont as string);
   const sourceFontFamily = await page.locator("#sample-text").evaluate((textarea) =>
     getComputedStyle(textarea).fontFamily,
   );
 
   expect(sourceFontFamily).toContain(nextFont as string);
   expect(nextFont).not.toBe(currentFont);
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-  });
   await expect
     .poll(
-      async () =>
-        page.locator("#demo-preview-canvas").evaluate((canvas) =>
-          (canvas as HTMLCanvasElement).toDataURL(),
-        ),
-      { timeout: 10_000 },
+      async () => {
+        const url = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+        return Boolean(url && url !== initialBlobUrl);
+      },
+      { timeout: 20_000 },
     )
-    .not.toBe(beforeCanvas);
+    .toBe(true);
 });
 
-test("renders a usable default pixel preview before upload", async ({ page }) => {
+test("renders a usable generated Google Font output before upload", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.locator("#app-status")).toHaveText("demo mode");
-  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
-  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#after-preview")).toBeVisible();
+  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+  await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
 
   await page.locator("#sample-text").fill("Editable source text");
+  await expect(page.locator("#after-preview")).toHaveText("Editable source text");
 
-  const before = await page.locator("#demo-preview-canvas").evaluate((canvas) =>
-    (canvas as HTMLCanvasElement).toDataURL(),
-  );
-
+  const beforeBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
   await page.locator("#pixels-per-em").fill("10");
   await page.locator("#threshold").fill("28");
   await page.locator("#expand").fill("2");
   await page.locator("#shift-x").fill("0.35");
   await page.locator("#shift-y").fill("-0.25");
 
-  const after = await page.locator("#demo-preview-canvas").evaluate((canvas) =>
-    (canvas as HTMLCanvasElement).toDataURL(),
-  );
+  await expect
+    .poll(
+      async () => {
+        const url = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+        return Boolean(url && url !== beforeBlobUrl);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+});
 
-  expect(after).not.toBe(before);
+test("removes manual generation, resets controls, and keeps Download TTF primary", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
+  const resetButton = page.getByRole("button", { name: "reset defaults" });
+  await expect(resetButton).toBeVisible();
+  await expect(resetButton).toBeDisabled();
+
+  await page.locator("#pixels-per-em").fill("12");
+  await expect(resetButton).toBeEnabled();
+  await page.locator("#threshold").fill("28");
+  await page.locator("#expand").fill("2");
+  await page.locator("#shift-x").fill("0.35");
+  await page.locator("#shift-y").fill("-0.25");
+  await resetButton.click();
+
+  await expect(page.locator("#pixels-per-em")).toHaveValue("20");
+  await expect(page.locator("#threshold")).toHaveValue("42");
+  await expect(page.locator("#expand")).toHaveValue("0");
+  await expect(page.locator("#shift-x")).toHaveValue("0");
+  await expect(page.locator("#shift-y")).toHaveValue("0");
+  await expect(resetButton).toBeDisabled();
+
+  await page.getByLabel("Your Font").check();
+  await page.locator("#font-upload").setInputFiles(sourcePath);
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+
+  const downloadStyles = await page.locator("#download-link").evaluate((link) => {
+    const styles = getComputedStyle(link);
+    return {
+      backgroundColor: styles.backgroundColor,
+      color: styles.color,
+    };
+  });
+
+  expect(downloadStyles.backgroundColor).toBe("rgb(17, 17, 17)");
+  expect(downloadStyles.color).toBe("rgb(255, 255, 255)");
 });
 
 test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
@@ -206,8 +249,7 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
     document.getElementById("upload-zone")?.dispatchEvent(event);
   }, fixtureBase64);
 
-  await expect(page.locator("#app-status")).toHaveText("Ready to generate");
-  await expect(page.locator("#font-summary")).toContainText("Fixture Sans");
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
 
   await page.locator("#pixels-per-em").fill("18");
   await page.locator("#threshold").fill("36");
@@ -264,8 +306,7 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
 
   await page.getByLabel("Your Font").check();
   await page.locator("#font-upload").setInputFiles(latoSourcePath);
-  await expect(page.locator("#app-status")).toHaveText("Ready to generate");
-  await expect(page.locator("#font-summary")).toContainText("Lato");
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
 
   await page.locator("#pixels-per-em").fill("22");
   await page.locator("#threshold").fill("42");

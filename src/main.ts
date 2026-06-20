@@ -30,15 +30,50 @@ type DemoFontChoice = {
   family: string;
   cssFamily: string;
   license: "OFL" | "Apache-2.0";
+  sourceUrl: string;
 };
 
 const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
-  { family: "IBM Plex Sans", cssFamily: '"IBM Plex Sans", system-ui, sans-serif', license: "OFL" },
-  { family: "Lato", cssFamily: '"Lato", system-ui, sans-serif', license: "OFL" },
-  { family: "Libre Baskerville", cssFamily: '"Libre Baskerville", Georgia, serif', license: "OFL" },
-  { family: "Merriweather", cssFamily: '"Merriweather", Georgia, serif', license: "OFL" },
-  { family: "Roboto Mono", cssFamily: '"Roboto Mono", ui-monospace, monospace', license: "Apache-2.0" },
-  { family: "Space Grotesk", cssFamily: '"Space Grotesk", system-ui, sans-serif', license: "OFL" },
+  {
+    family: "IBM Plex Sans",
+    cssFamily: '"IBM Plex Sans", system-ui, sans-serif',
+    license: "OFL",
+    sourceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+  },
+  {
+    family: "Lato",
+    cssFamily: '"Lato", system-ui, sans-serif',
+    license: "OFL",
+    sourceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf",
+  },
+  {
+    family: "Libre Baskerville",
+    cssFamily: '"Libre Baskerville", Georgia, serif',
+    license: "OFL",
+    sourceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+  },
+  {
+    family: "Merriweather",
+    cssFamily: '"Merriweather", Georgia, serif',
+    license: "OFL",
+    sourceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+  },
+  {
+    family: "Roboto Mono",
+    cssFamily: '"Roboto Mono", ui-monospace, monospace',
+    license: "OFL",
+    sourceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+  },
+  {
+    family: "Space Grotesk",
+    cssFamily: '"Space Grotesk", system-ui, sans-serif',
+    license: "OFL",
+    sourceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
+  },
 ];
 
 const state: AppState = {
@@ -47,6 +82,7 @@ const state: AppState = {
 const AUTO_GENERATE_DELAY_MS = 280;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
+let sourceLoadRunId = 0;
 
 const uploadInput = getElement<HTMLInputElement>("font-upload");
 const uploadZone = getElement<HTMLElement>("upload-zone");
@@ -55,15 +91,12 @@ const sourceModeUpload = getElement<HTMLInputElement>("source-mode-upload");
 const googleFontField = getElement<HTMLElement>("google-font-field");
 const googleFontSelect = getElement<HTMLSelectElement>("google-font-select");
 const sourceEditorField = getElement<HTMLElement>("source-editor-field");
-const generateButton = getElement<HTMLButtonElement>("generate-button");
+const resetButton = getElement<HTMLButtonElement>("reset-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
 const afterPreview = getElement<HTMLElement>("after-preview");
 const demoPreviewCanvas = getElement<HTMLCanvasElement>("demo-preview-canvas");
-const beforeLabel = getElement<HTMLElement>("before-label");
-const afterLabel = getElement<HTMLElement>("after-label");
 const appStatus = getElement<HTMLElement>("app-status");
-const fontSummary = getElement<HTMLElement>("font-summary");
 const pixelsPerEm = getElement<HTMLInputElement>("pixels-per-em");
 const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
@@ -83,7 +116,7 @@ uploadZone.addEventListener("drop", handleDrop);
 sourceModeGoogle.addEventListener("change", handleSourceModeChange);
 sourceModeUpload.addEventListener("change", handleSourceModeChange);
 googleFontSelect.addEventListener("change", handleGoogleFontChange);
-generateButton.addEventListener("click", handleGenerate);
+resetButton.addEventListener("click", resetControlsToDefaults);
 sampleText.addEventListener("input", syncSampleText);
 pixelsPerEm.addEventListener("input", handleControlInput);
 threshold.addEventListener("input", handleControlInput);
@@ -123,13 +156,13 @@ function initializeDemoFonts(): void {
 
   const font = pickRandomFont();
   googleFontSelect.value = font.family;
-  applyDemoFont(font);
+  void applyDemoFont(font);
 }
 
 function handleGoogleFontChange(): void {
   const font = DEMO_GOOGLE_FONTS.find((item) => item.family === googleFontSelect.value);
   if (font) {
-    applyDemoFont(font);
+    void applyDemoFont(font);
   }
 }
 
@@ -147,16 +180,13 @@ function setSourceMode(mode: SourceMode): void {
   if (mode === "google") {
     clearSourceFont();
     googleFontSelect.disabled = false;
-    applyDemoFont(state.demoFont ?? pickRandomFont());
+    void applyDemoFont(state.demoFont ?? pickRandomFont());
     setStatus("demo mode");
-  } else if (!state.sourceFont) {
+  } else {
+    clearSourceFont();
     clearGeneratedFont();
-    beforeLabel.textContent = "upload local font";
-    fontSummary.innerHTML = `
-      <span><strong>Local upload mode</strong></span>
-      <span>No font loaded</span>
-    `;
-    generateButton.disabled = true;
+    googleFontSelect.disabled = true;
+    setStatus("Upload a font");
   }
 
   syncSourceModeUI();
@@ -166,25 +196,61 @@ function setSourceMode(mode: SourceMode): void {
   }
 }
 
-function applyDemoFont(font: DemoFontChoice): void {
+async function applyDemoFont(font: DemoFontChoice): Promise<void> {
   state.demoFont = font;
 
-  if (state.sourceFont) {
-    return;
-  }
-
   sampleText.style.fontFamily = font.cssFamily;
-  beforeLabel.textContent = `${font.family} / Google Fonts`;
-  fontSummary.innerHTML = `
-    <span><strong>${escapeHtml(font.family)}</strong></span>
-    <span>Google Fonts demo</span>
-    <span>${font.license}</span>
-  `;
   renderDemoPreview();
   void document.fonts.load(`400 48px ${font.cssFamily}`).then(renderDemoPreview);
+
+  if (state.sourceMode === "google") {
+    await loadDemoFontFile(font);
+  }
+}
+
+async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
+  const loadId = (sourceLoadRunId += 1);
+  window.clearTimeout(autoGenerateTimer);
+  generationRunId += 1;
+  clearGeneratedFont();
+  revokeUrl(state.sourceUrl);
+  state.sourceFont = undefined;
+  state.sourceFile = undefined;
+  state.sourceUrl = undefined;
+  document.getElementById("font-face-SourcePreviewFont")?.remove();
+  setStatus(`Loading ${font.family}...`);
+
+  try {
+    const response = await fetch(font.sourceUrl);
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    const sourceFont = parseFont(buffer);
+    const sourceUrl = URL.createObjectURL(new Blob([buffer], { type: "font/ttf" }));
+
+    if (loadId !== sourceLoadRunId || state.sourceMode !== "google" || state.demoFont !== font) {
+      revokeUrl(sourceUrl);
+      return;
+    }
+
+    state.sourceFont = sourceFont;
+    state.sourceUrl = sourceUrl;
+    installFontFace("SourcePreviewFont", sourceUrl);
+    sampleText.style.fontFamily = `"SourcePreviewFont", ${font.cssFamily}`;
+    syncSourceModeUI();
+    focusSourceTextAtEnd();
+    await generatePixelFont();
+  } catch (error) {
+    if (loadId === sourceLoadRunId && state.sourceMode === "google" && state.demoFont === font) {
+      renderError(error, `Could not load ${font.family}.`);
+    }
+  }
 }
 
 async function loadFontFile(file: File): Promise<void> {
+  sourceLoadRunId += 1;
   window.clearTimeout(autoGenerateTimer);
   generationRunId += 1;
   state.sourceMode = "upload";
@@ -207,23 +273,14 @@ async function loadFontFile(file: File): Promise<void> {
     sampleText.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
 
     const label = getFontLabel(sourceFont);
-    beforeLabel.textContent = label;
-    afterLabel.textContent = "generate TTF to preview font output";
-    renderFontSummary(sourceFont);
-    generateButton.disabled = false;
+    setStatus(`Generating from ${label}...`);
     googleFontSelect.disabled = true;
     syncSourceModeUI();
     focusSourceTextAtEnd();
-    setStatus("Ready to generate");
+    await generatePixelFont();
   } catch (error) {
-    generateButton.disabled = true;
     renderError(error, "Could not parse this font file.");
   }
-}
-
-async function handleGenerate(): Promise<void> {
-  window.clearTimeout(autoGenerateTimer);
-  await generatePixelFont();
 }
 
 async function generatePixelFont(): Promise<void> {
@@ -233,7 +290,6 @@ async function generatePixelFont(): Promise<void> {
   }
 
   const runId = (generationRunId += 1);
-  generateButton.disabled = true;
   clearGeneratedFont();
   setStatus("Generating...");
   afterPreview.textContent = "Pixelizing Basic Latin glyphs...";
@@ -259,8 +315,8 @@ async function generatePixelFont(): Promise<void> {
     installFontFace("PixelizedPreviewFont", url);
     afterPreview.style.fontFamily = '"PixelizedPreviewFont", ui-monospace, monospace';
     afterPreview.classList.remove("is-hidden");
+    afterPreview.classList.remove("empty-preview");
     demoPreviewCanvas.classList.add("is-hidden");
-    afterLabel.textContent = `${generated.familyName} (${generated.glyphCount} glyphs)`;
     downloadLink.href = url;
     downloadLink.download = `${generated.familyName.replace(/\s+/g, "-")}.ttf`;
     downloadLink.classList.remove("is-disabled");
@@ -268,20 +324,7 @@ async function generatePixelFont(): Promise<void> {
     setStatus("Generated TTF ready");
   } catch (error) {
     renderError(error, "Could not generate a pixelized TTF.");
-  } finally {
-    if (runId === generationRunId) {
-      generateButton.disabled = false;
-    }
   }
-}
-
-function renderFontSummary(font: opentype.Font): void {
-  const label = getFontLabel(font);
-
-  fontSummary.innerHTML = `
-    <span><strong>${escapeHtml(label)}</strong></span>
-    <span>${font.glyphs.length} source glyphs</span>
-  `;
 }
 
 function syncSourceModeUI(): void {
@@ -315,16 +358,39 @@ function handleControlInput(): void {
   }
 }
 
+function resetControlsToDefaults(): void {
+  window.clearTimeout(autoGenerateTimer);
+
+  [pixelsPerEm, threshold, expand, shiftX, shiftY].forEach((input) => {
+    input.value = input.defaultValue;
+  });
+
+  syncControlLabels();
+
+  if (state.sourceFont) {
+    void generatePixelFont();
+  } else {
+    renderDemoPreview();
+  }
+}
+
 function syncControlLabels(): void {
   pixelsPerEmValue.textContent = pixelsPerEm.value;
   thresholdValue.textContent = `${threshold.value}%`;
   expandValue.textContent = expand.value;
   shiftXValue.textContent = `${formatShiftValue(shiftX.value)} cell`;
   shiftYValue.textContent = `${formatShiftValue(shiftY.value)} cell`;
+  syncResetButton();
 
   if (!state.generated) {
     renderDemoPreview();
   }
+}
+
+function syncResetButton(): void {
+  resetButton.disabled = [pixelsPerEm, threshold, expand, shiftX, shiftY].every(
+    (input) => input.value === input.defaultValue,
+  );
 }
 
 function scheduleAutoGenerate(): void {
@@ -354,9 +420,9 @@ function clearGeneratedFont(): void {
   downloadLink.classList.add("is-disabled");
   afterPreview.style.fontFamily = "";
   afterPreview.classList.add("is-hidden");
+  afterPreview.classList.remove("empty-preview");
   afterPreview.textContent = sampleText.value || " ";
   demoPreviewCanvas.classList.remove("is-hidden");
-  afterLabel.textContent = state.sourceFont ? "generate TTF to preview font output" : "live demo effect";
   renderDemoPreview();
 }
 
@@ -369,7 +435,6 @@ function clearSourceFont(): void {
   state.sourceUrl = undefined;
   uploadInput.value = "";
   document.getElementById("font-face-SourcePreviewFont")?.remove();
-  generateButton.disabled = true;
   clearGeneratedFont();
 }
 
@@ -567,26 +632,17 @@ function setStatus(message: string): void {
 function renderError(error: unknown, fallback: string): void {
   const message = error instanceof Error ? error.message : fallback;
   setStatus("Error");
-  fontSummary.innerHTML = `<span class="error-text">${escapeHtml(fallback)} ${escapeHtml(message)}</span>`;
+  downloadLink.classList.add("is-disabled");
+  demoPreviewCanvas.classList.add("is-hidden");
+  afterPreview.classList.remove("is-hidden");
+  afterPreview.classList.add("empty-preview");
+  afterPreview.textContent = `${fallback} ${message}`;
 }
 
 function revokeUrl(url?: string): void {
   if (url) {
     URL.revokeObjectURL(url);
   }
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => {
-    const entities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;",
-    };
-    return entities[char];
-  });
 }
 
 function formatShiftValue(value: string): string {
