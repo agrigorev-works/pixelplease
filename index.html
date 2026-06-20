@@ -25,10 +25,6 @@
 
       <div class="workspace">
         <section class="source-panel preview-pane" aria-label="Source font and text">
-          <div class="pane-header">
-            <h2>source</h2>
-          </div>
-
           <fieldset class="source-mode-control" aria-label="Source mode">
             <legend class="sr-only">Source mode</legend>
             <label class="segment-option">
@@ -60,9 +56,6 @@
         </section>
 
         <section class="output-panel preview-pane" aria-label="Pixelized font preview">
-          <div class="pane-header">
-            <h2>pixel output</h2>
-          </div>
           <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label="Pixelized demo preview"></canvas>
           <p id="after-preview" class="preview-text generated-preview is-hidden">
             The quick brown fox jumps over 123.
@@ -70,10 +63,6 @@
         </section>
 
         <aside class="controls-panel" aria-label="Settings">
-          <div class="pane-header">
-            <h2>settings</h2>
-          </div>
-
           <div class="control-stack">
             <label class="field">
               <span>pixels-per-em</span>
@@ -106,13 +95,15 @@
             </label>
           </div>
 
-          <button id="reset-button" class="secondary-action" type="button">
-            reset defaults
-          </button>
+          <div class="action-stack">
+            <button id="reset-button" class="secondary-action" type="button">
+              reset defaults
+            </button>
 
-          <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
-            Download TTF
-          </a>
+            <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
+              Download TTF
+            </a>
+          </div>
         </aside>
       </div>
 

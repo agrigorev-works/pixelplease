@@ -32,7 +32,8 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.locator(".terminal-bar")).toHaveCount(0);
   await expect(page.getByText("pixelplease.local")).toHaveCount(0);
   await expect(page.locator("#app-status")).toBeHidden();
-  await expect(page.locator(".pane-header span")).toHaveCount(0);
+  await expect(page.locator(".pane-header")).toHaveCount(0);
+  await expect(page.locator("h2")).toHaveCount(0);
   await expect(page.locator("#font-summary")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
 
@@ -55,8 +56,35 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.locator("#coverage-label")).toHaveCount(0);
   await expect(page.locator("#glyph-grid")).toHaveCount(0);
 
-  const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
-  const outputPreviewBox = await page.locator("#demo-preview-canvas").boundingBox();
+  const layoutMetrics = await page.evaluate(() => {
+    const sourcePanel = document.querySelector(".source-panel");
+    const outputPanel = document.querySelector(".output-panel");
+    const controlsPanel = document.querySelector(".controls-panel");
+    const sourcePreview = document.querySelector("#sample-text");
+    const outputPreview = [document.querySelector("#demo-preview-canvas"), document.querySelector("#after-preview")]
+      .filter((element): element is Element => Boolean(element))
+      .find((element) => getComputedStyle(element).display !== "none");
+
+    if (!sourcePanel || !outputPanel || !controlsPanel || !sourcePreview || !outputPreview) {
+      throw new Error("Missing layout elements");
+    }
+
+    const sourcePanelBox = sourcePanel.getBoundingClientRect();
+    const outputPanelBox = outputPanel.getBoundingClientRect();
+    const controlsPanelBox = controlsPanel.getBoundingClientRect();
+    const sourcePreviewBox = sourcePreview.getBoundingClientRect();
+    const outputPreviewBox = outputPreview.getBoundingClientRect();
+
+    return {
+      sourcePreviewHeight: sourcePreviewBox.height,
+      outputPreviewHeight: outputPreviewBox.height,
+      sourcePreviewBottom: sourcePreviewBox.bottom,
+      outputPreviewBottom: outputPreviewBox.bottom,
+      sourcePanelBottom: sourcePanelBox.bottom,
+      outputPanelBottom: outputPanelBox.bottom,
+      controlsPanelBottom: controlsPanelBox.bottom,
+    };
+  });
   const previewTypography = await page.locator("#sample-text").evaluate((source) => {
     const output = document.getElementById("after-preview");
     const sourceStyle = getComputedStyle(source);
@@ -69,7 +97,10 @@ test("renders a clean three-column source output settings layout", async ({ page
     };
   });
 
-  expect(Math.abs((sourcePreviewBox?.height ?? 0) - (outputPreviewBox?.height ?? 0))).toBeLessThan(2);
+  expect(Math.abs(layoutMetrics.sourcePreviewHeight - layoutMetrics.outputPreviewHeight)).toBeLessThan(2);
+  expect(Math.abs(layoutMetrics.sourcePreviewBottom - layoutMetrics.outputPreviewBottom)).toBeLessThan(1);
+  expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.outputPanelBottom)).toBeLessThan(1);
+  expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.controlsPanelBottom)).toBeLessThan(1);
   expect(previewTypography.sourceFontSize).toBe(previewTypography.outputFontSize);
   expect(previewTypography.sourceLineHeight).toBe(previewTypography.outputLineHeight);
 });
@@ -223,11 +254,32 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
     return {
       backgroundColor: styles.backgroundColor,
       color: styles.color,
+      borderRadius: styles.borderRadius,
+      height: link.getBoundingClientRect().height,
     };
+  });
+  const resetStyles = await resetButton.evaluate((button) => {
+    const styles = getComputedStyle(button);
+    return {
+      borderRadius: styles.borderRadius,
+      height: button.getBoundingClientRect().height,
+    };
+  });
+  const actionGap = await page.locator(".controls-panel").evaluate((panel) => {
+    const controlStack = panel.querySelector(".control-stack")?.getBoundingClientRect();
+    const actionStack = panel.querySelector(".action-stack")?.getBoundingClientRect();
+    if (!controlStack || !actionStack) {
+      throw new Error("Missing control/action stack");
+    }
+    return actionStack.top - controlStack.bottom;
   });
 
   expect(downloadStyles.backgroundColor).toBe("rgb(17, 17, 17)");
   expect(downloadStyles.color).toBe("rgb(255, 255, 255)");
+  expect(downloadStyles.height).toBeGreaterThanOrEqual(56);
+  expect(downloadStyles.borderRadius).toBe("999px");
+  expect(resetStyles.borderRadius).toBe("999px");
+  expect(actionGap).toBeGreaterThanOrEqual(32);
 });
 
 test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {

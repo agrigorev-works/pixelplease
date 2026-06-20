@@ -86,7 +86,7 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 320px);
   gap: clamp(24px, 3.2vw, 48px);
-  align-items: start;
+  align-items: end;
 }
 
 .controls-panel,
@@ -97,7 +97,7 @@ h2 {
 
 .controls-panel {
   display: grid;
-  gap: 18px;
+  gap: 36px;
   padding: 0;
   position: sticky;
   top: clamp(16px, 3vw, 40px);
@@ -203,13 +203,18 @@ select {
   justify-content: center;
   min-height: 38px;
   border: 1px solid #111111;
-  border-radius: 0;
+  border-radius: 999px;
   background: #111111;
   color: #ffffff;
   font-size: 12px;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+}
+
+.action-stack {
+  display: grid;
+  gap: 12px;
 }
 
 .secondary-action {
@@ -226,6 +231,7 @@ select {
 .download-action {
   background: #111111;
   color: #ffffff;
+  min-height: 57px;
 }
 
 .download-action.is-disabled {
@@ -250,17 +256,9 @@ textarea {
 
 .preview-pane {
   display: grid;
-  grid-template-rows: auto auto;
   align-content: start;
   gap: 16px;
   padding: 0;
-}
-
-.pane-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .preview-text,
@@ -359,6 +357,7 @@ textarea {
   .workspace {
     grid-template-columns: 1fr;
     gap: 28px;
+    align-items: stretch;
   }
 
   .controls-panel {
