@@ -210,6 +210,17 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#source-mode-google")).toBeChecked();
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#sample-text")).toBeFocused();
+  const sourceFocusStyles = await page.locator("#sample-text").evaluate((textarea) => {
+    const styles = getComputedStyle(textarea);
+    return {
+      borderColor: styles.borderColor,
+      outlineColor: styles.outlineColor,
+      outlineStyle: styles.outlineStyle,
+    };
+  });
+  expect(sourceFocusStyles.borderColor).toBe("rgb(17, 17, 17)");
+  expect(sourceFocusStyles.outlineColor).toBe("rgb(17, 17, 17)");
+  expect(sourceFocusStyles.outlineStyle).toBe("solid");
   await expect(page.locator("#google-font-select")).toBeVisible();
   await expect(page.locator("#google-font-field span")).toHaveCount(0);
   await expect(page.locator("#upload-zone")).toBeHidden();
@@ -236,9 +247,21 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#upload-zone")).toBeVisible();
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
-  await expect(page.getByText("choose font file")).toBeVisible();
+  await expect(page.getByText("choose font file")).toHaveCount(0);
+  await expect(page.locator("#upload-zone .upload-title")).toHaveText(
+    "drop a TTF/OTF here or click anywhere in this area",
+  );
   await expect(page.getByText(/license to edit/i)).toBeVisible();
   await expect(page.locator(".upload-button")).toHaveCount(0);
+  const uploadZoneStyles = await page.locator("#upload-zone").evaluate((zone) => {
+    const styles = getComputedStyle(zone);
+    return {
+      borderColor: styles.borderColor,
+      borderStyle: styles.borderStyle,
+    };
+  });
+  expect(uploadZoneStyles.borderColor).toBe("rgb(17, 17, 17)");
+  expect(uploadZoneStyles.borderStyle).toBe("dashed");
 
   const uploadPanelBox = await page.locator(".source-panel").boundingBox();
   const uploadBox = await page.locator("#upload-zone").boundingBox();
@@ -460,7 +483,9 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   await page.goto("/");
 
   await page.getByLabel("Your Font").check();
-  await expect(page.getByText("choose font file")).toBeVisible();
+  await expect(page.locator("#upload-zone .upload-title")).toHaveText(
+    "drop a TTF/OTF here or click anywhere in this area",
+  );
   const fixtureBase64 = (await fs.readFile(sourcePath)).toString("base64");
   await page.evaluate((base64) => {
     const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));

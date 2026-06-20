@@ -38,7 +38,6 @@ label {
   padding: clamp(24px, 4vw, 58px);
 }
 
-.upload-copy,
 .license-reminder,
 .segment-option span,
 .field span {
@@ -184,7 +183,6 @@ h2 {
   color: #ffffff;
 }
 
-.upload-copy,
 .license-reminder,
 .field span {
   color: #555555;
@@ -305,6 +303,12 @@ textarea {
   color: #111111;
 }
 
+textarea:focus {
+  border-color: #111111;
+  outline: 1px solid #111111;
+  outline-offset: -1px;
+}
+
 .preview-pane {
   display: grid;
   align-content: start;
@@ -345,6 +349,7 @@ textarea {
   justify-items: center;
   min-width: 0;
   padding: 16px;
+  border-color: #111111;
   border-style: dashed;
   color: #111111;
   cursor: pointer;
