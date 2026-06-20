@@ -38,7 +38,6 @@ label {
   padding: clamp(24px, 4vw, 58px);
 }
 
-.intro-copy,
 .upload-copy,
 .license-reminder,
 .segment-option span,
@@ -57,7 +56,9 @@ label {
 }
 
 .intro-copy {
-  color: #555555;
+  color: #111111;
+  font-size: 16px;
+  line-height: normal;
 }
 
 h1,
@@ -69,13 +70,16 @@ p {
 h1 {
   grid-column: 2;
   grid-row: 1;
+  display: inline-flex;
+  gap: 0.12em;
   justify-self: end;
   font-size: clamp(34px, 7vw, 76px);
   line-height: 0.96;
   letter-spacing: 0;
   font-weight: 600;
-  font-family: inherit;
+  font-family: "Merriweather", Georgia, serif;
   text-align: right;
+  white-space: nowrap;
 }
 
 .intro-copy {
@@ -102,8 +106,8 @@ h1 {
   .intro-copy {
     grid-column: 1;
     grid-row: 2;
-    justify-self: start;
-    text-align: left;
+    justify-self: center;
+    text-align: center;
   }
 }
 
@@ -116,7 +120,7 @@ h2 {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 320px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(220px, clamp(220px, 22vw, 300px));
   gap: clamp(24px, 3.2vw, 48px);
   align-items: end;
 }

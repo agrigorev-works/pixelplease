@@ -83,6 +83,8 @@ const state: AppState = {
   sourceMode: "google",
 };
 const AUTO_GENERATE_DELAY_MS = 280;
+const LOGO_FONT_FAMILY = "PixelpleaseLogoFont";
+const LOGO_SOURCE_FAMILY = "Merriweather";
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
@@ -97,6 +99,7 @@ const replaceFontButton = getElement<HTMLButtonElement>("replace-font-button");
 const sourceEditorField = getElement<HTMLElement>("source-editor-field");
 const resetButton = getElement<HTMLButtonElement>("reset-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
+const logoTitle = getElement<HTMLHeadingElement>("logo-title");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
 const afterPreview = getElement<HTMLElement>("after-preview");
 const demoPreviewCanvas = getElement<HTMLCanvasElement>("demo-preview-canvas");
@@ -131,6 +134,7 @@ shiftY.addEventListener("input", handleControlInput);
 window.addEventListener("resize", renderDemoPreview);
 
 initializeDemoFonts();
+void initializeLogoFont();
 syncSourceModeUI();
 syncControlLabels();
 syncSampleText();
@@ -162,6 +166,29 @@ function initializeDemoFonts(): void {
   const font = pickRandomFont();
   googleFontSelect.value = font.family;
   void applyDemoFont(font);
+}
+
+async function initializeLogoFont(): Promise<void> {
+  const font = DEMO_GOOGLE_FONTS.find((item) => item.family === LOGO_SOURCE_FAMILY);
+  if (!font) {
+    return;
+  }
+
+  try {
+    const response = await fetch(font.sourceUrl);
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+
+    const sourceFont = parseFont(await response.arrayBuffer());
+    const generated = await pixelizeFont(sourceFont, getDefaultPixelizeOptions());
+    const url = URL.createObjectURL(new Blob([generated.arrayBuffer], { type: "font/ttf" }));
+    installFontFace(LOGO_FONT_FAMILY, url);
+    logoTitle.style.fontFamily = `"${LOGO_FONT_FAMILY}", "Merriweather", Georgia, serif`;
+    logoTitle.dataset.logoFont = "ready";
+  } catch {
+    logoTitle.dataset.logoFont = "fallback";
+  }
 }
 
 function handleGoogleFontChange(): void {
@@ -449,6 +476,16 @@ function getPixelizeOptions(): PixelizeOptions {
     expand: Number(expand.value),
     shiftX: Number(shiftX.value),
     shiftY: Number(shiftY.value),
+  };
+}
+
+function getDefaultPixelizeOptions(): PixelizeOptions {
+  return {
+    pixelsPerEm: Number(pixelsPerEm.defaultValue),
+    threshold: Number(threshold.defaultValue) / 100,
+    expand: Number(expand.defaultValue),
+    shiftX: Number(shiftX.defaultValue),
+    shiftY: Number(shiftY.defaultValue),
   };
 }
 

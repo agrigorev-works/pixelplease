@@ -38,6 +38,8 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.locator("h2")).toHaveCount(0);
   await expect(page.locator("#font-summary")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "pixel please" })).toBeVisible();
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });
 
   const gridColumns = await page
     .locator(".workspace")
@@ -61,8 +63,10 @@ test("renders a clean three-column source output settings layout", async ({ page
     const copyBox = copy.getBoundingClientRect();
     const introBox = document.querySelector(".intro")?.getBoundingClientRect();
     const sourceBox = document.querySelector(".source-panel")?.getBoundingClientRect();
+    const controlsBox = document.querySelector(".controls-panel")?.getBoundingClientRect();
     const titleStyles = getComputedStyle(title);
     const copyStyles = getComputedStyle(copy);
+    const selectStyles = getComputedStyle(document.querySelector("#google-font-select") as Element);
 
     return {
       copyLeft: copyBox.left,
@@ -73,6 +77,14 @@ test("renders a clean three-column source output settings layout", async ({ page
       copyTextAlign: copyStyles.textAlign,
       introBottom: introBox?.bottom,
       sourceTop: sourceBox?.top,
+      titleFontFamily: titleStyles.fontFamily,
+      copyFontFamily: copyStyles.fontFamily,
+      copyFontSize: copyStyles.fontSize,
+      copyColor: copyStyles.color,
+      selectFontFamily: selectStyles.fontFamily,
+      selectFontSize: selectStyles.fontSize,
+      selectColor: selectStyles.color,
+      controlsWidth: controlsBox?.width,
     };
   });
   expect(introMetrics.copyLeft).toBeLessThan(introMetrics.titleLeft);
@@ -80,6 +92,11 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(introMetrics.titleTextAlign).toBe("right");
   expect(introMetrics.copyTextAlign).toBe("left");
   expect((introMetrics.sourceTop ?? 0) - (introMetrics.introBottom ?? 0)).toBeLessThan(56);
+  expect(introMetrics.titleFontFamily).toContain("PixelpleaseLogoFont");
+  expect(introMetrics.copyFontFamily).toBe(introMetrics.selectFontFamily);
+  expect(introMetrics.copyFontSize).toBe(introMetrics.selectFontSize);
+  expect(introMetrics.copyColor).toBe(introMetrics.selectColor);
+  expect(introMetrics.controlsWidth).toBeLessThanOrEqual(300);
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();
@@ -152,7 +169,8 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
     const title = document.querySelector("h1");
     const copy = document.querySelector(".intro-copy");
     const workspace = document.querySelector(".workspace");
-    if (!intro || !title || !copy || !workspace) {
+    const controls = document.querySelector(".controls-panel");
+    if (!intro || !title || !copy || !workspace || !controls) {
       throw new Error("Missing intro elements");
     }
 
@@ -165,20 +183,22 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
 
     return {
       titleCenterDelta: Math.abs(titleBox.left + titleBox.width / 2 - (introBox.left + introBox.width / 2)),
+      copyCenterDelta: Math.abs(copyBox.left + copyBox.width / 2 - (introBox.left + introBox.width / 2)),
       copyBelowTitle: copyBox.top > titleBox.bottom,
-      copyLeftDelta: Math.abs(copyBox.left - introBox.left),
       titleTextAlign: titleStyles.textAlign,
       copyTextAlign: copyStyles.textAlign,
+      controlsWidth: controls.getBoundingClientRect().width,
       gridColumns: workspaceStyles.gridTemplateColumns.split(" ").length,
       overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
     };
   });
 
   expect(metrics.titleCenterDelta).toBeLessThan(1);
+  expect(metrics.copyCenterDelta).toBeLessThan(1);
   expect(metrics.copyBelowTitle).toBe(true);
-  expect(metrics.copyLeftDelta).toBeLessThan(1);
   expect(metrics.titleTextAlign).toBe("center");
-  expect(metrics.copyTextAlign).toBe("left");
+  expect(metrics.copyTextAlign).toBe("center");
+  expect(metrics.controlsWidth).toBeLessThanOrEqual(230);
   expect(metrics.gridColumns).toBe(3);
   expect(metrics.overflow).toBe(0);
 });
