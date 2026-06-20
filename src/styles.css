@@ -41,8 +41,10 @@ label {
 .prompt-line,
 .intro-copy,
 .upload-copy,
+.license-reminder,
 .legal-note,
 .font-select-field span,
+.segment-option span,
 .field span,
 .pane-header span,
 .section-heading span,
@@ -104,7 +106,50 @@ h2 {
   top: clamp(16px, 3vw, 40px);
 }
 
+.source-mode-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border: 1px solid #111111;
+}
+
+.segment-option {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.segment-option + .segment-option {
+  border-left: 1px solid #111111;
+}
+
+.segment-option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segment-option span {
+  color: #111111;
+}
+
+.segment-option:has(input:checked) {
+  background: #111111;
+}
+
+.segment-option:has(input:checked) span {
+  color: #ffffff;
+}
+
 .upload-copy,
+.license-reminder,
 .legal-note,
 .font-select-field span,
 .field span,
@@ -159,8 +204,7 @@ select {
 }
 
 .primary-action,
-.download-action,
-.upload-button {
+.download-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -175,23 +219,9 @@ select {
   cursor: pointer;
 }
 
-.download-action,
-.upload-button {
+.download-action {
   background: #ffffff;
   color: #111111;
-}
-
-.upload-button {
-  justify-self: start;
-  padding: 0 18px;
-}
-
-.upload-button input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
 }
 
 .primary-action:disabled,
@@ -247,7 +277,8 @@ textarea {
 }
 
 .preview-text,
-.demo-preview-canvas {
+.demo-preview-canvas,
+.upload-zone {
   width: 100%;
   height: clamp(360px, 52vh, 620px);
   min-height: 360px;
@@ -269,6 +300,41 @@ textarea {
   display: block;
   align-self: start;
   image-rendering: pixelated;
+}
+
+.upload-zone {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  justify-items: center;
+  padding: 16px;
+  border-style: dashed;
+  color: #111111;
+  cursor: pointer;
+  text-align: center;
+}
+
+.upload-zone.is-dragging {
+  outline: 2px solid #111111;
+  outline-offset: -8px;
+}
+
+.upload-title {
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.license-reminder {
+  max-width: 34ch;
+}
+
+.upload-zone input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .generated-preview {
@@ -310,7 +376,8 @@ textarea {
   }
 
   .preview-text,
-  .demo-preview-canvas {
+  .demo-preview-canvas,
+  .upload-zone {
     height: 320px;
     min-height: 320px;
     font-size: 34px;

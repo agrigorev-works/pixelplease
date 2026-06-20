@@ -15,6 +15,7 @@ declare global {
 }
 
 type AppState = {
+  sourceMode: SourceMode;
   sourceFont?: opentype.Font;
   sourceFile?: File;
   sourceUrl?: string;
@@ -22,6 +23,8 @@ type AppState = {
   generated?: PixelizeResult;
   generatedUrl?: string;
 };
+
+type SourceMode = "google" | "upload";
 
 type DemoFontChoice = {
   family: string;
@@ -38,13 +41,20 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
   { family: "Space Grotesk", cssFamily: '"Space Grotesk", system-ui, sans-serif', license: "OFL" },
 ];
 
-const state: AppState = {};
+const state: AppState = {
+  sourceMode: "google",
+};
 const AUTO_GENERATE_DELAY_MS = 280;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 
 const uploadInput = getElement<HTMLInputElement>("font-upload");
+const uploadZone = getElement<HTMLElement>("upload-zone");
+const sourceModeGoogle = getElement<HTMLInputElement>("source-mode-google");
+const sourceModeUpload = getElement<HTMLInputElement>("source-mode-upload");
+const googleFontField = getElement<HTMLElement>("google-font-field");
 const googleFontSelect = getElement<HTMLSelectElement>("google-font-select");
+const sourceEditorField = getElement<HTMLElement>("source-editor-field");
 const generateButton = getElement<HTMLButtonElement>("generate-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
@@ -66,6 +76,12 @@ const shiftXValue = getElement<HTMLOutputElement>("shift-x-value");
 const shiftYValue = getElement<HTMLOutputElement>("shift-y-value");
 
 uploadInput.addEventListener("change", handleUpload);
+uploadZone.addEventListener("dragenter", handleDragEnter);
+uploadZone.addEventListener("dragover", handleDragOver);
+uploadZone.addEventListener("dragleave", handleDragLeave);
+uploadZone.addEventListener("drop", handleDrop);
+sourceModeGoogle.addEventListener("change", handleSourceModeChange);
+sourceModeUpload.addEventListener("change", handleSourceModeChange);
 googleFontSelect.addEventListener("change", handleGoogleFontChange);
 generateButton.addEventListener("click", handleGenerate);
 sampleText.addEventListener("input", syncSampleText);
@@ -77,6 +93,7 @@ shiftY.addEventListener("input", handleControlInput);
 window.addEventListener("resize", renderDemoPreview);
 
 initializeDemoFonts();
+syncSourceModeUI();
 syncControlLabels();
 syncSampleText();
 focusSourceTextAtEnd();
@@ -116,6 +133,39 @@ function handleGoogleFontChange(): void {
   }
 }
 
+function handleSourceModeChange(): void {
+  if (sourceModeGoogle.checked) {
+    setSourceMode("google");
+  } else {
+    setSourceMode("upload");
+  }
+}
+
+function setSourceMode(mode: SourceMode): void {
+  state.sourceMode = mode;
+
+  if (mode === "google") {
+    clearSourceFont();
+    googleFontSelect.disabled = false;
+    applyDemoFont(state.demoFont ?? pickRandomFont());
+    setStatus("demo mode");
+  } else if (!state.sourceFont) {
+    clearGeneratedFont();
+    beforeLabel.textContent = "upload local font";
+    fontSummary.innerHTML = `
+      <span><strong>Local upload mode</strong></span>
+      <span>No font loaded</span>
+    `;
+    generateButton.disabled = true;
+  }
+
+  syncSourceModeUI();
+
+  if (!sourceEditorField.classList.contains("is-hidden")) {
+    focusSourceTextAtEnd();
+  }
+}
+
 function applyDemoFont(font: DemoFontChoice): void {
   state.demoFont = font;
 
@@ -137,6 +187,8 @@ function applyDemoFont(font: DemoFontChoice): void {
 async function loadFontFile(file: File): Promise<void> {
   window.clearTimeout(autoGenerateTimer);
   generationRunId += 1;
+  state.sourceMode = "upload";
+  sourceModeUpload.checked = true;
   setStatus("Parsing font...");
 
   try {
@@ -160,6 +212,8 @@ async function loadFontFile(file: File): Promise<void> {
     renderFontSummary(sourceFont);
     generateButton.disabled = false;
     googleFontSelect.disabled = true;
+    syncSourceModeUI();
+    focusSourceTextAtEnd();
     setStatus("Ready to generate");
   } catch (error) {
     generateButton.disabled = true;
@@ -230,6 +284,19 @@ function renderFontSummary(font: opentype.Font): void {
   `;
 }
 
+function syncSourceModeUI(): void {
+  const isGoogleMode = state.sourceMode === "google";
+  const shouldShowUploadZone = state.sourceMode === "upload" && !state.sourceFont;
+  const shouldShowSourceEditor = isGoogleMode || Boolean(state.sourceFont);
+
+  sourceModeGoogle.checked = isGoogleMode;
+  sourceModeUpload.checked = state.sourceMode === "upload";
+  googleFontField.classList.toggle("is-hidden", !isGoogleMode);
+  sourceEditorField.classList.toggle("is-hidden", !shouldShowSourceEditor);
+  uploadZone.classList.toggle("is-hidden", !shouldShowUploadZone);
+  sampleText.disabled = !shouldShowSourceEditor;
+}
+
 function syncSampleText(): void {
   const value = sampleText.value || " ";
 
@@ -291,6 +358,50 @@ function clearGeneratedFont(): void {
   demoPreviewCanvas.classList.remove("is-hidden");
   afterLabel.textContent = state.sourceFont ? "generate TTF to preview font output" : "live demo effect";
   renderDemoPreview();
+}
+
+function clearSourceFont(): void {
+  window.clearTimeout(autoGenerateTimer);
+  generationRunId += 1;
+  revokeUrl(state.sourceUrl);
+  state.sourceFont = undefined;
+  state.sourceFile = undefined;
+  state.sourceUrl = undefined;
+  uploadInput.value = "";
+  document.getElementById("font-face-SourcePreviewFont")?.remove();
+  generateButton.disabled = true;
+  clearGeneratedFont();
+}
+
+function handleDragEnter(event: DragEvent): void {
+  event.preventDefault();
+  uploadZone.classList.add("is-dragging");
+}
+
+function handleDragOver(event: DragEvent): void {
+  event.preventDefault();
+  uploadZone.classList.add("is-dragging");
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "copy";
+  }
+}
+
+function handleDragLeave(event: DragEvent): void {
+  if (!uploadZone.contains(event.relatedTarget as Node | null)) {
+    uploadZone.classList.remove("is-dragging");
+  }
+}
+
+async function handleDrop(event: DragEvent): Promise<void> {
+  event.preventDefault();
+  uploadZone.classList.remove("is-dragging");
+
+  const file = event.dataTransfer?.files[0];
+  if (!file) {
+    return;
+  }
+
+  await loadFontFile(file);
 }
 
 function renderDemoPreview(): void {

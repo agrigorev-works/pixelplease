@@ -30,23 +30,37 @@
             <span id="before-label">system mono demo</span>
           </div>
 
-          <label class="font-select-field" for="google-font-select">
+          <fieldset class="source-mode-control" aria-label="Source mode">
+            <legend class="sr-only">Source mode</legend>
+            <label class="segment-option">
+              <input id="source-mode-google" type="radio" name="source-mode" value="google" checked />
+              <span>Google Font</span>
+            </label>
+            <label class="segment-option">
+              <input id="source-mode-upload" type="radio" name="source-mode" value="upload" />
+              <span>Your Font</span>
+            </label>
+          </fieldset>
+
+          <label id="google-font-field" class="font-select-field" for="google-font-select">
             <span>google font</span>
             <select id="google-font-select" aria-label="Google Font for demo preview"></select>
           </label>
 
-          <label class="source-editor-field" for="sample-text">
+          <label id="source-editor-field" class="source-editor-field" for="sample-text">
             <span class="sr-only">sample text</span>
             <textarea id="sample-text" class="preview-text source-editor" rows="8" autofocus>The quick brown fox jumps over 123.</textarea>
           </label>
 
-          <label class="upload-button" for="font-upload">
-            <span>upload your font</span>
+          <label id="upload-zone" class="upload-zone is-hidden" for="font-upload">
+            <span class="upload-title">choose font file</span>
+            <span class="upload-copy">drop a TTF/OTF here or click anywhere in this area</span>
+            <span class="license-reminder">Please use only fonts you have a license to edit.</span>
             <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
           </label>
 
           <p class="legal-note">
-            Processed locally. Only use fonts you have the right to modify.
+            Processed locally. Only upload fonts you have the right to modify and export.
           </p>
         </section>
 

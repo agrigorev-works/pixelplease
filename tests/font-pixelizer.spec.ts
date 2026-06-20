@@ -46,6 +46,9 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(outputBox?.x).toBeLessThan(controlsBox?.x ?? 0);
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
+  await expect(page.locator("#source-mode-google")).toBeChecked();
+  await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.locator("#coverage-label")).toHaveCount(0);
   await expect(page.locator("#glyph-grid")).toHaveCount(0);
 
@@ -66,6 +69,39 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (outputPreviewBox?.height ?? 0))).toBeLessThan(2);
   expect(previewTypography.sourceFontSize).toBe(previewTypography.outputFontSize);
   expect(previewTypography.sourceLineHeight).toBe(previewTypography.outputLineHeight);
+});
+
+test("switches Source between Google Font editing and same-size upload drop zone", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await expect(page.locator("#source-mode-google")).toBeChecked();
+  await expect(page.locator("#sample-text")).toBeVisible();
+  await expect(page.locator("#sample-text")).toBeFocused();
+  await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#upload-zone")).toBeHidden();
+
+  const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
+
+  await page.getByLabel("Your Font").check();
+  await expect(page.locator("#source-mode-upload")).toBeChecked();
+  await expect(page.locator("#sample-text")).toBeHidden();
+  await expect(page.locator("#google-font-select")).toBeHidden();
+  await expect(page.locator("#upload-zone")).toBeVisible();
+  await expect(page.locator("#before-label")).toHaveText("upload local font");
+  await expect(page.locator("#font-summary")).toContainText("No font loaded");
+  await expect(page.getByText("choose font file")).toBeVisible();
+  await expect(page.getByText(/license to edit/i)).toBeVisible();
+  await expect(page.locator(".upload-button")).toHaveCount(0);
+
+  const uploadBox = await page.locator("#upload-zone").boundingBox();
+  expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadBox?.height ?? 0))).toBeLessThan(2);
+
+  await page.locator("#font-upload").setInputFiles(sourcePath);
+  await expect(page.locator("#sample-text")).toBeVisible();
+  await expect(page.locator("#upload-zone")).toBeHidden();
+  await expect(page.locator("#font-summary")).toContainText("Fixture Sans");
+  await expect(page.locator("#app-status")).toHaveText("Ready to generate");
 });
 
 test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
@@ -151,12 +187,24 @@ test("renders a usable default pixel preview before upload", async ({ page }) =>
   expect(after).not.toBe(before);
 });
 
-test("uploads a TTF through the local font button, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
+test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByText("upload your font")).toBeVisible();
-  await expect(page.locator("#upload-zone")).toHaveCount(0);
-  await page.locator("#font-upload").setInputFiles(sourcePath);
+  await page.getByLabel("Your Font").check();
+  await expect(page.getByText("choose font file")).toBeVisible();
+  const fixtureBase64 = (await fs.readFile(sourcePath)).toString("base64");
+  await page.evaluate((base64) => {
+    const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+    const file = new File([bytes], "fixture-source.ttf", { type: "font/ttf" });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    const event = new DragEvent("drop", {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer,
+    });
+    document.getElementById("upload-zone")?.dispatchEvent(event);
+  }, fixtureBase64);
 
   await expect(page.locator("#app-status")).toHaveText("Ready to generate");
   await expect(page.locator("#font-summary")).toContainText("Fixture Sans");
@@ -214,6 +262,7 @@ test("uploads a TTF through the local font button, pixelizes Basic Latin, downlo
 test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByLabel("Your Font").check();
   await page.locator("#font-upload").setInputFiles(latoSourcePath);
   await expect(page.locator("#app-status")).toHaveText("Ready to generate");
   await expect(page.locator("#font-summary")).toContainText("Lato");
