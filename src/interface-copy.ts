@@ -24,15 +24,16 @@ export const UI_COPY = {
     settings: "Settings",
   },
   sourceModes: {
-    google: "Google Font",
-    upload: "Your Font",
+    google: "Google font",
+    upload: "Upload font",
   },
   source: {
     googleFontSelect: "Google Font for demo preview",
     fontOptionSeparator: " / ",
     replaceFont: "upload new font",
     sampleTextLabel: "sample text",
-    sampleTextDefault: "The quick brown fox jumps over 123.",
+    sampleTextDefault:
+      "Hi, this is pixelplease. I quickly pixelize fonts, tweak crisp grids, and export jazzy test TTFs 123.",
     uploadTitle: "drop a TTF/OTF here",
     licenseReminder: "Please use only fonts you have a license to edit",
   },
