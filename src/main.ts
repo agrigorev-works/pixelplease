@@ -92,8 +92,9 @@ const state: AppState = {
   sourceMode: "google",
 };
 const AUTO_GENERATE_DELAY_MS = 280;
+const DEFAULT_DEMO_FONT_FAMILY = "Merriweather";
 const LOGO_FONT_FAMILY = "PixelpleaseLogoFont";
-const LOGO_SOURCE_FAMILY = "Merriweather";
+const LOGO_SOURCE_FAMILY = DEFAULT_DEMO_FONT_FAMILY;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
@@ -221,7 +222,7 @@ function initializeDemoFonts(): void {
     }),
   );
 
-  const font = pickRandomFont();
+  const font = getDefaultDemoFont();
   googleFontSelect.value = font.family;
   void applyDemoFont(font);
 }
@@ -276,7 +277,7 @@ function setSourceMode(mode: SourceMode): void {
     googleFontSelect.disabled = false;
     if (state.sourceFile || !state.sourceFont) {
       clearSourceFont({ keepGenerated: true, preserveUploaded: true });
-      void applyDemoFont(state.demoFont ?? pickRandomFont());
+      void applyDemoFont(state.demoFont ?? getDefaultDemoFont());
       setStatus(UI_COPY.status.demoMode);
     } else {
       setStatus(state.generated ? UI_COPY.status.generatedReady : UI_COPY.status.demoMode);
@@ -853,10 +854,12 @@ function fileNameFromUrl(url: string): string {
   return decodeURIComponent(path);
 }
 
-function pickRandomFont(): DemoFontChoice {
-  const random = new Uint32Array(1);
-  crypto.getRandomValues(random);
-  return DEMO_GOOGLE_FONTS[random[0] % DEMO_GOOGLE_FONTS.length];
+function getDefaultDemoFont(): DemoFontChoice {
+  const font = DEMO_GOOGLE_FONTS.find((item) => item.family === DEFAULT_DEMO_FONT_FAMILY);
+  if (!font) {
+    throw new Error(`Missing default demo font: ${DEFAULT_DEMO_FONT_FAMILY}`);
+  }
+  return font;
 }
 
 function focusSourceTextAtEnd(): void {

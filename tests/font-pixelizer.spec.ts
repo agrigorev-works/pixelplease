@@ -343,7 +343,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 });
 
-test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
+test("focuses source text at the end and starts with Merriweather Google demo font", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.locator("#sample-text")).toBeFocused();
@@ -362,10 +362,12 @@ test("focuses source text at the end and offers curated Google demo fonts", asyn
   await expect(page.locator("#google-font-select")).toBeVisible();
   const fontOptions = await page.locator("#google-font-select option").allTextContents();
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
+  await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   const initialBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
 
   const currentFont = await page.locator("#google-font-select").inputValue();
+  expect(currentFont).toBe("Merriweather");
   await page.locator("#sample-text").fill("MMMM iiiiii 123");
   const nextFont = await page.locator("#google-font-select").evaluate((select) => {
     const element = select as HTMLSelectElement;
