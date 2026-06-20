@@ -2,15 +2,17 @@
 
 pixelplease is an MVP prototype for turning a local font file into a pixelized, downloadable TTF.
 
-This branch contains a minimal light terminal-style variation of the first proof of concept:
+This branch contains a minimal mono, three-column variation of the first proof of concept:
 
 - upload a local `.ttf` / `.otf` file;
-- drag and drop a font file onto the upload area;
+- drag and drop a font file inside the Source column;
 - parse glyphs with `opentype.js`;
 - show source glyph count and Basic Latin coverage;
 - apply a simple pixelization effect;
 - tune pixels-per-em, threshold, expand, and X/Y grid shift;
-- try the effect in demo mode before uploading a font;
+- edit the source text directly in the Source preview;
+- compare Source and Pixel Output at matching preview size/line-height;
+- try the effect before uploading a font;
 - update the generated preview automatically when pixel controls change;
 - preview before/after sample text;
 - download a generated `.ttf`;

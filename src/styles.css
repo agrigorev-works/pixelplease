@@ -34,42 +34,10 @@ label {
 .app-shell {
   width: 100%;
   margin: 0 auto;
-  padding: 16px 18px;
+  min-height: 100vh;
+  padding: clamp(24px, 4vw, 58px);
 }
 
-.terminal-window {
-  width: 100%;
-  min-height: calc(100vh - 32px);
-  border: 1px solid #d8d8d4;
-  background: #ffffff;
-}
-
-.terminal-bar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  align-items: center;
-  min-height: 38px;
-  padding: 0 12px;
-  border-bottom: 1px solid #ececea;
-  background: #fbfbfa;
-}
-
-.window-controls {
-  display: flex;
-  gap: 7px;
-}
-
-.window-controls span {
-  width: 10px;
-  height: 10px;
-  border: 1px solid #c9c9c3;
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-.window-title,
-.status-pill,
 .prompt-line,
 .intro-copy,
 .upload-copy,
@@ -82,26 +50,11 @@ label {
   line-height: 1.45;
 }
 
-.window-title {
-  justify-self: center;
-  color: #555555;
-}
-
-.status-pill {
-  justify-self: end;
-  color: #111111;
-}
-
-.terminal-body {
-  display: grid;
-  gap: 38px;
-  padding: clamp(24px, 4vw, 58px);
-}
-
 .intro {
   display: grid;
   gap: 8px;
   max-width: 820px;
+  margin-bottom: clamp(34px, 5vw, 72px);
 }
 
 .prompt-line,
@@ -120,6 +73,7 @@ h1 {
   line-height: 0.96;
   letter-spacing: 0;
   font-weight: 600;
+  font-family: inherit;
 }
 
 h2 {
@@ -131,13 +85,12 @@ h2 {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
-  gap: clamp(32px, 5vw, 76px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 320px);
+  gap: clamp(24px, 3.2vw, 48px);
   align-items: start;
 }
 
 .controls-panel,
-.main-panel,
 .preview-pane {
   background: transparent;
 }
@@ -147,13 +100,13 @@ h2 {
   gap: 18px;
   padding: 0;
   position: sticky;
-  top: 24px;
+  top: clamp(16px, 3vw, 40px);
 }
 
 .upload-zone {
   display: grid;
   gap: 7px;
-  min-height: 144px;
+  min-height: 96px;
   align-content: center;
   justify-items: start;
   padding: 16px;
@@ -244,12 +197,6 @@ h2 {
   pointer-events: none;
 }
 
-.main-panel {
-  display: grid;
-  gap: 26px;
-  padding: 0;
-}
-
 .summary-strip {
   display: flex;
   flex-wrap: wrap;
@@ -265,39 +212,24 @@ h2 {
   color: #111111;
 }
 
-.sample-field {
+.source-editor-field {
   display: grid;
-  gap: 7px;
-}
-
-.sample-field span {
-  font-size: 12px;
-  font-weight: 500;
+  min-width: 0;
 }
 
 textarea {
   width: 100%;
-  resize: vertical;
-  min-height: 72px;
-  padding: 10px;
-  border: 1px solid #d8d8d4;
+  resize: none;
   border-radius: 0;
   background: #ffffff;
   color: #111111;
-  line-height: 1.45;
-}
-
-.preview-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
 }
 
 .preview-pane {
   display: grid;
   grid-template-rows: auto auto;
   align-content: start;
-  gap: 12px;
+  gap: 16px;
   padding: 0;
 }
 
@@ -312,15 +244,18 @@ textarea {
 .preview-text,
 .demo-preview-canvas {
   width: 100%;
-  min-height: 260px;
+  height: clamp(360px, 52vh, 620px);
+  min-height: 360px;
   border: 1px solid #e1e1dc;
   background: #ffffff;
 }
 
 .preview-text {
+  display: block;
   overflow-wrap: anywhere;
-  padding: 14px;
-  font-size: clamp(32px, 5.6vw, 72px);
+  overflow: auto;
+  padding: 16px;
+  font-size: clamp(34px, 3.2vw, 48px);
   line-height: 1.12;
   letter-spacing: 0;
 }
@@ -328,7 +263,6 @@ textarea {
 .demo-preview-canvas {
   display: block;
   align-self: start;
-  height: 280px;
   image-rendering: pixelated;
 }
 
@@ -343,6 +277,7 @@ textarea {
 .glyph-section {
   display: grid;
   gap: 14px;
+  margin-top: clamp(32px, 4vw, 56px);
 }
 
 .glyph-grid {
@@ -372,44 +307,36 @@ textarea {
   color: #111111;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (max-width: 860px) {
   .app-shell {
-    padding: 12px;
+    padding: 24px 14px;
   }
 
-  .terminal-window {
-    min-height: calc(100vh - 24px);
-  }
-
-  .terminal-body {
-    padding: 14px;
-  }
-
-  .terminal-bar {
-    grid-template-columns: auto 1fr;
-  }
-
-  .status-pill {
-    grid-column: 1 / -1;
-    justify-self: start;
-    padding-bottom: 8px;
-  }
-
-  .workspace,
-  .preview-grid {
+  .workspace {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
 
   .controls-panel {
     position: static;
   }
 
-  .preview-pane {
-    grid-template-rows: auto minmax(220px, auto);
-  }
-
   .preview-text,
   .demo-preview-canvas {
-    min-height: 220px;
+    height: 320px;
+    min-height: 320px;
+    font-size: 34px;
   }
 }

@@ -7,121 +7,109 @@
   </head>
   <body>
     <main id="app" class="app-shell">
-      <section class="terminal-window" aria-label="pixelplease terminal interface">
-        <header class="terminal-bar">
-          <div class="window-controls" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+      <p id="app-status" aria-live="polite" hidden>demo mode</p>
+
+      <header class="intro">
+        <p class="prompt-line">~/pixelplease $ font-to-pixel --local</p>
+        <h1>pixelplease</h1>
+        <p class="intro-copy">
+          Upload a font, edit sample text, preview a pixel treatment, and export a test TTF.
+        </p>
+      </header>
+
+      <div class="workspace">
+        <section class="source-panel preview-pane" aria-label="Source font and text">
+          <div class="pane-header">
+            <h2>source</h2>
+            <span id="before-label">system mono demo</span>
           </div>
-          <span class="window-title">pixelplease.local</span>
-          <span class="status-pill" id="app-status">demo mode</span>
-        </header>
 
-        <div class="terminal-body">
-          <header class="intro">
-            <p class="prompt-line">~/pixelplease $ font-to-pixel --local</p>
-            <h1>pixelplease</h1>
-            <p class="intro-copy">
-              Upload a font, inspect its Basic Latin coverage, preview a pixel treatment, and export a test TTF.
-            </p>
-          </header>
+          <label class="source-editor-field" for="sample-text">
+            <span class="sr-only">sample text</span>
+            <textarea id="sample-text" class="preview-text source-editor" rows="8">The quick brown fox jumps over 123.</textarea>
+          </label>
 
-          <div class="workspace">
-            <aside class="controls-panel" aria-label="Controls">
-              <label class="upload-zone" id="upload-zone" for="font-upload">
-                <span class="upload-title">Drop font here</span>
-                <span class="upload-copy">or choose a local TTF/OTF file</span>
-                <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
-              </label>
+          <label class="upload-zone" id="upload-zone" for="font-upload">
+            <span class="upload-title">drop font here</span>
+            <span class="upload-copy">or choose a local TTF/OTF file</span>
+            <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
+          </label>
 
-              <p class="legal-note">
-                Processed locally. Only use fonts you have the right to modify.
-              </p>
+          <p class="legal-note">
+            Processed locally. Only use fonts you have the right to modify.
+          </p>
+        </section>
 
-              <div class="control-stack">
-                <label class="field">
-                  <span>pixels-per-em</span>
-                  <output id="pixels-per-em-value">20</output>
-                  <input id="pixels-per-em" type="range" min="10" max="40" step="1" value="20" />
-                </label>
-
-                <label class="field">
-                  <span>threshold</span>
-                  <output id="threshold-value">42%</output>
-                  <input id="threshold" type="range" min="12" max="78" step="1" value="42" />
-                </label>
-
-                <label class="field">
-                  <span>expand</span>
-                  <output id="expand-value">0</output>
-                  <input id="expand" type="range" min="0" max="3" step="1" value="0" />
-                </label>
-
-                <label class="field">
-                  <span>shift-x</span>
-                  <output id="shift-x-value">0.00 cell</output>
-                  <input id="shift-x" type="range" min="-0.5" max="0.5" step="0.05" value="0" />
-                </label>
-
-                <label class="field">
-                  <span>shift-y</span>
-                  <output id="shift-y-value">0.00 cell</output>
-                  <input id="shift-y" type="range" min="-0.5" max="0.5" step="0.05" value="0" />
-                </label>
-              </div>
-
-              <button id="generate-button" class="primary-action" type="button" disabled>
-                generate ttf
-              </button>
-
-              <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
-                download ttf
-              </a>
-            </aside>
-
-            <section class="main-panel" aria-label="Preview">
-              <div class="summary-strip" id="font-summary">
-                <span>Demo preview active</span>
-                <span>No font loaded</span>
-              </div>
-
-              <label class="sample-field" for="sample-text">
-                <span>sample.txt</span>
-                <textarea id="sample-text" rows="2">The quick brown fox jumps over 123.</textarea>
-              </label>
-
-              <div class="preview-grid">
-                <section class="preview-pane" aria-label="Original font preview">
-                  <div class="pane-header">
-                    <h2>source</h2>
-                    <span id="before-label">system mono demo</span>
-                  </div>
-                  <p id="before-preview" class="preview-text">The quick brown fox jumps over 123.</p>
-                </section>
-
-                <section class="preview-pane" aria-label="Pixelized font preview">
-                  <div class="pane-header">
-                    <h2>pixel output</h2>
-                    <span id="after-label">live demo effect</span>
-                  </div>
-                  <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label="Pixelized demo preview"></canvas>
-                  <p id="after-preview" class="preview-text generated-preview is-hidden">
-                    The quick brown fox jumps over 123.
-                  </p>
-                </section>
-              </div>
-
-              <section class="glyph-section" aria-label="Glyph coverage">
-                <div class="section-heading">
-                  <h2>coverage</h2>
-                  <span id="coverage-label">Upload a font to inspect Basic Latin.</span>
-                </div>
-                <div id="glyph-grid" class="glyph-grid" aria-live="polite"></div>
-              </section>
-            </section>
+        <section class="output-panel preview-pane" aria-label="Pixelized font preview">
+          <div class="pane-header">
+            <h2>pixel output</h2>
+            <span id="after-label">live demo effect</span>
           </div>
+          <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label="Pixelized demo preview"></canvas>
+          <p id="after-preview" class="preview-text generated-preview is-hidden">
+            The quick brown fox jumps over 123.
+          </p>
+        </section>
+
+        <aside class="controls-panel" aria-label="Settings">
+          <div class="pane-header">
+            <h2>settings</h2>
+            <span>live controls</span>
+          </div>
+
+          <div class="summary-strip" id="font-summary">
+            <span>Demo preview active</span>
+            <span>No font loaded</span>
+          </div>
+
+          <div class="control-stack">
+            <label class="field">
+              <span>pixels-per-em</span>
+              <output id="pixels-per-em-value">20</output>
+              <input id="pixels-per-em" type="range" min="10" max="40" step="1" value="20" />
+            </label>
+
+            <label class="field">
+              <span>threshold</span>
+              <output id="threshold-value">42%</output>
+              <input id="threshold" type="range" min="12" max="78" step="1" value="42" />
+            </label>
+
+            <label class="field">
+              <span>expand</span>
+              <output id="expand-value">0</output>
+              <input id="expand" type="range" min="0" max="3" step="1" value="0" />
+            </label>
+
+            <label class="field">
+              <span>shift-x</span>
+              <output id="shift-x-value">0.00 cell</output>
+              <input id="shift-x" type="range" min="-0.5" max="0.5" step="0.05" value="0" />
+            </label>
+
+            <label class="field">
+              <span>shift-y</span>
+              <output id="shift-y-value">0.00 cell</output>
+              <input id="shift-y" type="range" min="-0.5" max="0.5" step="0.05" value="0" />
+            </label>
+          </div>
+
+          <button id="generate-button" class="primary-action" type="button" disabled>
+            generate ttf
+          </button>
+
+          <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
+            download ttf
+          </a>
+        </aside>
+      </div>
+
+      <section class="glyph-section" aria-label="Glyph coverage">
+        <div class="section-heading">
+          <h2>coverage</h2>
+          <span id="coverage-label">Upload a font to inspect Basic Latin.</span>
         </div>
+        <div id="glyph-grid" class="glyph-grid" aria-live="polite"></div>
       </section>
     </main>
 

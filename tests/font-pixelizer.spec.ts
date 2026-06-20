@@ -20,9 +20,50 @@ test("uses the available desktop viewport instead of a fixed narrow shell", asyn
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto("/");
 
-  const shellBox = await page.locator(".terminal-window").boundingBox();
+  const shellBox = await page.locator(".app-shell").boundingBox();
 
   expect(shellBox?.width).toBeGreaterThan(1200);
+});
+
+test("renders a clean three-column source output settings layout", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await expect(page.locator(".terminal-bar")).toHaveCount(0);
+  await expect(page.getByText("pixelplease.local")).toHaveCount(0);
+  await expect(page.locator("#app-status")).toBeHidden();
+
+  const gridColumns = await page
+    .locator(".workspace")
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length);
+  expect(gridColumns).toBe(3);
+
+  const sourceBox = await page.locator(".source-panel").boundingBox();
+  const outputBox = await page.locator(".output-panel").boundingBox();
+  const controlsBox = await page.locator(".controls-panel").boundingBox();
+
+  expect(sourceBox?.x).toBeLessThan(outputBox?.x ?? 0);
+  expect(outputBox?.x).toBeLessThan(controlsBox?.x ?? 0);
+  await expect(page.locator(".source-panel #sample-text")).toBeVisible();
+  await expect(page.locator(".source-panel #upload-zone")).toBeVisible();
+
+  const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
+  const outputPreviewBox = await page.locator("#demo-preview-canvas").boundingBox();
+  const previewTypography = await page.locator("#sample-text").evaluate((source) => {
+    const output = document.getElementById("after-preview");
+    const sourceStyle = getComputedStyle(source);
+    const outputStyle = output ? getComputedStyle(output) : undefined;
+    return {
+      sourceFontSize: sourceStyle.fontSize,
+      outputFontSize: outputStyle?.fontSize,
+      sourceLineHeight: sourceStyle.lineHeight,
+      outputLineHeight: outputStyle?.lineHeight,
+    };
+  });
+
+  expect(Math.abs((sourcePreviewBox?.height ?? 0) - (outputPreviewBox?.height ?? 0))).toBeLessThan(2);
+  expect(previewTypography.sourceFontSize).toBe(previewTypography.outputFontSize);
+  expect(previewTypography.sourceLineHeight).toBe(previewTypography.outputLineHeight);
 });
 
 test("renders a usable default pixel preview before upload", async ({ page }) => {
@@ -31,6 +72,8 @@ test("renders a usable default pixel preview before upload", async ({ page }) =>
   await expect(page.locator("#app-status")).toHaveText("demo mode");
   await expect(page.locator("#demo-preview-canvas")).toBeVisible();
   await expect(page.locator("#after-preview")).toBeHidden();
+
+  await page.locator("#sample-text").fill("Editable source text");
 
   const before = await page.locator("#demo-preview-canvas").evaluate((canvas) =>
     (canvas as HTMLCanvasElement).toDataURL(),

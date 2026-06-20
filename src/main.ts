@@ -34,7 +34,6 @@ const uploadInput = getElement<HTMLInputElement>("font-upload");
 const generateButton = getElement<HTMLButtonElement>("generate-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
-const beforePreview = getElement<HTMLElement>("before-preview");
 const afterPreview = getElement<HTMLElement>("after-preview");
 const demoPreviewCanvas = getElement<HTMLCanvasElement>("demo-preview-canvas");
 const beforeLabel = getElement<HTMLElement>("before-label");
@@ -99,7 +98,7 @@ async function loadFontFile(file: File): Promise<void> {
     state.sourceUrl = sourceUrl;
 
     installFontFace("SourcePreviewFont", sourceUrl);
-    beforePreview.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
+    sampleText.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
 
     const label = getFontLabel(sourceFont);
     beforeLabel.textContent = label;
@@ -191,7 +190,6 @@ function renderCoverage(font: opentype.Font): void {
 
 function syncSampleText(): void {
   const value = sampleText.value || " ";
-  beforePreview.textContent = value;
 
   if (state.generated) {
     afterPreview.textContent = value;
@@ -315,19 +313,27 @@ function renderDemoPreview(): void {
   }
 
   const options = getPixelizeOptions();
-  const cellSize = Math.max(1, Math.round(42 / options.pixelsPerEm));
+  const previewStyles = getComputedStyle(sampleText);
+  const previewFontSize = Number.parseFloat(previewStyles.fontSize) || 42;
+  const previewLineHeight = Number.parseFloat(previewStyles.lineHeight) || previewFontSize * 1.12;
+  const previewPadding = Number.parseFloat(previewStyles.paddingLeft) || 16;
+  const cellSize = Math.max(1, Math.round(previewFontSize / options.pixelsPerEm));
   const shiftXPixels = options.shiftX ? options.shiftX * cellSize : 0;
   const shiftYPixels = options.shiftY ? options.shiftY * cellSize : 0;
 
   sourceContext.fillStyle = "#ffffff";
   sourceContext.fillRect(0, 0, width, height);
   sourceContext.fillStyle = "#111111";
-  sourceContext.font = '42px "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace';
+  sourceContext.font = `${previewFontSize}px "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace`;
   sourceContext.textBaseline = "top";
 
-  const lines = wrapText(sourceContext, sampleText.value || " ", width - 36);
+  const lines = wrapText(sourceContext, sampleText.value || " ", width - previewPadding * 2);
   lines.slice(0, 5).forEach((line, index) => {
-    sourceContext.fillText(line, 18 + shiftXPixels, 18 + shiftYPixels + index * 52);
+    sourceContext.fillText(
+      line,
+      previewPadding + shiftXPixels,
+      previewPadding + shiftYPixels + index * previewLineHeight,
+    );
   });
 
   const cols = Math.ceil(width / cellSize);
