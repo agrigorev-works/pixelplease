@@ -2,25 +2,33 @@
 
 PixelPlease is an MVP prototype for turning a local font file into a pixelized, downloadable TTF.
 
-This branch contains the first narrow proof of concept:
+This branch contains a minimal light terminal-style variation of the first proof of concept:
 
 - upload a local `.ttf` / `.otf` file;
+- drag and drop a font file onto the upload area;
 - parse glyphs with `opentype.js`;
 - show source glyph count and Basic Latin coverage;
 - apply a simple pixelization effect;
+- try the effect in demo mode before uploading a font;
 - preview before/after sample text;
 - download a generated `.ttf`;
 - verify the generated font can be parsed and loaded in the browser.
 
 ## Branch
 
-Current MVP branch:
+Current variation branch:
+
+```text
+variation-light-terminal-ui
+```
+
+Base MVP branch:
 
 ```text
 mvp-local-font-pixelizer
 ```
 
-Future visual or algorithmic variations can live in separate branches.
+Future visual or algorithmic variations can continue to live in separate branches.
 
 ## Run
 
