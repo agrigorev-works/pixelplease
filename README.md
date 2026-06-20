@@ -17,7 +17,7 @@ This branch contains a minimal mono, three-column variation of the first proof o
 - compare Source and Pixel Output at matching preview size/line-height;
 - generate automatically after Google Font selection, local upload, and pixel control changes;
 - preview before/after sample text;
-- download a generated `.ttf`;
+- download a `.zip` package containing the generated `.ttf` and `NOTICE.txt`;
 - verify the generated font can be parsed and loaded in the browser.
 
 ## Branch
@@ -60,7 +60,9 @@ The smoke test downloads a permissive Google Fonts sample, `Lato-Regular.ttf`, i
 ## MVP Limits
 
 - Basic Latin export only.
-- No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup.
+- No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup beyond basic release-safety names and notice packaging.
 - The algorithm is intentionally simple: rasterize glyphs to a grid, optionally offset the sampling grid, sample filled cells, optionally expand cells, convert horizontal filled runs into rectangular outlines, then build a derivative TTF.
+- Generated font family names use the product-owned `Pixelplease Test` name rather than preserving source family names, to avoid Reserved Font Name reuse.
+- Download packages include `NOTICE.txt`; user-uploaded font licenses still need manual verification before redistribution.
 
 Only upload fonts you have the right to modify.

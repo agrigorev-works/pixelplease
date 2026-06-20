@@ -7,9 +7,9 @@ import { createFixtureFont } from "./fixture-font";
 
 const artifactsDir = path.resolve("test-artifacts");
 const sourcePath = path.join(artifactsDir, "fixture-source.ttf");
-const generatedPath = path.join(artifactsDir, "generated-pixel.ttf");
+const generatedPackagePath = path.join(artifactsDir, "generated-pixel.zip");
 const latoSourcePath = path.resolve("samples/Lato-Regular.ttf");
-const latoGeneratedPath = path.join(artifactsDir, "lato-generated-pixel.ttf");
+const latoGeneratedPackagePath = path.join(artifactsDir, "lato-generated-pixel.zip");
 
 test.beforeAll(async () => {
   await fs.mkdir(artifactsDir, { recursive: true });
@@ -420,7 +420,7 @@ test("renders a usable generated Google Font output before upload", async ({ pag
     .toBe(true);
 });
 
-test("removes manual generation, resets controls, and keeps Download TTF primary", async ({ page }) => {
+test("removes manual generation, resets controls, and keeps Download package primary", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
@@ -484,7 +484,9 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
   expect(controlGap).toBe("22px");
 });
 
-test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
+test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a packaged usable TTF", async ({
+  page,
+}) => {
   await page.goto("/");
 
   await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
@@ -546,11 +548,21 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
-  await download.saveAs(generatedPath);
+  expect(download.suggestedFilename()).toBe("Pixelplease-Test.zip");
+  await download.saveAs(generatedPackagePath);
 
-  const generated = await fs.readFile(generatedPath);
+  const packageBytes = await fs.readFile(generatedPackagePath);
+  const packageEntries = readStoredZip(packageBytes);
+  const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
+  const generated = packageEntries["Pixelplease-Test.ttf"];
   const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
 
+  expect(Object.keys(packageEntries).sort()).toEqual(["NOTICE.txt", "Pixelplease-Test.ttf"]);
+  expect(notice).toContain("Fixture Sans");
+  expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
+  expect(parsed.names.fontFamily.en).toBe("Pixelplease Test");
+  expect(parsed.names.fontFamily.en).not.toContain("Fixture");
+  expect(parsed.names.license.en).toContain("Generated derivative for testing");
   expect(parsed.glyphs.length).toBeGreaterThan(10);
   expect(parsed.charToGlyph("A").advanceWidth).toBeGreaterThan(0);
 });
@@ -572,11 +584,39 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
-  await download.saveAs(latoGeneratedPath);
+  expect(download.suggestedFilename()).toBe("Pixelplease-Test.zip");
+  await download.saveAs(latoGeneratedPackagePath);
 
-  const generated = await fs.readFile(latoGeneratedPath);
+  const packageBytes = await fs.readFile(latoGeneratedPackagePath);
+  const packageEntries = readStoredZip(packageBytes);
+  const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
+  const generated = packageEntries["Pixelplease-Test.ttf"];
   const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
 
-  expect(parsed.names.fontFamily.en).toContain("Lato Pixel Test");
+  expect(notice).toContain("Lato Regular");
+  expect(notice).toContain("Lato-Regular.ttf");
+  expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
+  expect(parsed.names.fontFamily.en).toBe("Pixelplease Test");
+  expect(parsed.names.fontFamily.en).not.toContain("Lato");
+  expect(parsed.names.license.en).toContain("Source font license controls use");
   expect(parsed.charToGlyph("P").advanceWidth).toBeGreaterThan(0);
 });
+
+function readStoredZip(data: Uint8Array): Record<string, Uint8Array> {
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const entries: Record<string, Uint8Array> = {};
+  let offset = 0;
+
+  while (view.getUint32(offset, true) === 0x04034b50) {
+    const compressedSize = view.getUint32(offset + 18, true);
+    const nameLength = view.getUint16(offset + 26, true);
+    const extraLength = view.getUint16(offset + 28, true);
+    const nameStart = offset + 30;
+    const dataStart = nameStart + nameLength + extraLength;
+    const name = new TextDecoder().decode(data.subarray(nameStart, nameStart + nameLength));
+    entries[name] = data.subarray(dataStart, dataStart + compressedSize);
+    offset = dataStart + compressedSize;
+  }
+
+  return entries;
+}

@@ -6,6 +6,13 @@ import {
   type PixelizeResult,
   type PixelizeOptions,
 } from "./font-pixelizer";
+import {
+  buildNoticeText,
+  createDownloadPackage,
+  makePackageFileName,
+  makeTtfFileName,
+  type NoticeSourceInfo,
+} from "./download-package";
 import { UI_COPY } from "./interface-copy";
 import type opentype from "opentype.js";
 
@@ -26,6 +33,7 @@ type AppState = {
   demoFont?: DemoFontChoice;
   generated?: PixelizeResult;
   generatedUrl?: string;
+  generatedPackageUrl?: string;
 };
 
 type SourceMode = "google" | "upload";
@@ -392,6 +400,7 @@ async function generatePixelFont(): Promise<void> {
 
   const runId = (generationRunId += 1);
   const previousGeneratedUrl = state.generatedUrl;
+  const previousGeneratedPackageUrl = state.generatedPackageUrl;
   const hasGeneratedPreview = Boolean(state.generated);
   if (!hasGeneratedPreview) {
     clearGeneratedFont();
@@ -411,26 +420,36 @@ async function generatePixelFont(): Promise<void> {
 
     const blob = new Blob([generated.arrayBuffer], { type: "font/ttf" });
     const url = URL.createObjectURL(blob);
+    const packageBlob = createDownloadPackage([
+      { name: makeTtfFileName(generated.familyName), data: generated.arrayBuffer },
+      { name: "NOTICE.txt", data: buildNoticeText(generated.familyName, getActiveSourceNoticeInfo()) },
+    ]);
+    const packageUrl = URL.createObjectURL(packageBlob);
 
     if (runId !== generationRunId) {
       revokeUrl(url);
+      revokeUrl(packageUrl);
       return;
     }
 
     state.generated = generated;
     state.generatedUrl = url;
+    state.generatedPackageUrl = packageUrl;
     window.__fontPixelizerLastBlobUrl = url;
 
     installFontFace("PixelizedPreviewFont", url);
     if (previousGeneratedUrl && previousGeneratedUrl !== url) {
       revokeUrl(previousGeneratedUrl);
     }
+    if (previousGeneratedPackageUrl && previousGeneratedPackageUrl !== packageUrl) {
+      revokeUrl(previousGeneratedPackageUrl);
+    }
     afterPreview.style.fontFamily = '"PixelizedPreviewFont", ui-monospace, monospace';
     afterPreview.classList.remove("is-hidden");
     afterPreview.classList.remove("empty-preview");
     demoPreviewCanvas.classList.add("is-hidden");
-    downloadLink.href = url;
-    downloadLink.download = `${generated.familyName.replace(/\s+/g, "-")}.ttf`;
+    downloadLink.href = packageUrl;
+    downloadLink.download = makePackageFileName(generated.familyName);
     downloadLink.classList.remove("is-disabled");
     syncSampleText();
     setStatus(UI_COPY.status.generatedReady);
@@ -541,8 +560,10 @@ function getDefaultPixelizeOptions(): PixelizeOptions {
 
 function clearGeneratedFont(): void {
   revokeUrl(state.generatedUrl);
+  revokeUrl(state.generatedPackageUrl);
   state.generated = undefined;
   state.generatedUrl = undefined;
+  state.generatedPackageUrl = undefined;
   window.__fontPixelizerLastBlobUrl = undefined;
   downloadLink.href = "#";
   downloadLink.classList.add("is-disabled");
@@ -808,6 +829,28 @@ function revokeUrl(url?: string): void {
 
 function formatShiftValue(value: string): string {
   return Number(value).toFixed(2);
+}
+
+function getActiveSourceNoticeInfo(): NoticeSourceInfo {
+  if (state.sourceMode === "google" && state.demoFont) {
+    return {
+      sourceName: state.demoFont.family,
+      sourceFileName: fileNameFromUrl(state.demoFont.sourceUrl),
+      sourceLicense: state.demoFont.license,
+      sourceUrl: state.demoFont.sourceUrl,
+    };
+  }
+
+  return {
+    sourceName: state.sourceFont ? getFontLabel(state.sourceFont) : "User-provided font",
+    sourceFileName: state.sourceFile?.name,
+    sourceLicense: "User-provided; rights not verified by pixelplease.",
+  };
+}
+
+function fileNameFromUrl(url: string): string {
+  const path = new URL(url).pathname.split("/").pop() || "source-font.ttf";
+  return decodeURIComponent(path);
 }
 
 function pickRandomFont(): DemoFontChoice {

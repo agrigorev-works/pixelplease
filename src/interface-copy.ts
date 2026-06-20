@@ -46,8 +46,8 @@ export const UI_COPY = {
     shiftY: "shift-y",
     shiftUnit: "cell",
     resetDefaults: "reset defaults",
-    downloadTtf: "Download TTF",
-    defaultDownloadName: "Pixelized-Test.ttf",
+    downloadTtf: "Download package",
+    defaultDownloadName: "Pixelplease-Test.zip",
   },
   errors: {
     missingElement: (id: string) => `Missing element #${id}`,
