@@ -178,13 +178,19 @@ function setSourceMode(mode: SourceMode): void {
   state.sourceMode = mode;
 
   if (mode === "google") {
-    clearSourceFont();
     googleFontSelect.disabled = false;
-    void applyDemoFont(state.demoFont ?? pickRandomFont());
-    setStatus("demo mode");
+    if (state.sourceFile || !state.sourceFont) {
+      clearSourceFont({ keepGenerated: true });
+      void applyDemoFont(state.demoFont ?? pickRandomFont());
+      setStatus("demo mode");
+    } else {
+      setStatus(state.generated ? "Generated TTF ready" : "demo mode");
+    }
   } else {
-    clearSourceFont();
-    clearGeneratedFont();
+    sourceLoadRunId += 1;
+    window.clearTimeout(autoGenerateTimer);
+    state.sourceFile = undefined;
+    uploadInput.value = "";
     googleFontSelect.disabled = true;
     setStatus("Upload a font");
   }
@@ -212,7 +218,6 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
   const loadId = (sourceLoadRunId += 1);
   window.clearTimeout(autoGenerateTimer);
   generationRunId += 1;
-  clearGeneratedFont();
   revokeUrl(state.sourceUrl);
   state.sourceFont = undefined;
   state.sourceFile = undefined;
@@ -258,7 +263,6 @@ async function loadFontFile(file: File): Promise<void> {
   setStatus("Parsing font...");
 
   try {
-    clearGeneratedFont();
     revokeUrl(state.sourceUrl);
 
     const buffer = await file.arrayBuffer();
@@ -290,10 +294,16 @@ async function generatePixelFont(): Promise<void> {
   }
 
   const runId = (generationRunId += 1);
-  clearGeneratedFont();
+  const previousGeneratedUrl = state.generatedUrl;
+  const hasGeneratedPreview = Boolean(state.generated);
+  if (!hasGeneratedPreview) {
+    clearGeneratedFont();
+  }
   setStatus("Generating...");
-  afterPreview.textContent = "Pixelizing Basic Latin glyphs...";
-  afterPreview.classList.add("empty-preview");
+  if (!hasGeneratedPreview) {
+    afterPreview.textContent = "Pixelizing Basic Latin glyphs...";
+    afterPreview.classList.add("empty-preview");
+  }
 
   try {
     const generated = await pixelizeFont(sourceFont, getPixelizeOptions(), (done, total) => {
@@ -313,6 +323,9 @@ async function generatePixelFont(): Promise<void> {
     window.__fontPixelizerLastBlobUrl = url;
 
     installFontFace("PixelizedPreviewFont", url);
+    if (previousGeneratedUrl && previousGeneratedUrl !== url) {
+      revokeUrl(previousGeneratedUrl);
+    }
     afterPreview.style.fontFamily = '"PixelizedPreviewFont", ui-monospace, monospace';
     afterPreview.classList.remove("is-hidden");
     afterPreview.classList.remove("empty-preview");
@@ -323,14 +336,19 @@ async function generatePixelFont(): Promise<void> {
     syncSampleText();
     setStatus("Generated TTF ready");
   } catch (error) {
-    renderError(error, "Could not generate a pixelized TTF.");
+    if (hasGeneratedPreview) {
+      setStatus("Error");
+    } else {
+      renderError(error, "Could not generate a pixelized TTF.");
+    }
   }
 }
 
 function syncSourceModeUI(): void {
   const isGoogleMode = state.sourceMode === "google";
-  const shouldShowUploadZone = state.sourceMode === "upload" && !state.sourceFont;
-  const shouldShowSourceEditor = isGoogleMode || Boolean(state.sourceFont);
+  const hasUploadedFont = state.sourceMode === "upload" && Boolean(state.sourceFile);
+  const shouldShowUploadZone = state.sourceMode === "upload" && !hasUploadedFont;
+  const shouldShowSourceEditor = isGoogleMode || hasUploadedFont;
 
   sourceModeGoogle.checked = isGoogleMode;
   sourceModeUpload.checked = state.sourceMode === "upload";
@@ -426,7 +444,7 @@ function clearGeneratedFont(): void {
   renderDemoPreview();
 }
 
-function clearSourceFont(): void {
+function clearSourceFont({ keepGenerated = false }: { keepGenerated?: boolean } = {}): void {
   window.clearTimeout(autoGenerateTimer);
   generationRunId += 1;
   revokeUrl(state.sourceUrl);
@@ -435,7 +453,9 @@ function clearSourceFont(): void {
   state.sourceUrl = undefined;
   uploadInput.value = "";
   document.getElementById("font-face-SourcePreviewFont")?.remove();
-  clearGeneratedFont();
+  if (!keepGenerated) {
+    clearGeneratedFont();
+  }
 }
 
 function handleDragEnter(event: DragEvent): void {

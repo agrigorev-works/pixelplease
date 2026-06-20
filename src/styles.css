@@ -97,7 +97,9 @@ h2 {
 
 .controls-panel {
   display: grid;
-  gap: 36px;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+  height: clamp(360px, 52vh, 620px);
   padding: 0;
   position: sticky;
   top: clamp(16px, 3vw, 40px);
@@ -214,6 +216,7 @@ select {
 
 .action-stack {
   display: grid;
+  align-self: end;
   gap: 12px;
 }
 
@@ -362,6 +365,8 @@ textarea {
 
   .controls-panel {
     position: static;
+    height: auto;
+    gap: 36px;
   }
 
   .preview-text,

@@ -78,6 +78,9 @@ test("renders a clean three-column source output settings layout", async ({ page
     return {
       sourcePreviewHeight: sourcePreviewBox.height,
       outputPreviewHeight: outputPreviewBox.height,
+      sourcePreviewTop: sourcePreviewBox.top,
+      outputPreviewTop: outputPreviewBox.top,
+      controlsPanelTop: controlsPanelBox.top,
       sourcePreviewBottom: sourcePreviewBox.bottom,
       outputPreviewBottom: outputPreviewBox.bottom,
       sourcePanelBottom: sourcePanelBox.bottom,
@@ -98,6 +101,8 @@ test("renders a clean three-column source output settings layout", async ({ page
   });
 
   expect(Math.abs(layoutMetrics.sourcePreviewHeight - layoutMetrics.outputPreviewHeight)).toBeLessThan(2);
+  expect(Math.abs(layoutMetrics.sourcePreviewTop - layoutMetrics.outputPreviewTop)).toBeLessThan(1);
+  expect(Math.abs(layoutMetrics.sourcePreviewTop - layoutMetrics.controlsPanelTop)).toBeLessThan(1);
   expect(Math.abs(layoutMetrics.sourcePreviewBottom - layoutMetrics.outputPreviewBottom)).toBeLessThan(1);
   expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.outputPanelBottom)).toBeLessThan(1);
   expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.controlsPanelBottom)).toBeLessThan(1);
@@ -114,25 +119,69 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#sample-text")).toBeFocused();
   await expect(page.locator("#google-font-select")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#after-preview")).toBeVisible();
+  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
 
   const sourcePanelBox = await page.locator(".source-panel").boundingBox();
   const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
+  const outputBeforeModeSwitch = await page.locator("#after-preview").evaluate((preview) => {
+    const styles = getComputedStyle(preview);
+    return {
+      fontFamily: styles.fontFamily,
+      text: preview.textContent,
+    };
+  });
+  const blobBeforeModeSwitch = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
 
   await page.getByLabel("Your Font").check();
   await expect(page.locator("#source-mode-upload")).toBeChecked();
   await expect(page.locator("#sample-text")).toBeHidden();
   await expect(page.locator("#google-font-select")).toBeHidden();
   await expect(page.locator("#upload-zone")).toBeVisible();
+  await expect(page.locator("#after-preview")).toBeVisible();
+  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await expect(page.getByText("choose font file")).toBeVisible();
   await expect(page.getByText(/license to edit/i)).toBeVisible();
   await expect(page.locator(".upload-button")).toHaveCount(0);
 
   const uploadPanelBox = await page.locator(".source-panel").boundingBox();
   const uploadBox = await page.locator("#upload-zone").boundingBox();
+  const outputAfterModeSwitch = await page.locator("#after-preview").evaluate((preview) => {
+    const styles = getComputedStyle(preview);
+    return {
+      fontFamily: styles.fontFamily,
+      text: preview.textContent,
+    };
+  });
+  const blobAfterModeSwitch = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
   expect(Math.abs((sourcePanelBox?.width ?? 0) - (uploadPanelBox?.width ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePanelBox?.height ?? 0) - (uploadPanelBox?.height ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadBox?.height ?? 0))).toBeLessThan(2);
+  expect(outputAfterModeSwitch).toEqual(outputBeforeModeSwitch);
+  expect(blobAfterModeSwitch).toBe(blobBeforeModeSwitch);
 
+  await page.getByRole("radio", { name: "Google Font" }).check();
+  await expect(page.locator("#source-mode-google")).toBeChecked();
+  await expect(page.locator("#sample-text")).toBeVisible();
+  await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#upload-zone")).toBeHidden();
+  await expect(page.locator("#after-preview")).toBeVisible();
+  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+
+  const outputAfterReturn = await page.locator("#after-preview").evaluate((preview) => {
+    const styles = getComputedStyle(preview);
+    return {
+      fontFamily: styles.fontFamily,
+      text: preview.textContent,
+    };
+  });
+  const blobAfterReturn = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  expect(outputAfterReturn).toEqual(outputBeforeModeSwitch);
+  expect(blobAfterReturn).toBe(blobBeforeModeSwitch);
+
+  await page.getByLabel("Your Font").check();
+  await expect(page.locator("#upload-zone")).toBeVisible();
   await page.locator("#font-upload").setInputFiles(sourcePath);
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
