@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 import opentype from "opentype.js";
@@ -243,7 +243,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
       text: preview.textContent,
     };
   });
-  const blobBeforeModeSwitch = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  const blobBeforeModeSwitch = await getGeneratedFontUrl(page);
 
   await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await expect(page.locator("#source-mode-upload")).toBeChecked();
@@ -277,7 +277,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
       text: preview.textContent,
     };
   });
-  const blobAfterModeSwitch = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  const blobAfterModeSwitch = await getGeneratedFontUrl(page);
   expect(Math.abs((sourcePanelBox?.width ?? 0) - (uploadPanelBox?.width ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePanelBox?.height ?? 0) - (uploadPanelBox?.height ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadBox?.height ?? 0))).toBeLessThan(2);
@@ -299,7 +299,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
       text: preview.textContent,
     };
   });
-  const blobAfterReturn = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  const blobAfterReturn = await getGeneratedFontUrl(page);
   expect(outputAfterReturn).toEqual(outputBeforeModeSwitch);
   expect(blobAfterReturn).toBe(blobBeforeModeSwitch);
 
@@ -364,7 +364,7 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
   await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
-  const initialBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  const initialBlobUrl = await getGeneratedFontUrl(page);
 
   const currentFont = await page.locator("#google-font-select").inputValue();
   expect(currentFont).toBe("Merriweather");
@@ -385,7 +385,7 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
   await expect
     .poll(
       async () => {
-        const url = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+        const url = await getGeneratedFontUrl(page);
         return Boolean(url && url !== initialBlobUrl);
       },
       { timeout: 20_000 },
@@ -404,7 +404,7 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   await page.locator("#sample-text").fill("Editable source text");
   await expect(page.locator("#after-preview")).toHaveText("Editable source text");
 
-  const beforeBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  const beforeBlobUrl = await getGeneratedFontUrl(page);
   await page.locator("#pixels-per-em").fill("10");
   await page.locator("#threshold").fill("28");
   await page.locator("#expand").fill("2");
@@ -414,7 +414,7 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   await expect
     .poll(
       async () => {
-        const url = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+        const url = await getGeneratedFontUrl(page);
         return Boolean(url && url !== beforeBlobUrl);
       },
       { timeout: 20_000 },
@@ -519,20 +519,20 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await page.screenshot({ path: path.join(artifactsDir, "demo-generated.png"), fullPage: true });
 
-  const firstBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  const firstBlobUrl = await getGeneratedFontUrl(page);
   await page.locator("#shift-x").fill("0.45");
   await expect
     .poll(
       async () => {
-        const url = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+        const url = await getGeneratedFontUrl(page);
         return Boolean(url && url !== firstBlobUrl);
       },
       { timeout: 20_000 },
     )
     .toBe(true);
 
-  const fontFaceLoads = await page.evaluate(async () => {
-    const blobUrl = window.__fontPixelizerLastBlobUrl;
+  const blobUrl = await getGeneratedFontUrl(page);
+  const fontFaceLoads = await page.evaluate(async (blobUrl) => {
     if (!blobUrl) {
       return false;
     }
@@ -544,7 +544,7 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
     await face.load();
     document.fonts.add(face);
     return document.fonts.check('32px "GeneratedSmokeFont"', "ABC 123");
-  });
+  }, blobUrl);
   expect(fontFaceLoads).toBe(true);
 
   const downloadPromise = page.waitForEvent("download");
@@ -603,6 +603,10 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   expect(parsed.names.license.en).toContain("Source font license controls use");
   expect(parsed.charToGlyph("P").advanceWidth).toBeGreaterThan(0);
 });
+
+async function getGeneratedFontUrl(page: Page): Promise<string | null> {
+  return page.locator("#download-link").getAttribute("data-generated-font-url");
+}
 
 function readStoredZip(data: Uint8Array): Record<string, Uint8Array> {
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);

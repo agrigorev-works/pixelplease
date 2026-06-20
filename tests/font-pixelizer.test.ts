@@ -7,7 +7,6 @@ import {
   getCellSize,
   getGridPixelsPerEm,
   makeDerivativeFamilyName,
-  sanitizeName,
   type CellMask,
   type FontMetrics,
 } from "../src/font-pixelizer";
@@ -77,11 +76,6 @@ describe("font pixelizer core", () => {
     expect(coverage.find((item) => item.char === "A")?.supported).toBe(true);
     expect(coverage.find((item) => item.char === "B")?.supported).toBe(false);
     expect(coverage.find((item) => item.char === " ")?.supported).toBe(true);
-  });
-
-  it("sanitizes derivative family names", () => {
-    expect(sanitizeName("Demo/Font::Regular")).toBe("Demo Font Regular");
-    expect(sanitizeName("")).toBe("Uploaded");
   });
 
   it("uses a product-owned derivative family name without source font tokens", () => {

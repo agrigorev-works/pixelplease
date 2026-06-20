@@ -73,11 +73,6 @@ export function getBasicLatinCoverage(font: opentype.Font): CoverageItem[] {
   return items;
 }
 
-export function summarizeCoverage(coverage: CoverageItem[]): string {
-  const supported = coverage.filter((item) => item.supported).length;
-  return `${supported}/${coverage.length} Basic Latin`;
-}
-
 export async function pixelizeFont(
   sourceFont: opentype.Font,
   options: PixelizeOptions,
@@ -245,10 +240,6 @@ export function getGridPixelsPerEm(metrics: FontMetrics, options: PixelizeOption
     const currentDistance = Math.abs(current - requested);
     return currentDistance < bestDistance || (currentDistance === bestDistance && current > best) ? current : best;
   }, divisors[0]);
-}
-
-export function sanitizeName(value: string): string {
-  return value.replace(/[^a-zA-Z0-9 ]+/g, " ").replace(/\s+/g, " ").trim() || "Uploaded";
 }
 
 function rasterizeGlyphToCells(

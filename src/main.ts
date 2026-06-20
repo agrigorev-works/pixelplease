@@ -16,12 +16,6 @@ import {
 import { UI_COPY } from "./interface-copy";
 import type opentype from "opentype.js";
 
-declare global {
-  interface Window {
-    __fontPixelizerLastBlobUrl?: string;
-  }
-}
-
 type AppState = {
   sourceMode: SourceMode;
   sourceFont?: opentype.Font;
@@ -436,7 +430,7 @@ async function generatePixelFont(): Promise<void> {
     state.generated = generated;
     state.generatedUrl = url;
     state.generatedPackageUrl = packageUrl;
-    window.__fontPixelizerLastBlobUrl = url;
+    downloadLink.dataset.generatedFontUrl = url;
 
     installFontFace("PixelizedPreviewFont", url);
     if (previousGeneratedUrl && previousGeneratedUrl !== url) {
@@ -565,7 +559,7 @@ function clearGeneratedFont(): void {
   state.generated = undefined;
   state.generatedUrl = undefined;
   state.generatedPackageUrl = undefined;
-  window.__fontPixelizerLastBlobUrl = undefined;
+  delete downloadLink.dataset.generatedFontUrl;
   downloadLink.href = "#";
   downloadLink.classList.add("is-disabled");
   afterPreview.style.fontFamily = "";
