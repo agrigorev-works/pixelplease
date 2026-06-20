@@ -4,9 +4,7 @@ import {
   cellsToPath,
   dilateMask,
   getBasicLatinCoverage,
-  getCellSize,
   getGridPixelsPerEm,
-  makeDerivativeFamilyName,
   type CellMask,
   type FontMetrics,
 } from "../src/font-pixelizer";
@@ -78,19 +76,11 @@ describe("font pixelizer core", () => {
     expect(coverage.find((item) => item.char === " ")?.supported).toBe(true);
   });
 
-  it("uses a product-owned derivative family name without source font tokens", () => {
-    expect(makeDerivativeFamilyName()).toBe("Pixelplease Test");
-    expect(makeDerivativeFamilyName()).not.toContain("Lato");
-    expect(makeDerivativeFamilyName()).not.toContain("Fixture");
-  });
-
   it("snaps the pixel grid to a clean units-per-em divisor", () => {
     expect(getGridPixelsPerEm(metrics, { pixelsPerEm: 18, threshold: 0.5, expand: 0 })).toBe(20);
-    expect(getCellSize(metrics, { pixelsPerEm: 18, threshold: 0.5, expand: 0 })).toBe(50);
 
     const powerOfTwoMetrics = { ...metrics, unitsPerEm: 2048 };
     expect(getGridPixelsPerEm(powerOfTwoMetrics, { pixelsPerEm: 20, threshold: 0.5, expand: 0 })).toBe(16);
-    expect(getCellSize(powerOfTwoMetrics, { pixelsPerEm: 20, threshold: 0.5, expand: 0 })).toBe(128);
   });
 
   it("packages generated fonts with a notice file", () => {

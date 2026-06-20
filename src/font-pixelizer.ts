@@ -24,7 +24,6 @@ export type CoverageItem = {
   codePoint: number;
   char: string;
   supported: boolean;
-  glyphIndex: number;
 };
 
 export type PixelizeResult = {
@@ -52,7 +51,7 @@ export function getFontLabel(font: opentype.Font): string {
   return `${family} ${style}`.trim();
 }
 
-export function makeDerivativeFamilyName(): string {
+function makeDerivativeFamilyName(): string {
   return DERIVATIVE_FAMILY_NAME;
 }
 
@@ -66,7 +65,6 @@ export function getBasicLatinCoverage(font: opentype.Font): CoverageItem[] {
       codePoint,
       char,
       supported: codePoint === 32 || glyphIndex > 0,
-      glyphIndex,
     });
   }
 
@@ -124,7 +122,7 @@ export async function pixelizeFont(
   };
 }
 
-export function pixelizeGlyph(
+function pixelizeGlyph(
   sourceGlyph: opentype.Glyph,
   codePoint: number,
   metrics: FontMetrics,
@@ -208,7 +206,7 @@ export function dilateMask(mask: CellMask, radius: number): CellMask {
   return { ...mask, cells: output };
 }
 
-export function getMetrics(font: opentype.Font): FontMetrics {
+function getMetrics(font: opentype.Font): FontMetrics {
   const unitsPerEm = font.unitsPerEm || 1000;
   return {
     unitsPerEm,
@@ -217,7 +215,7 @@ export function getMetrics(font: opentype.Font): FontMetrics {
   };
 }
 
-export function getCellSize(metrics: FontMetrics, options: PixelizeOptions): number {
+function getCellSize(metrics: FontMetrics, options: PixelizeOptions): number {
   return metrics.unitsPerEm / getGridPixelsPerEm(metrics, options);
 }
 
