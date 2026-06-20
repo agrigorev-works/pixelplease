@@ -1,6 +1,6 @@
-# PixelPlease
+# pixelplease
 
-PixelPlease is an MVP prototype for turning a local font file into a pixelized, downloadable TTF.
+pixelplease is an MVP prototype for turning a local font file into a pixelized, downloadable TTF.
 
 This branch contains a minimal light terminal-style variation of the first proof of concept:
 
