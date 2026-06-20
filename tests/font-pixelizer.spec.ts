@@ -16,6 +16,15 @@ test.beforeAll(async () => {
   await fs.writeFile(sourcePath, Buffer.from(fixture.toArrayBuffer()));
 });
 
+test("uses the available desktop viewport instead of a fixed narrow shell", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 820 });
+  await page.goto("/");
+
+  const shellBox = await page.locator(".terminal-window").boundingBox();
+
+  expect(shellBox?.width).toBeGreaterThan(1200);
+});
+
 test("renders a usable default pixel preview before upload", async ({ page }) => {
   await page.goto("/");
 
@@ -30,6 +39,8 @@ test("renders a usable default pixel preview before upload", async ({ page }) =>
   await page.locator("#pixels-per-em").fill("10");
   await page.locator("#threshold").fill("28");
   await page.locator("#expand").fill("2");
+  await page.locator("#shift-x").fill("0.35");
+  await page.locator("#shift-y").fill("-0.25");
 
   const after = await page.locator("#demo-preview-canvas").evaluate((canvas) =>
     (canvas as HTMLCanvasElement).toDataURL(),
@@ -60,12 +71,25 @@ test("uploads a TTF through drag and drop, pixelizes Basic Latin, downloads a us
 
   await page.locator("#pixels-per-em").fill("18");
   await page.locator("#threshold").fill("36");
-  await page.getByRole("button", { name: "generate ttf" }).click();
+  await page.locator("#shift-x").fill("0.25");
+  await page.locator("#shift-y").fill("-0.2");
 
   await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await page.screenshot({ path: path.join(artifactsDir, "demo-generated.png"), fullPage: true });
+
+  const firstBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+  await page.locator("#shift-x").fill("0.45");
+  await expect
+    .poll(
+      async () => {
+        const url = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
+        return Boolean(url && url !== firstBlobUrl);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
 
   const fontFaceLoads = await page.evaluate(async () => {
     const blobUrl = window.__fontPixelizerLastBlobUrl;
@@ -104,7 +128,7 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
 
   await page.locator("#pixels-per-em").fill("22");
   await page.locator("#threshold").fill("42");
-  await page.getByRole("button", { name: "generate ttf" }).click();
+  await page.locator("#shift-y").fill("0.3");
 
   await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
   await page.screenshot({ path: path.join(artifactsDir, "demo-lato-generated.png"), fullPage: true });

@@ -2,7 +2,7 @@
   color-scheme: light;
   font-family:
     "JetBrains Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", ui-monospace, monospace;
-  background: #f6f6f3;
+  background: #ffffff;
   color: #111111;
   font-synthesis: none;
   text-rendering: geometricPrecision;
@@ -16,7 +16,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f6f6f3;
+  background: #ffffff;
 }
 
 button,
@@ -32,14 +32,15 @@ label {
 }
 
 .app-shell {
-  width: min(1180px, 100%);
+  width: 100%;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px 18px;
 }
 
 .terminal-window {
-  min-height: calc(100vh - 48px);
-  border: 1px solid #111111;
+  width: 100%;
+  min-height: calc(100vh - 32px);
+  border: 1px solid #d8d8d4;
   background: #ffffff;
 }
 
@@ -50,8 +51,8 @@ label {
   align-items: center;
   min-height: 38px;
   padding: 0 12px;
-  border-bottom: 1px solid #111111;
-  background: #f0f0ed;
+  border-bottom: 1px solid #ececea;
+  background: #fbfbfa;
 }
 
 .window-controls {
@@ -62,7 +63,7 @@ label {
 .window-controls span {
   width: 10px;
   height: 10px;
-  border: 1px solid #111111;
+  border: 1px solid #c9c9c3;
   border-radius: 50%;
   background: #ffffff;
 }
@@ -93,8 +94,8 @@ label {
 
 .terminal-body {
   display: grid;
-  gap: 24px;
-  padding: 22px;
+  gap: 38px;
+  padding: clamp(24px, 4vw, 58px);
 }
 
 .intro {
@@ -130,24 +131,23 @@ h2 {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(248px, 310px) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 76px);
   align-items: start;
 }
 
 .controls-panel,
 .main-panel,
 .preview-pane {
-  border: 1px solid #111111;
-  background: #ffffff;
+  background: transparent;
 }
 
 .controls-panel {
   display: grid;
-  gap: 14px;
-  padding: 14px;
+  gap: 18px;
+  padding: 0;
   position: sticky;
-  top: 16px;
+  top: 24px;
 }
 
 .upload-zone {
@@ -156,14 +156,14 @@ h2 {
   min-height: 144px;
   align-content: center;
   justify-items: start;
-  padding: 14px;
-  border: 1px dashed #111111;
+  padding: 16px;
+  border: 1px dashed #b9b9b2;
   background: #ffffff;
   cursor: pointer;
 }
 
 .upload-zone.is-dragging {
-  background: #f0f0ed;
+  background: #f7f7f5;
   outline: 2px solid #111111;
   outline-offset: -5px;
 }
@@ -189,13 +189,12 @@ h2 {
 }
 
 .legal-note {
-  padding: 10px 0 0;
-  border-top: 1px solid #d8d8d4;
+  max-width: 32ch;
 }
 
 .control-stack {
   display: grid;
-  gap: 13px;
+  gap: 16px;
 }
 
 .field {
@@ -247,19 +246,17 @@ h2 {
 
 .main-panel {
   display: grid;
-  gap: 16px;
-  padding: 14px;
+  gap: 26px;
+  padding: 0;
 }
 
 .summary-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px 16px;
 }
 
 .summary-strip span {
-  padding: 4px 7px;
-  border: 1px solid #d8d8d4;
   color: #555555;
 }
 
@@ -283,7 +280,7 @@ textarea {
   resize: vertical;
   min-height: 72px;
   padding: 10px;
-  border: 1px solid #111111;
+  border: 1px solid #d8d8d4;
   border-radius: 0;
   background: #ffffff;
   color: #111111;
@@ -293,15 +290,15 @@ textarea {
 .preview-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 28px;
 }
 
 .preview-pane {
   display: grid;
   grid-template-rows: auto auto;
   align-content: start;
-  gap: 10px;
-  padding: 12px;
+  gap: 12px;
+  padding: 0;
 }
 
 .pane-header,
@@ -316,7 +313,7 @@ textarea {
 .demo-preview-canvas {
   width: 100%;
   min-height: 260px;
-  border: 1px solid #d8d8d4;
+  border: 1px solid #e1e1dc;
   background: #ffffff;
 }
 
@@ -345,13 +342,13 @@ textarea {
 
 .glyph-section {
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .glyph-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
-  gap: 5px;
+  gap: 6px;
 }
 
 .glyph-tile {
@@ -359,7 +356,7 @@ textarea {
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  border: 1px solid #111111;
+  border: 1px solid #d8d8d4;
   background: #ffffff;
   color: #111111;
   font-size: 12px;

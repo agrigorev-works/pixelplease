@@ -6,6 +6,7 @@ import {
   pixelizeFont,
   summarizeCoverage,
   type PixelizeResult,
+  type PixelizeOptions,
 } from "./font-pixelizer";
 import type opentype from "opentype.js";
 
@@ -24,6 +25,9 @@ type AppState = {
 };
 
 const state: AppState = {};
+const AUTO_GENERATE_DELAY_MS = 280;
+let autoGenerateTimer: number | undefined;
+let generationRunId = 0;
 
 const uploadZone = getElement<HTMLElement>("upload-zone");
 const uploadInput = getElement<HTMLInputElement>("font-upload");
@@ -42,9 +46,13 @@ const glyphGrid = getElement<HTMLElement>("glyph-grid");
 const pixelsPerEm = getElement<HTMLInputElement>("pixels-per-em");
 const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
+const shiftX = getElement<HTMLInputElement>("shift-x");
+const shiftY = getElement<HTMLInputElement>("shift-y");
 const pixelsPerEmValue = getElement<HTMLOutputElement>("pixels-per-em-value");
 const thresholdValue = getElement<HTMLOutputElement>("threshold-value");
 const expandValue = getElement<HTMLOutputElement>("expand-value");
+const shiftXValue = getElement<HTMLOutputElement>("shift-x-value");
+const shiftYValue = getElement<HTMLOutputElement>("shift-y-value");
 
 uploadInput.addEventListener("change", handleUpload);
 uploadZone.addEventListener("dragenter", handleDragEnter);
@@ -53,9 +61,11 @@ uploadZone.addEventListener("dragleave", handleDragLeave);
 uploadZone.addEventListener("drop", handleDrop);
 generateButton.addEventListener("click", handleGenerate);
 sampleText.addEventListener("input", syncSampleText);
-pixelsPerEm.addEventListener("input", syncControlLabels);
-threshold.addEventListener("input", syncControlLabels);
-expand.addEventListener("input", syncControlLabels);
+pixelsPerEm.addEventListener("input", handleControlInput);
+threshold.addEventListener("input", handleControlInput);
+expand.addEventListener("input", handleControlInput);
+shiftX.addEventListener("input", handleControlInput);
+shiftY.addEventListener("input", handleControlInput);
 window.addEventListener("resize", renderDemoPreview);
 
 syncControlLabels();
@@ -72,6 +82,8 @@ async function handleUpload(): Promise<void> {
 }
 
 async function loadFontFile(file: File): Promise<void> {
+  window.clearTimeout(autoGenerateTimer);
+  generationRunId += 1;
   setStatus("Parsing font...");
 
   try {
@@ -102,16 +114,17 @@ async function loadFontFile(file: File): Promise<void> {
 }
 
 async function handleGenerate(): Promise<void> {
-  if (!state.sourceFont) {
+  window.clearTimeout(autoGenerateTimer);
+  await generatePixelFont();
+}
+
+async function generatePixelFont(): Promise<void> {
+  const sourceFont = state.sourceFont;
+  if (!sourceFont) {
     return;
   }
 
-  const options = {
-    pixelsPerEm: Number(pixelsPerEm.value),
-    threshold: Number(threshold.value) / 100,
-    expand: Number(expand.value),
-  };
-
+  const runId = (generationRunId += 1);
   generateButton.disabled = true;
   clearGeneratedFont();
   setStatus("Generating...");
@@ -119,12 +132,17 @@ async function handleGenerate(): Promise<void> {
   afterPreview.classList.add("empty-preview");
 
   try {
-    const generated = await pixelizeFont(state.sourceFont, options, (done, total) => {
+    const generated = await pixelizeFont(sourceFont, getPixelizeOptions(), (done, total) => {
       setStatus(`Generating ${done}/${total}`);
     });
 
     const blob = new Blob([generated.arrayBuffer], { type: "font/ttf" });
     const url = URL.createObjectURL(blob);
+
+    if (runId !== generationRunId) {
+      revokeUrl(url);
+      return;
+    }
 
     state.generated = generated;
     state.generatedUrl = url;
@@ -143,7 +161,9 @@ async function handleGenerate(): Promise<void> {
   } catch (error) {
     renderError(error, "Could not generate a pixelized TTF.");
   } finally {
-    generateButton.disabled = false;
+    if (runId === generationRunId) {
+      generateButton.disabled = false;
+    }
   }
 }
 
@@ -180,14 +200,42 @@ function syncSampleText(): void {
   }
 }
 
+function handleControlInput(): void {
+  syncControlLabels();
+
+  if (state.sourceFont) {
+    scheduleAutoGenerate();
+  }
+}
+
 function syncControlLabels(): void {
   pixelsPerEmValue.textContent = pixelsPerEm.value;
   thresholdValue.textContent = `${threshold.value}%`;
   expandValue.textContent = expand.value;
+  shiftXValue.textContent = `${formatShiftValue(shiftX.value)} cell`;
+  shiftYValue.textContent = `${formatShiftValue(shiftY.value)} cell`;
 
   if (!state.generated) {
     renderDemoPreview();
   }
+}
+
+function scheduleAutoGenerate(): void {
+  window.clearTimeout(autoGenerateTimer);
+  setStatus(state.generated ? "Updating preview..." : "Auto-generating...");
+  autoGenerateTimer = window.setTimeout(() => {
+    void generatePixelFont();
+  }, AUTO_GENERATE_DELAY_MS);
+}
+
+function getPixelizeOptions(): PixelizeOptions {
+  return {
+    pixelsPerEm: Number(pixelsPerEm.value),
+    threshold: Number(threshold.value) / 100,
+    expand: Number(expand.value),
+    shiftX: Number(shiftX.value),
+    shiftY: Number(shiftY.value),
+  };
 }
 
 function clearGeneratedFont(): void {
@@ -266,6 +314,11 @@ function renderDemoPreview(): void {
     return;
   }
 
+  const options = getPixelizeOptions();
+  const cellSize = Math.max(1, Math.round(42 / options.pixelsPerEm));
+  const shiftXPixels = options.shiftX ? options.shiftX * cellSize : 0;
+  const shiftYPixels = options.shiftY ? options.shiftY * cellSize : 0;
+
   sourceContext.fillStyle = "#ffffff";
   sourceContext.fillRect(0, 0, width, height);
   sourceContext.fillStyle = "#111111";
@@ -274,14 +327,13 @@ function renderDemoPreview(): void {
 
   const lines = wrapText(sourceContext, sampleText.value || " ", width - 36);
   lines.slice(0, 5).forEach((line, index) => {
-    sourceContext.fillText(line, 18, 18 + index * 52);
+    sourceContext.fillText(line, 18 + shiftXPixels, 18 + shiftYPixels + index * 52);
   });
 
-  const cellSize = Math.max(1, Math.round(42 / Number(pixelsPerEm.value)));
   const cols = Math.ceil(width / cellSize);
   const rows = Math.ceil(height / cellSize);
   const cells = new Uint8Array(cols * rows);
-  const thresholdValue = Number(threshold.value) / 100;
+  const fillThreshold = options.threshold;
   const imageData = sourceContext.getImageData(0, 0, width, height).data;
 
   for (let row = 0; row < rows; row += 1) {
@@ -299,11 +351,11 @@ function renderDemoPreview(): void {
         }
       }
 
-      cells[row * cols + col] = darkness / Math.max(1, count) >= thresholdValue ? 1 : 0;
+      cells[row * cols + col] = darkness / Math.max(1, count) >= fillThreshold ? 1 : 0;
     }
   }
 
-  const expanded = expandCells(cells, cols, rows, Number(expand.value));
+  const expanded = expandCells(cells, cols, rows, options.expand);
   context.fillStyle = "#111111";
 
   for (let row = 0; row < rows; row += 1) {
@@ -405,6 +457,10 @@ function escapeHtml(value: string): string {
     };
     return entities[char];
   });
+}
+
+function formatShiftValue(value: string): string {
+  return Number(value).toFixed(2);
 }
 
 function getElement<T extends HTMLElement>(id: string): T {

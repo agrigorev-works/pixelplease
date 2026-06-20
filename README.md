@@ -9,7 +9,9 @@ This branch contains a minimal light terminal-style variation of the first proof
 - parse glyphs with `opentype.js`;
 - show source glyph count and Basic Latin coverage;
 - apply a simple pixelization effect;
+- tune pixels-per-em, threshold, expand, and X/Y grid shift;
 - try the effect in demo mode before uploading a font;
+- update the generated preview automatically when pixel controls change;
 - preview before/after sample text;
 - download a generated `.ttf`;
 - verify the generated font can be parsed and loaded in the browser.
@@ -55,6 +57,6 @@ The smoke test downloads a permissive Google Fonts sample, `Lato-Regular.ttf`, i
 
 - Basic Latin export only.
 - No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup.
-- The algorithm is intentionally simple: rasterize glyphs to a grid, sample filled cells, optionally expand cells, convert horizontal filled runs into rectangular outlines, then build a derivative TTF.
+- The algorithm is intentionally simple: rasterize glyphs to a grid, optionally offset the sampling grid, sample filled cells, optionally expand cells, convert horizontal filled runs into rectangular outlines, then build a derivative TTF.
 
 Only upload fonts you have the right to modify.

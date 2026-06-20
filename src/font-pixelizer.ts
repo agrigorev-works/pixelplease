@@ -4,6 +4,8 @@ export type PixelizeOptions = {
   pixelsPerEm: number;
   threshold: number;
   expand: number;
+  shiftX?: number;
+  shiftY?: number;
 };
 
 export type FontMetrics = {
@@ -233,9 +235,12 @@ function rasterizeGlyphToCells(
     throw new Error("Could not create canvas context for glyph rasterization.");
   }
 
+  const shiftX = clamp(options.shiftX ?? 0, -0.5, 0.5) * samplesPerCell;
+  const shiftY = clamp(options.shiftY ?? 0, -0.5, 0.5) * samplesPerCell;
+
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = "#000";
-  sourceGlyph.draw(context, 0, metrics.ascender * scale, metrics.unitsPerEm * scale);
+  sourceGlyph.draw(context, shiftX, metrics.ascender * scale + shiftY, metrics.unitsPerEm * scale);
 
   const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
   const cells = new Uint8Array(cols * rows);
