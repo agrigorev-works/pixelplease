@@ -59,6 +59,8 @@ test("renders a clean three-column source output settings layout", async ({ page
 
     const titleBox = title.getBoundingClientRect();
     const copyBox = copy.getBoundingClientRect();
+    const introBox = document.querySelector(".intro")?.getBoundingClientRect();
+    const sourceBox = document.querySelector(".source-panel")?.getBoundingClientRect();
     const titleStyles = getComputedStyle(title);
     const copyStyles = getComputedStyle(copy);
 
@@ -69,12 +71,15 @@ test("renders a clean three-column source output settings layout", async ({ page
       titleTop: titleBox.top,
       titleTextAlign: titleStyles.textAlign,
       copyTextAlign: copyStyles.textAlign,
+      introBottom: introBox?.bottom,
+      sourceTop: sourceBox?.top,
     };
   });
   expect(introMetrics.copyLeft).toBeLessThan(introMetrics.titleLeft);
   expect(Math.abs(introMetrics.copyTop - introMetrics.titleTop)).toBeLessThan(1);
   expect(introMetrics.titleTextAlign).toBe("right");
   expect(introMetrics.copyTextAlign).toBe("left");
+  expect((introMetrics.sourceTop ?? 0) - (introMetrics.introBottom ?? 0)).toBeLessThan(56);
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();
@@ -136,6 +141,46 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.controlsPanelBottom)).toBeLessThan(1);
   expect(previewTypography.sourceFontSize).toBe(previewTypography.outputFontSize);
   expect(previewTypography.sourceLineHeight).toBe(previewTypography.outputLineHeight);
+});
+
+test("stacks the intro when the header no longer fits horizontally", async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 760 });
+  await page.goto("/");
+
+  const metrics = await page.evaluate(() => {
+    const intro = document.querySelector(".intro");
+    const title = document.querySelector("h1");
+    const copy = document.querySelector(".intro-copy");
+    const workspace = document.querySelector(".workspace");
+    if (!intro || !title || !copy || !workspace) {
+      throw new Error("Missing intro elements");
+    }
+
+    const introBox = intro.getBoundingClientRect();
+    const titleBox = title.getBoundingClientRect();
+    const copyBox = copy.getBoundingClientRect();
+    const titleStyles = getComputedStyle(title);
+    const copyStyles = getComputedStyle(copy);
+    const workspaceStyles = getComputedStyle(workspace);
+
+    return {
+      titleCenterDelta: Math.abs(titleBox.left + titleBox.width / 2 - (introBox.left + introBox.width / 2)),
+      copyBelowTitle: copyBox.top > titleBox.bottom,
+      copyLeftDelta: Math.abs(copyBox.left - introBox.left),
+      titleTextAlign: titleStyles.textAlign,
+      copyTextAlign: copyStyles.textAlign,
+      gridColumns: workspaceStyles.gridTemplateColumns.split(" ").length,
+      overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
+    };
+  });
+
+  expect(metrics.titleCenterDelta).toBeLessThan(1);
+  expect(metrics.copyBelowTitle).toBe(true);
+  expect(metrics.copyLeftDelta).toBeLessThan(1);
+  expect(metrics.titleTextAlign).toBe("center");
+  expect(metrics.copyTextAlign).toBe("left");
+  expect(metrics.gridColumns).toBe(3);
+  expect(metrics.overflow).toBe(0);
 });
 
 test("switches Source between Google Font editing and same-size upload drop zone", async ({ page }) => {

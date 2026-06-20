@@ -53,7 +53,7 @@ label {
   gap: clamp(20px, 4vw, 48px);
   align-items: start;
   max-width: none;
-  margin-bottom: clamp(34px, 5vw, 72px);
+  margin-bottom: clamp(34px, 3vw, 48px);
 }
 
 .intro-copy {
@@ -84,6 +84,27 @@ h1 {
   justify-self: start;
   max-width: 42ch;
   text-align: left;
+}
+
+@media (max-width: 1080px) {
+  .intro {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  h1 {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    text-align: center;
+  }
+
+  .intro-copy {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    text-align: left;
+  }
 }
 
 h2 {
@@ -372,17 +393,6 @@ textarea {
 @media (max-width: 860px) {
   .app-shell {
     padding: 24px 14px;
-  }
-
-  .intro {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  h1,
-  .intro-copy {
-    grid-column: 1;
-    grid-row: auto;
   }
 
   .workspace {
