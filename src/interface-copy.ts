@@ -33,7 +33,7 @@ export const UI_COPY = {
     replaceFont: "upload new font",
     sampleTextLabel: "sample text",
     sampleTextDefault:
-      "Hi, this is pixelplease. I quickly pixelize fonts, tweak crisp grids, and export jazzy test TTFs 123.",
+      "Hey, this is pixelplease. I quickly pixelize fonts, adding brutal web grit and old monitor vibes to your interface 123.",
     uploadTitle: "drop a TTF/OTF here",
     licenseReminder: "Please use only fonts you have a license to edit",
   },
