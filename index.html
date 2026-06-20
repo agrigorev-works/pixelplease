@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pixelplease</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400&family=Lato:wght@400&family=Libre+Baskerville:wght@400&family=Merriweather:wght@400&family=Roboto+Mono:wght@400&family=Space+Grotesk:wght@400&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <main id="app" class="app-shell">
@@ -24,14 +30,18 @@
             <span id="before-label">system mono demo</span>
           </div>
 
-          <label class="source-editor-field" for="sample-text">
-            <span class="sr-only">sample text</span>
-            <textarea id="sample-text" class="preview-text source-editor" rows="8">The quick brown fox jumps over 123.</textarea>
+          <label class="font-select-field" for="google-font-select">
+            <span>google font</span>
+            <select id="google-font-select" aria-label="Google Font for demo preview"></select>
           </label>
 
-          <label class="upload-zone" id="upload-zone" for="font-upload">
-            <span class="upload-title">drop font here</span>
-            <span class="upload-copy">or choose a local TTF/OTF file</span>
+          <label class="source-editor-field" for="sample-text">
+            <span class="sr-only">sample text</span>
+            <textarea id="sample-text" class="preview-text source-editor" rows="8" autofocus>The quick brown fox jumps over 123.</textarea>
+          </label>
+
+          <label class="upload-button" for="font-upload">
+            <span>upload your font</span>
             <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
           </label>
 
@@ -104,13 +114,6 @@
         </aside>
       </div>
 
-      <section class="glyph-section" aria-label="Glyph coverage">
-        <div class="section-heading">
-          <h2>coverage</h2>
-          <span id="coverage-label">Upload a font to inspect Basic Latin.</span>
-        </div>
-        <div id="glyph-grid" class="glyph-grid" aria-live="polite"></div>
-      </section>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

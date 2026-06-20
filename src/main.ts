@@ -1,10 +1,8 @@
 import "./styles.css";
 import {
-  getBasicLatinCoverage,
   getFontLabel,
   parseFont,
   pixelizeFont,
-  summarizeCoverage,
   type PixelizeResult,
   type PixelizeOptions,
 } from "./font-pixelizer";
@@ -20,17 +18,33 @@ type AppState = {
   sourceFont?: opentype.Font;
   sourceFile?: File;
   sourceUrl?: string;
+  demoFont?: DemoFontChoice;
   generated?: PixelizeResult;
   generatedUrl?: string;
 };
+
+type DemoFontChoice = {
+  family: string;
+  cssFamily: string;
+  license: "OFL" | "Apache-2.0";
+};
+
+const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
+  { family: "IBM Plex Sans", cssFamily: '"IBM Plex Sans", system-ui, sans-serif', license: "OFL" },
+  { family: "Lato", cssFamily: '"Lato", system-ui, sans-serif', license: "OFL" },
+  { family: "Libre Baskerville", cssFamily: '"Libre Baskerville", Georgia, serif', license: "OFL" },
+  { family: "Merriweather", cssFamily: '"Merriweather", Georgia, serif', license: "OFL" },
+  { family: "Roboto Mono", cssFamily: '"Roboto Mono", ui-monospace, monospace', license: "Apache-2.0" },
+  { family: "Space Grotesk", cssFamily: '"Space Grotesk", system-ui, sans-serif', license: "OFL" },
+];
 
 const state: AppState = {};
 const AUTO_GENERATE_DELAY_MS = 280;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 
-const uploadZone = getElement<HTMLElement>("upload-zone");
 const uploadInput = getElement<HTMLInputElement>("font-upload");
+const googleFontSelect = getElement<HTMLSelectElement>("google-font-select");
 const generateButton = getElement<HTMLButtonElement>("generate-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
@@ -40,8 +54,6 @@ const beforeLabel = getElement<HTMLElement>("before-label");
 const afterLabel = getElement<HTMLElement>("after-label");
 const appStatus = getElement<HTMLElement>("app-status");
 const fontSummary = getElement<HTMLElement>("font-summary");
-const coverageLabel = getElement<HTMLElement>("coverage-label");
-const glyphGrid = getElement<HTMLElement>("glyph-grid");
 const pixelsPerEm = getElement<HTMLInputElement>("pixels-per-em");
 const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
@@ -54,10 +66,7 @@ const shiftXValue = getElement<HTMLOutputElement>("shift-x-value");
 const shiftYValue = getElement<HTMLOutputElement>("shift-y-value");
 
 uploadInput.addEventListener("change", handleUpload);
-uploadZone.addEventListener("dragenter", handleDragEnter);
-uploadZone.addEventListener("dragover", handleDragOver);
-uploadZone.addEventListener("dragleave", handleDragLeave);
-uploadZone.addEventListener("drop", handleDrop);
+googleFontSelect.addEventListener("change", handleGoogleFontChange);
 generateButton.addEventListener("click", handleGenerate);
 sampleText.addEventListener("input", syncSampleText);
 pixelsPerEm.addEventListener("input", handleControlInput);
@@ -67,9 +76,14 @@ shiftX.addEventListener("input", handleControlInput);
 shiftY.addEventListener("input", handleControlInput);
 window.addEventListener("resize", renderDemoPreview);
 
+initializeDemoFonts();
 syncControlLabels();
 syncSampleText();
-void document.fonts.ready.then(renderDemoPreview);
+focusSourceTextAtEnd();
+void document.fonts.ready.then(() => {
+  renderDemoPreview();
+  focusSourceTextAtEnd();
+});
 
 async function handleUpload(): Promise<void> {
   const file = uploadInput.files?.[0];
@@ -78,6 +92,46 @@ async function handleUpload(): Promise<void> {
   }
 
   await loadFontFile(file);
+}
+
+function initializeDemoFonts(): void {
+  googleFontSelect.replaceChildren(
+    ...DEMO_GOOGLE_FONTS.map((font) => {
+      const option = document.createElement("option");
+      option.value = font.family;
+      option.textContent = `${font.family} / ${font.license}`;
+      return option;
+    }),
+  );
+
+  const font = pickRandomFont();
+  googleFontSelect.value = font.family;
+  applyDemoFont(font);
+}
+
+function handleGoogleFontChange(): void {
+  const font = DEMO_GOOGLE_FONTS.find((item) => item.family === googleFontSelect.value);
+  if (font) {
+    applyDemoFont(font);
+  }
+}
+
+function applyDemoFont(font: DemoFontChoice): void {
+  state.demoFont = font;
+
+  if (state.sourceFont) {
+    return;
+  }
+
+  sampleText.style.fontFamily = font.cssFamily;
+  beforeLabel.textContent = `${font.family} / Google Fonts`;
+  fontSummary.innerHTML = `
+    <span><strong>${escapeHtml(font.family)}</strong></span>
+    <span>Google Fonts demo</span>
+    <span>${font.license}</span>
+  `;
+  renderDemoPreview();
+  void document.fonts.load(`400 48px ${font.cssFamily}`).then(renderDemoPreview);
 }
 
 async function loadFontFile(file: File): Promise<void> {
@@ -103,8 +157,9 @@ async function loadFontFile(file: File): Promise<void> {
     const label = getFontLabel(sourceFont);
     beforeLabel.textContent = label;
     afterLabel.textContent = "generate TTF to preview font output";
-    renderCoverage(sourceFont);
+    renderFontSummary(sourceFont);
     generateButton.disabled = false;
+    googleFontSelect.disabled = true;
     setStatus("Ready to generate");
   } catch (error) {
     generateButton.disabled = true;
@@ -166,26 +221,13 @@ async function generatePixelFont(): Promise<void> {
   }
 }
 
-function renderCoverage(font: opentype.Font): void {
-  const coverage = getBasicLatinCoverage(font);
-  const supported = coverage.filter((item) => item.supported).length;
+function renderFontSummary(font: opentype.Font): void {
   const label = getFontLabel(font);
 
   fontSummary.innerHTML = `
     <span><strong>${escapeHtml(label)}</strong></span>
     <span>${font.glyphs.length} source glyphs</span>
-    <span>${summarizeCoverage(coverage)}</span>
   `;
-  coverageLabel.textContent = `${supported} supported characters in Basic Latin.`;
-  glyphGrid.replaceChildren(
-    ...coverage.map((item) => {
-      const tile = document.createElement("span");
-      tile.className = `glyph-tile ${item.supported ? "is-supported" : "is-missing"}`;
-      tile.textContent = item.char === " " ? "space" : item.char;
-      tile.title = `U+${item.codePoint.toString(16).toUpperCase().padStart(4, "0")} / glyph ${item.glyphIndex}`;
-      return tile;
-    }),
-  );
 }
 
 function syncSampleText(): void {
@@ -251,37 +293,6 @@ function clearGeneratedFont(): void {
   renderDemoPreview();
 }
 
-function handleDragEnter(event: DragEvent): void {
-  event.preventDefault();
-  uploadZone.classList.add("is-dragging");
-}
-
-function handleDragOver(event: DragEvent): void {
-  event.preventDefault();
-  uploadZone.classList.add("is-dragging");
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = "copy";
-  }
-}
-
-function handleDragLeave(event: DragEvent): void {
-  if (!uploadZone.contains(event.relatedTarget as Node | null)) {
-    uploadZone.classList.remove("is-dragging");
-  }
-}
-
-async function handleDrop(event: DragEvent): Promise<void> {
-  event.preventDefault();
-  uploadZone.classList.remove("is-dragging");
-
-  const file = event.dataTransfer?.files[0];
-  if (!file) {
-    return;
-  }
-
-  await loadFontFile(file);
-}
-
 function renderDemoPreview(): void {
   if (state.generated || demoPreviewCanvas.classList.contains("is-hidden")) {
     return;
@@ -317,6 +328,8 @@ function renderDemoPreview(): void {
   const previewFontSize = Number.parseFloat(previewStyles.fontSize) || 42;
   const previewLineHeight = Number.parseFloat(previewStyles.lineHeight) || previewFontSize * 1.12;
   const previewPadding = Number.parseFloat(previewStyles.paddingLeft) || 16;
+  const previewFontFamily =
+    previewStyles.fontFamily || '"JetBrains Mono", "SFMono-Regular", ui-monospace, monospace';
   const cellSize = Math.max(1, Math.round(previewFontSize / options.pixelsPerEm));
   const shiftXPixels = options.shiftX ? options.shiftX * cellSize : 0;
   const shiftYPixels = options.shiftY ? options.shiftY * cellSize : 0;
@@ -324,7 +337,7 @@ function renderDemoPreview(): void {
   sourceContext.fillStyle = "#ffffff";
   sourceContext.fillRect(0, 0, width, height);
   sourceContext.fillStyle = "#111111";
-  sourceContext.font = `${previewFontSize}px "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace`;
+  sourceContext.font = `${previewFontSize}px ${previewFontFamily}`;
   sourceContext.textBaseline = "top";
 
   const lines = wrapText(sourceContext, sampleText.value || " ", width - previewPadding * 2);
@@ -467,6 +480,18 @@ function escapeHtml(value: string): string {
 
 function formatShiftValue(value: string): string {
   return Number(value).toFixed(2);
+}
+
+function pickRandomFont(): DemoFontChoice {
+  const random = new Uint32Array(1);
+  crypto.getRandomValues(random);
+  return DEMO_GOOGLE_FONTS[random[0] % DEMO_GOOGLE_FONTS.length];
+}
+
+function focusSourceTextAtEnd(): void {
+  const end = sampleText.value.length;
+  sampleText.focus({ preventScroll: true });
+  sampleText.setSelectionRange(end, end);
 }
 
 function getElement<T extends HTMLElement>(id: string): T {

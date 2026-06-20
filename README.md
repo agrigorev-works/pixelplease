@@ -5,9 +5,11 @@ pixelplease is an MVP prototype for turning a local font file into a pixelized, 
 This branch contains a minimal mono, three-column variation of the first proof of concept:
 
 - upload a local `.ttf` / `.otf` file;
-- drag and drop a font file inside the Source column;
+- choose from a small permissive Google Fonts demo list;
+- start each session with a random demo font;
+- upload a local font from the Source column;
 - parse glyphs with `opentype.js`;
-- show source glyph count and Basic Latin coverage;
+- show source font metadata after upload;
 - apply a simple pixelization effect;
 - tune pixels-per-em, threshold, expand, and X/Y grid shift;
 - edit the source text directly in the Source preview;

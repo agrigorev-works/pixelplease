@@ -42,6 +42,7 @@ label {
 .intro-copy,
 .upload-copy,
 .legal-note,
+.font-select-field span,
 .field span,
 .pane-header span,
 .section-heading span,
@@ -103,46 +104,35 @@ h2 {
   top: clamp(16px, 3vw, 40px);
 }
 
-.upload-zone {
-  display: grid;
-  gap: 7px;
-  min-height: 96px;
-  align-content: center;
-  justify-items: start;
-  padding: 16px;
-  border: 1px dashed #b9b9b2;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-.upload-zone.is-dragging {
-  background: #f7f7f5;
-  outline: 2px solid #111111;
-  outline-offset: -5px;
-}
-
-.upload-title {
-  font-size: 16px;
-  line-height: 1.2;
-  font-weight: 600;
-}
-
 .upload-copy,
 .legal-note,
+.font-select-field span,
 .field span,
 .pane-header span,
 .section-heading span {
   color: #555555;
 }
 
-.upload-zone input {
-  max-width: 100%;
-  margin-top: 8px;
-  font-size: 12px;
-}
-
 .legal-note {
   max-width: 32ch;
+}
+
+.font-select-field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+select {
+  min-width: 0;
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid #d8d8d4;
+  border-radius: 0;
+  background: #ffffff;
+  color: #111111;
+  font: inherit;
 }
 
 .control-stack {
@@ -169,7 +159,8 @@ h2 {
 }
 
 .primary-action,
-.download-action {
+.download-action,
+.upload-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -184,9 +175,23 @@ h2 {
   cursor: pointer;
 }
 
-.download-action {
+.download-action,
+.upload-button {
   background: #ffffff;
   color: #111111;
+}
+
+.upload-button {
+  justify-self: start;
+  padding: 0 18px;
+}
+
+.upload-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .primary-action:disabled,
@@ -272,35 +277,6 @@ textarea {
 
 .is-hidden {
   display: none;
-}
-
-.glyph-section {
-  display: grid;
-  gap: 14px;
-  margin-top: clamp(32px, 4vw, 56px);
-}
-
-.glyph-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
-  gap: 6px;
-}
-
-.glyph-tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  border: 1px solid #d8d8d4;
-  background: #ffffff;
-  color: #111111;
-  font-size: 12px;
-  overflow: hidden;
-}
-
-.glyph-tile.is-missing {
-  border-style: dashed;
-  color: #999999;
 }
 
 .error-text {

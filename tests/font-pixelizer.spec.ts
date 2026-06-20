@@ -45,7 +45,9 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(sourceBox?.x).toBeLessThan(outputBox?.x ?? 0);
   expect(outputBox?.x).toBeLessThan(controlsBox?.x ?? 0);
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
-  await expect(page.locator(".source-panel #upload-zone")).toBeVisible();
+  await expect(page.locator(".source-panel #font-upload")).toBeAttached();
+  await expect(page.locator("#coverage-label")).toHaveCount(0);
+  await expect(page.locator("#glyph-grid")).toHaveCount(0);
 
   const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
   const outputPreviewBox = await page.locator("#demo-preview-canvas").boundingBox();
@@ -64,6 +66,63 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (outputPreviewBox?.height ?? 0))).toBeLessThan(2);
   expect(previewTypography.sourceFontSize).toBe(previewTypography.outputFontSize);
   expect(previewTypography.sourceLineHeight).toBe(previewTypography.outputLineHeight);
+});
+
+test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.locator("#sample-text")).toBeFocused();
+  const caret = await page.locator("#sample-text").evaluate((textarea) => {
+    const input = textarea as HTMLTextAreaElement;
+    return {
+      start: input.selectionStart,
+      end: input.selectionEnd,
+      length: input.value.length,
+    };
+  });
+
+  expect(caret.start).toBe(caret.length);
+  expect(caret.end).toBe(caret.length);
+
+  await expect(page.locator("#google-font-select")).toBeVisible();
+  const fontOptions = await page.locator("#google-font-select option").allTextContents();
+  expect(fontOptions.length).toBeGreaterThanOrEqual(5);
+  await expect(page.locator("#before-label")).toContainText(/Google Fonts/i);
+
+  const currentFont = await page.locator("#google-font-select").inputValue();
+  await page.locator("#sample-text").fill("MMMM iiiiii 123");
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  const beforeCanvas = await page.locator("#demo-preview-canvas").evaluate((canvas) =>
+    (canvas as HTMLCanvasElement).toDataURL(),
+  );
+  const nextFont = await page.locator("#google-font-select").evaluate((select) => {
+    const element = select as HTMLSelectElement;
+    return Array.from(element.options).find((option) => option.value !== element.value)?.value;
+  });
+  expect(nextFont).toBeTruthy();
+
+  await page.locator("#google-font-select").selectOption(nextFont as string);
+  await expect(page.locator("#before-label")).toContainText(nextFont as string);
+  const sourceFontFamily = await page.locator("#sample-text").evaluate((textarea) =>
+    getComputedStyle(textarea).fontFamily,
+  );
+
+  expect(sourceFontFamily).toContain(nextFont as string);
+  expect(nextFont).not.toBe(currentFont);
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  await expect
+    .poll(
+      async () =>
+        page.locator("#demo-preview-canvas").evaluate((canvas) =>
+          (canvas as HTMLCanvasElement).toDataURL(),
+        ),
+      { timeout: 10_000 },
+    )
+    .not.toBe(beforeCanvas);
 });
 
 test("renders a usable default pixel preview before upload", async ({ page }) => {
@@ -92,25 +151,15 @@ test("renders a usable default pixel preview before upload", async ({ page }) =>
   expect(after).not.toBe(before);
 });
 
-test("uploads a TTF through drag and drop, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
+test("uploads a TTF through the local font button, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
   await page.goto("/");
 
-  const fixtureBase64 = (await fs.readFile(sourcePath)).toString("base64");
-  await page.evaluate((base64) => {
-    const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-    const file = new File([bytes], "fixture-source.ttf", { type: "font/ttf" });
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    const event = new DragEvent("drop", {
-      bubbles: true,
-      cancelable: true,
-      dataTransfer,
-    });
-    document.getElementById("upload-zone")?.dispatchEvent(event);
-  }, fixtureBase64);
+  await expect(page.getByText("upload your font")).toBeVisible();
+  await expect(page.locator("#upload-zone")).toHaveCount(0);
+  await page.locator("#font-upload").setInputFiles(sourcePath);
 
   await expect(page.locator("#app-status")).toHaveText("Ready to generate");
-  await expect(page.locator("#coverage-label")).toContainText("supported characters");
+  await expect(page.locator("#font-summary")).toContainText("Fixture Sans");
 
   await page.locator("#pixels-per-em").fill("18");
   await page.locator("#threshold").fill("36");
