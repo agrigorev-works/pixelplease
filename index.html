@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pixelplease</title>
+    <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,99 +13,89 @@
   </head>
   <body>
     <main id="app" class="app-shell">
-      <p id="app-status" aria-live="polite" hidden>demo mode</p>
+      <p id="app-status" aria-live="polite" hidden></p>
 
       <header class="intro">
-        <h1 id="logo-title" aria-label="pixel please"><span>pixel</span><span>please</span></h1>
-        <p class="intro-copy">
-          Upload a font, edit sample text, preview a pixel treatment, and export a test TTF.
-        </p>
+        <h1 id="logo-title" aria-label=""><span></span><span></span></h1>
+        <p class="intro-copy"></p>
       </header>
 
       <div class="workspace">
-        <section class="source-panel preview-pane" aria-label="Source font and text">
-          <fieldset class="source-mode-control" aria-label="Source mode">
-            <legend class="sr-only">Source mode</legend>
+        <section class="source-panel preview-pane" aria-label="">
+          <fieldset class="source-mode-control" aria-label="">
+            <legend class="sr-only"></legend>
             <label class="segment-option">
               <input id="source-mode-google" type="radio" name="source-mode" value="google" checked />
-              <span>Google Font</span>
+              <span></span>
             </label>
             <label class="segment-option">
               <input id="source-mode-upload" type="radio" name="source-mode" value="upload" />
-              <span>Your Font</span>
+              <span></span>
             </label>
           </fieldset>
 
           <div class="source-toolbar">
             <label id="google-font-field" class="font-select-field" for="google-font-select">
-              <select id="google-font-select" aria-label="Google Font for demo preview"></select>
+              <select id="google-font-select"></select>
             </label>
 
-            <button id="replace-font-button" class="replace-font-button is-hidden" type="button">
-              upload new font
-            </button>
+            <button id="replace-font-button" class="replace-font-button is-hidden" type="button"></button>
           </div>
 
           <label id="source-editor-field" class="source-editor-field" for="sample-text">
-            <span class="sr-only">sample text</span>
-            <textarea id="sample-text" class="preview-text source-editor" rows="8" autofocus>The quick brown fox jumps over 123.</textarea>
+            <span class="sr-only"></span>
+            <textarea id="sample-text" class="preview-text source-editor" rows="8" autofocus></textarea>
           </label>
 
           <label id="upload-zone" class="upload-zone is-hidden" for="font-upload">
-            <span class="upload-title">drop a TTF/OTF here or click anywhere in this area</span>
-            <span class="license-reminder">Please use only fonts you have a license to edit.</span>
+            <span class="upload-title"></span>
+            <span class="license-reminder"></span>
           </label>
           <input id="font-upload" class="font-upload-input" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
         </section>
 
-        <section class="output-panel preview-pane" aria-label="Pixelized font preview">
-          <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label="Pixelized demo preview"></canvas>
-          <p id="after-preview" class="preview-text generated-preview is-hidden">
-            The quick brown fox jumps over 123.
-          </p>
+        <section class="output-panel preview-pane" aria-label="">
+          <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label=""></canvas>
+          <p id="after-preview" class="preview-text generated-preview is-hidden"></p>
         </section>
 
-        <aside class="controls-panel" aria-label="Settings">
+        <aside class="controls-panel" aria-label="">
           <div class="control-stack">
             <label class="field">
-              <span>pixels-per-em</span>
-              <output id="pixels-per-em-value">20</output>
+              <span></span>
+              <output id="pixels-per-em-value"></output>
               <input id="pixels-per-em" type="range" min="10" max="40" step="1" value="20" />
             </label>
 
             <label class="field">
-              <span>threshold</span>
-              <output id="threshold-value">42%</output>
+              <span></span>
+              <output id="threshold-value"></output>
               <input id="threshold" type="range" min="12" max="78" step="1" value="42" />
             </label>
 
             <label class="field">
-              <span>expand</span>
-              <output id="expand-value">0</output>
+              <span></span>
+              <output id="expand-value"></output>
               <input id="expand" type="range" min="0" max="3" step="1" value="0" />
             </label>
 
             <label class="field">
-              <span>shift-x</span>
-              <output id="shift-x-value">0.00 cell</output>
+              <span></span>
+              <output id="shift-x-value"></output>
               <input id="shift-x" type="range" min="-0.5" max="0.5" step="0.05" value="0" />
             </label>
 
             <label class="field">
-              <span>shift-y</span>
-              <output id="shift-y-value">0.00 cell</output>
+              <span></span>
+              <output id="shift-y-value"></output>
               <input id="shift-y" type="range" min="-0.5" max="0.5" step="0.05" value="0" />
             </label>
           </div>
 
           <div class="action-stack">
-            <button id="reset-button" class="secondary-action" type="button">
-              reset defaults
-            </button>
+            <button id="reset-button" class="secondary-action" type="button"></button>
 
-            <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
-              Download TTF
-            </a>
+            <a id="download-link" class="download-action is-disabled" href="#" download=""></a>
           </div>
         </aside>
       </div>

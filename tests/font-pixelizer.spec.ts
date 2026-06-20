@@ -213,14 +213,18 @@ test("switches Source between Google Font editing and same-size upload drop zone
   const sourceFocusStyles = await page.locator("#sample-text").evaluate((textarea) => {
     const styles = getComputedStyle(textarea);
     return {
+      backgroundColor: styles.backgroundColor,
       borderColor: styles.borderColor,
       outlineColor: styles.outlineColor,
       outlineStyle: styles.outlineStyle,
     };
   });
+  expect(sourceFocusStyles.backgroundColor).toBe("rgb(255, 255, 255)");
   expect(sourceFocusStyles.borderColor).toBe("rgb(17, 17, 17)");
   expect(sourceFocusStyles.outlineColor).toBe("rgb(17, 17, 17)");
   expect(sourceFocusStyles.outlineStyle).toBe("solid");
+  await page.locator("#google-font-select").focus();
+  await expect(page.locator("#sample-text")).toHaveCSS("background-color", "rgb(245, 245, 245)");
   await expect(page.locator("#google-font-select")).toBeVisible();
   await expect(page.locator("#google-font-field span")).toHaveCount(0);
   await expect(page.locator("#upload-zone")).toBeHidden();

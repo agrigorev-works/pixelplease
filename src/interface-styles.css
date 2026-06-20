@@ -299,12 +299,13 @@ textarea {
   width: 100%;
   resize: none;
   border-radius: 0;
-  background: #ffffff;
+  background: #f5f5f5;
   color: #111111;
 }
 
 textarea:focus {
   border-color: #111111;
+  background: #ffffff;
   outline: 1px solid #111111;
   outline-offset: -1px;
 }
@@ -334,6 +335,14 @@ textarea:focus {
   font-size: clamp(34px, 3.2vw, 48px);
   line-height: 1.12;
   letter-spacing: 0;
+}
+
+.source-editor {
+  background: #f5f5f5;
+}
+
+.source-editor:focus {
+  background: #ffffff;
 }
 
 .demo-preview-canvas {

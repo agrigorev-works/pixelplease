@@ -1,4 +1,4 @@
-import "./styles.css";
+import "./interface-styles.css";
 import {
   getFontLabel,
   parseFont,
@@ -6,6 +6,7 @@ import {
   type PixelizeResult,
   type PixelizeOptions,
 } from "./font-pixelizer";
+import { UI_COPY } from "./interface-copy";
 import type opentype from "opentype.js";
 
 declare global {
@@ -100,10 +101,19 @@ const sourceEditorField = getElement<HTMLElement>("source-editor-field");
 const resetButton = getElement<HTMLButtonElement>("reset-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
 const logoTitle = getElement<HTMLHeadingElement>("logo-title");
+const introCopy = getSelector<HTMLElement>(".intro-copy");
+const sourcePanel = getSelector<HTMLElement>(".source-panel");
+const sourceModeControl = getSelector<HTMLFieldSetElement>(".source-mode-control");
+const sourceModeLegend = getSelector<HTMLElement>(".source-mode-control legend");
+const outputPanel = getSelector<HTMLElement>(".output-panel");
+const controlsPanel = getSelector<HTMLElement>(".controls-panel");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
 const afterPreview = getElement<HTMLElement>("after-preview");
 const demoPreviewCanvas = getElement<HTMLCanvasElement>("demo-preview-canvas");
 const appStatus = getElement<HTMLElement>("app-status");
+const sourceEditorLabel = getSelector<HTMLElement>("#source-editor-field .sr-only");
+const uploadTitle = getSelector<HTMLElement>(".upload-title");
+const licenseReminder = getSelector<HTMLElement>(".license-reminder");
 const pixelsPerEm = getElement<HTMLInputElement>("pixels-per-em");
 const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
@@ -114,7 +124,11 @@ const thresholdValue = getElement<HTMLOutputElement>("threshold-value");
 const expandValue = getElement<HTMLOutputElement>("expand-value");
 const shiftXValue = getElement<HTMLOutputElement>("shift-x-value");
 const shiftYValue = getElement<HTMLOutputElement>("shift-y-value");
+const logoParts = Array.from(logoTitle.querySelectorAll<HTMLElement>("span"));
+const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".segment-option span"));
+const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".field span"));
 
+applyInterfaceCopy();
 uploadInput.addEventListener("change", handleUpload);
 uploadZone.addEventListener("dragenter", handleDragEnter);
 uploadZone.addEventListener("dragover", handleDragOver);
@@ -153,12 +167,48 @@ async function handleUpload(): Promise<void> {
   await loadFontFile(file);
 }
 
+function applyInterfaceCopy(): void {
+  document.title = UI_COPY.documentTitle;
+  appStatus.textContent = UI_COPY.status.demoMode;
+  logoTitle.setAttribute("aria-label", UI_COPY.intro.logoAriaLabel);
+  logoParts.forEach((part, index) => {
+    part.textContent = UI_COPY.intro.logoParts[index] ?? "";
+  });
+  introCopy.textContent = UI_COPY.intro.copy;
+
+  sourcePanel.setAttribute("aria-label", UI_COPY.sections.source);
+  sourceModeControl.setAttribute("aria-label", UI_COPY.sections.sourceMode);
+  sourceModeLegend.textContent = UI_COPY.sections.sourceMode;
+  setText(sourceModeLabels[0], UI_COPY.sourceModes.google, "google source mode label");
+  setText(sourceModeLabels[1], UI_COPY.sourceModes.upload, "upload source mode label");
+  googleFontSelect.setAttribute("aria-label", UI_COPY.source.googleFontSelect);
+  replaceFontButton.textContent = UI_COPY.source.replaceFont;
+  sourceEditorLabel.textContent = UI_COPY.source.sampleTextLabel;
+  sampleText.defaultValue = UI_COPY.source.sampleTextDefault;
+  sampleText.value = UI_COPY.source.sampleTextDefault;
+  uploadTitle.textContent = UI_COPY.source.uploadTitle;
+  licenseReminder.textContent = UI_COPY.source.licenseReminder;
+
+  outputPanel.setAttribute("aria-label", UI_COPY.sections.pixelizedPreview);
+  demoPreviewCanvas.setAttribute("aria-label", UI_COPY.sections.demoPreview);
+  afterPreview.textContent = UI_COPY.source.sampleTextDefault;
+  controlsPanel.setAttribute("aria-label", UI_COPY.sections.settings);
+  setText(controlLabels[0], UI_COPY.controls.pixelsPerEm, "pixels-per-em control label");
+  setText(controlLabels[1], UI_COPY.controls.threshold, "threshold control label");
+  setText(controlLabels[2], UI_COPY.controls.expand, "expand control label");
+  setText(controlLabels[3], UI_COPY.controls.shiftX, "shift-x control label");
+  setText(controlLabels[4], UI_COPY.controls.shiftY, "shift-y control label");
+  resetButton.textContent = UI_COPY.controls.resetDefaults;
+  downloadLink.textContent = UI_COPY.controls.downloadTtf;
+  downloadLink.download = UI_COPY.controls.defaultDownloadName;
+}
+
 function initializeDemoFonts(): void {
   googleFontSelect.replaceChildren(
     ...DEMO_GOOGLE_FONTS.map((font) => {
       const option = document.createElement("option");
       option.value = font.family;
-      option.textContent = `${font.family} / ${font.license}`;
+      option.textContent = `${font.family}${UI_COPY.source.fontOptionSeparator}${font.license}`;
       return option;
     }),
   );
@@ -219,9 +269,9 @@ function setSourceMode(mode: SourceMode): void {
     if (state.sourceFile || !state.sourceFont) {
       clearSourceFont({ keepGenerated: true, preserveUploaded: true });
       void applyDemoFont(state.demoFont ?? pickRandomFont());
-      setStatus("demo mode");
+      setStatus(UI_COPY.status.demoMode);
     } else {
-      setStatus(state.generated ? "Generated TTF ready" : "demo mode");
+      setStatus(state.generated ? UI_COPY.status.generatedReady : UI_COPY.status.demoMode);
     }
   } else {
     sourceLoadRunId += 1;
@@ -231,7 +281,7 @@ function setSourceMode(mode: SourceMode): void {
     if (state.uploadedFont && state.uploadedFile && state.uploadedUrl) {
       activateUploadedFont();
     } else {
-      setStatus("Upload a font");
+      setStatus(UI_COPY.status.uploadFont);
     }
   }
 
@@ -263,7 +313,7 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
   state.sourceFile = undefined;
   state.sourceUrl = undefined;
   document.getElementById("font-face-SourcePreviewFont")?.remove();
-  setStatus(`Loading ${font.family}...`);
+  setStatus(UI_COPY.dynamicStatus.loadingFont(font.family));
 
   try {
     const response = await fetch(font.sourceUrl);
@@ -289,7 +339,7 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
     await generatePixelFont();
   } catch (error) {
     if (loadId === sourceLoadRunId && state.sourceMode === "google" && state.demoFont === font) {
-      renderError(error, `Could not load ${font.family}.`);
+      renderError(error, UI_COPY.errors.couldNotLoadFont(font.family));
     }
   }
 }
@@ -300,7 +350,7 @@ async function loadFontFile(file: File): Promise<void> {
   generationRunId += 1;
   state.sourceMode = "upload";
   sourceModeUpload.checked = true;
-  setStatus("Parsing font...");
+  setStatus(UI_COPY.status.parsingFont);
 
   try {
     const buffer = await file.arrayBuffer();
@@ -324,13 +374,13 @@ async function loadFontFile(file: File): Promise<void> {
     sampleText.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
 
     const label = getFontLabel(sourceFont);
-    setStatus(`Generating from ${label}...`);
+    setStatus(UI_COPY.dynamicStatus.generatingFrom(label));
     googleFontSelect.disabled = true;
     syncSourceModeUI();
     focusSourceTextAtEnd();
     await generatePixelFont();
   } catch (error) {
-    renderError(error, "Could not parse this font file.");
+    renderError(error, UI_COPY.errors.couldNotParseFont);
   }
 }
 
@@ -346,16 +396,16 @@ async function generatePixelFont(): Promise<void> {
   if (!hasGeneratedPreview) {
     clearGeneratedFont();
   }
-  setStatus("Generating...");
+  setStatus(UI_COPY.status.generating);
   if (!hasGeneratedPreview) {
-    afterPreview.textContent = "Pixelizing Basic Latin glyphs...";
+    afterPreview.textContent = UI_COPY.status.pixelizingBasicLatin;
     afterPreview.classList.add("empty-preview");
   }
 
   try {
     const generated = await pixelizeFont(sourceFont, getPixelizeOptions(), (done, total) => {
       if (runId === generationRunId) {
-        setStatus(`Generating ${done}/${total}`);
+        setStatus(UI_COPY.dynamicStatus.generatingProgress(done, total));
       }
     });
 
@@ -383,12 +433,12 @@ async function generatePixelFont(): Promise<void> {
     downloadLink.download = `${generated.familyName.replace(/\s+/g, "-")}.ttf`;
     downloadLink.classList.remove("is-disabled");
     syncSampleText();
-    setStatus("Generated TTF ready");
+    setStatus(UI_COPY.status.generatedReady);
   } catch (error) {
     if (hasGeneratedPreview) {
-      setStatus("Error");
+      setStatus(UI_COPY.status.error);
     } else {
-      renderError(error, "Could not generate a pixelized TTF.");
+      renderError(error, UI_COPY.errors.couldNotGenerateTtf);
     }
   }
 }
@@ -444,10 +494,10 @@ function resetControlsToDefaults(): void {
 
 function syncControlLabels(): void {
   pixelsPerEmValue.textContent = pixelsPerEm.value;
-  thresholdValue.textContent = `${threshold.value}%`;
+  thresholdValue.textContent = `${threshold.value}${UI_COPY.controls.thresholdUnit}`;
   expandValue.textContent = expand.value;
-  shiftXValue.textContent = `${formatShiftValue(shiftX.value)} cell`;
-  shiftYValue.textContent = `${formatShiftValue(shiftY.value)} cell`;
+  shiftXValue.textContent = `${formatShiftValue(shiftX.value)} ${UI_COPY.controls.shiftUnit}`;
+  shiftYValue.textContent = `${formatShiftValue(shiftY.value)} ${UI_COPY.controls.shiftUnit}`;
   syncResetButton();
 
   if (!state.generated) {
@@ -463,7 +513,7 @@ function syncResetButton(): void {
 
 function scheduleAutoGenerate(): void {
   window.clearTimeout(autoGenerateTimer);
-  setStatus(state.generated ? "Updating preview..." : "Auto-generating...");
+  setStatus(state.generated ? UI_COPY.status.updatingPreview : UI_COPY.status.autoGenerating);
   autoGenerateTimer = window.setTimeout(() => {
     void generatePixelFont();
   }, AUTO_GENERATE_DELAY_MS);
@@ -537,7 +587,7 @@ function activateUploadedFont(): void {
   state.sourceUrl = state.uploadedUrl;
   installFontFace("SourcePreviewFont", state.uploadedUrl);
   sampleText.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
-  setStatus(`Generating from ${getFontLabel(state.uploadedFont)}...`);
+  setStatus(UI_COPY.dynamicStatus.generatingFrom(getFontLabel(state.uploadedFont)));
   syncSourceModeUI();
   focusSourceTextAtEnd();
   void generatePixelFont();
@@ -742,7 +792,7 @@ function setStatus(message: string): void {
 
 function renderError(error: unknown, fallback: string): void {
   const message = error instanceof Error ? error.message : fallback;
-  setStatus("Error");
+  setStatus(UI_COPY.status.error);
   downloadLink.classList.add("is-disabled");
   demoPreviewCanvas.classList.add("is-hidden");
   afterPreview.classList.remove("is-hidden");
@@ -775,7 +825,22 @@ function focusSourceTextAtEnd(): void {
 function getElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
   if (!element) {
-    throw new Error(`Missing element #${id}`);
+    throw new Error(UI_COPY.errors.missingElement(id));
   }
   return element as T;
+}
+
+function getSelector<T extends HTMLElement>(selector: string): T {
+  const element = document.querySelector(selector);
+  if (!element) {
+    throw new Error(UI_COPY.errors.missingElement(selector));
+  }
+  return element as T;
+}
+
+function setText(element: HTMLElement | undefined, value: string, label: string): void {
+  if (!element) {
+    throw new Error(UI_COPY.errors.missingElement(label));
+  }
+  element.textContent = value;
 }
