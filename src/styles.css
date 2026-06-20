@@ -219,8 +219,8 @@ select {
 
 .replace-font-button {
   min-height: 34px;
-  border-color: #d8d8d4;
-  border-radius: 0;
+  border-color: #111111;
+  border-radius: 999px;
   background: #ffffff;
   color: #111111;
 }

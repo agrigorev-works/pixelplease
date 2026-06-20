@@ -194,10 +194,19 @@ test("switches Source between Google Font editing and same-size upload drop zone
   const uploadedPanelBox = await page.locator(".source-panel").boundingBox();
   const uploadedPreviewBox = await page.locator("#sample-text").boundingBox();
   const replaceButtonBox = await page.getByRole("button", { name: "upload new font" }).boundingBox();
+  const replaceButtonStyles = await page.getByRole("button", { name: "upload new font" }).evaluate((button) => {
+    const styles = getComputedStyle(button);
+    return {
+      borderColor: styles.borderColor,
+      borderRadius: styles.borderRadius,
+    };
+  });
   expect(Math.abs((sourcePanelBox?.width ?? 0) - (uploadedPanelBox?.width ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePanelBox?.height ?? 0) - (uploadedPanelBox?.height ?? 0))).toBeLessThan(1);
   expect(Math.abs((sourcePreviewBox?.height ?? 0) - (uploadedPreviewBox?.height ?? 0))).toBeLessThan(2);
   expect(Math.abs((googleSelectBox?.height ?? 0) - (replaceButtonBox?.height ?? 0))).toBeLessThan(1);
+  expect(replaceButtonStyles.borderColor).toBe("rgb(17, 17, 17)");
+  expect(replaceButtonStyles.borderRadius).toBe("999px");
 });
 
 test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
