@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Font Pixelizer MVP</title>
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MVP Prototype</p>
+          <h1>Font Pixelizer</h1>
+        </div>
+        <div class="status-pill" id="app-status">Waiting for a TTF file</div>
+      </header>
+
+      <section class="workspace">
+        <aside class="panel controls-panel" aria-label="Controls">
+          <label class="upload-zone" for="font-upload">
+            <span class="upload-title">Upload local font</span>
+            <span class="upload-copy">TTF first. OTF may parse, export target is TTF.</span>
+            <input id="font-upload" type="file" accept=".ttf,.otf,font/ttf,font/otf" />
+          </label>
+
+          <div class="legal-note">
+            Only upload fonts you have the right to modify. Files are processed locally in this browser session.
+          </div>
+
+          <div class="control-stack">
+            <label class="field">
+              <span>Pixels per em</span>
+              <output id="pixels-per-em-value">20</output>
+              <input id="pixels-per-em" type="range" min="10" max="36" step="2" value="20" />
+            </label>
+
+            <label class="field">
+              <span>Fill threshold</span>
+              <output id="threshold-value">42%</output>
+              <input id="threshold" type="range" min="12" max="72" step="2" value="42" />
+            </label>
+
+            <label class="field">
+              <span>Expand cells</span>
+              <output id="expand-value">0</output>
+              <input id="expand" type="range" min="0" max="2" step="1" value="0" />
+            </label>
+          </div>
+
+          <button id="generate-button" class="primary-action" type="button" disabled>
+            Generate pixel font
+          </button>
+
+          <a id="download-link" class="download-action is-disabled" href="#" download="Pixelized-Test.ttf">
+            Download TTF
+          </a>
+        </aside>
+
+        <section class="main-panel" aria-label="Preview">
+          <div class="summary-strip" id="font-summary">
+            <span>No font loaded</span>
+          </div>
+
+          <label class="sample-field" for="sample-text">
+            <span>Sample text</span>
+            <textarea id="sample-text" rows="2">The quick brown fox jumps over 123.</textarea>
+          </label>
+
+          <div class="preview-grid">
+            <section class="preview-pane" aria-label="Original font preview">
+              <div class="pane-header">
+                <h2>Before</h2>
+                <span id="before-label">Source font</span>
+              </div>
+              <p id="before-preview" class="preview-text">The quick brown fox jumps over 123.</p>
+            </section>
+
+            <section class="preview-pane" aria-label="Pixelized font preview">
+              <div class="pane-header">
+                <h2>After</h2>
+                <span id="after-label">Pixelized output</span>
+              </div>
+              <p id="after-preview" class="preview-text empty-preview">Generate a font to preview it here.</p>
+            </section>
+          </div>
+
+          <section class="glyph-section" aria-label="Glyph coverage">
+            <div class="section-heading">
+              <h2>Glyph coverage</h2>
+              <span id="coverage-label">Upload a font to inspect Basic Latin.</span>
+            </div>
+            <div id="glyph-grid" class="glyph-grid" aria-live="polite"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
