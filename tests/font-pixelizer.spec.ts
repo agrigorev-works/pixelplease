@@ -31,6 +31,8 @@ test("renders a clean three-column source output settings layout", async ({ page
 
   await expect(page.locator(".terminal-bar")).toHaveCount(0);
   await expect(page.getByText("pixelplease.local")).toHaveCount(0);
+  await expect(page.locator(".prompt-line")).toHaveCount(0);
+  await expect(page.getByText("font-to-pixel --local")).toHaveCount(0);
   await expect(page.locator("#app-status")).toBeHidden();
   await expect(page.locator(".pane-header")).toHaveCount(0);
   await expect(page.locator("h2")).toHaveCount(0);
@@ -48,6 +50,31 @@ test("renders a clean three-column source output settings layout", async ({ page
 
   expect(sourceBox?.x).toBeLessThan(outputBox?.x ?? 0);
   expect(outputBox?.x).toBeLessThan(controlsBox?.x ?? 0);
+  const introMetrics = await page.evaluate(() => {
+    const title = document.querySelector("h1");
+    const copy = document.querySelector(".intro-copy");
+    if (!title || !copy) {
+      throw new Error("Missing intro elements");
+    }
+
+    const titleBox = title.getBoundingClientRect();
+    const copyBox = copy.getBoundingClientRect();
+    const titleStyles = getComputedStyle(title);
+    const copyStyles = getComputedStyle(copy);
+
+    return {
+      copyLeft: copyBox.left,
+      copyTop: copyBox.top,
+      titleLeft: titleBox.left,
+      titleTop: titleBox.top,
+      titleTextAlign: titleStyles.textAlign,
+      copyTextAlign: copyStyles.textAlign,
+    };
+  });
+  expect(introMetrics.copyLeft).toBeLessThan(introMetrics.titleLeft);
+  expect(Math.abs(introMetrics.copyTop - introMetrics.titleTop)).toBeLessThan(1);
+  expect(introMetrics.titleTextAlign).toBe("right");
+  expect(introMetrics.copyTextAlign).toBe("left");
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();
@@ -207,6 +234,20 @@ test("switches Source between Google Font editing and same-size upload drop zone
   expect(Math.abs((googleSelectBox?.height ?? 0) - (replaceButtonBox?.height ?? 0))).toBeLessThan(1);
   expect(replaceButtonStyles.borderColor).toBe("rgb(17, 17, 17)");
   expect(replaceButtonStyles.borderRadius).toBe("999px");
+
+  await page.getByRole("radio", { name: "Google Font" }).check();
+  await expect(page.locator("#source-mode-google")).toBeChecked();
+  await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.getByRole("button", { name: "upload new font" })).toBeHidden();
+  await expect(page.locator("#upload-zone")).toBeHidden();
+
+  await page.getByRole("radio", { name: "Your Font" }).check();
+  await expect(page.locator("#source-mode-upload")).toBeChecked();
+  await expect(page.locator("#sample-text")).toBeVisible();
+  await expect(page.locator("#upload-zone")).toBeHidden();
+  await expect(page.getByRole("button", { name: "upload new font" })).toBeVisible();
+  await expect(page.locator("#sample-text")).toHaveCSS("font-family", /SourcePreviewFont/);
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
 });
 
 test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {

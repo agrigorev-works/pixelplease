@@ -19,6 +19,9 @@ type AppState = {
   sourceFont?: opentype.Font;
   sourceFile?: File;
   sourceUrl?: string;
+  uploadedFont?: opentype.Font;
+  uploadedFile?: File;
+  uploadedUrl?: string;
   demoFont?: DemoFontChoice;
   generated?: PixelizeResult;
   generatedUrl?: string;
@@ -169,6 +172,7 @@ function handleGoogleFontChange(): void {
 }
 
 function handleReplaceFontClick(): void {
+  uploadInput.value = "";
   uploadInput.click();
 }
 
@@ -186,7 +190,7 @@ function setSourceMode(mode: SourceMode): void {
   if (mode === "google") {
     googleFontSelect.disabled = false;
     if (state.sourceFile || !state.sourceFont) {
-      clearSourceFont({ keepGenerated: true });
+      clearSourceFont({ keepGenerated: true, preserveUploaded: true });
       void applyDemoFont(state.demoFont ?? pickRandomFont());
       setStatus("demo mode");
     } else {
@@ -195,10 +199,13 @@ function setSourceMode(mode: SourceMode): void {
   } else {
     sourceLoadRunId += 1;
     window.clearTimeout(autoGenerateTimer);
-    state.sourceFile = undefined;
     uploadInput.value = "";
     googleFontSelect.disabled = true;
-    setStatus("Upload a font");
+    if (state.uploadedFont && state.uploadedFile && state.uploadedUrl) {
+      activateUploadedFont();
+    } else {
+      setStatus("Upload a font");
+    }
   }
 
   syncSourceModeUI();
@@ -224,7 +231,7 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
   const loadId = (sourceLoadRunId += 1);
   window.clearTimeout(autoGenerateTimer);
   generationRunId += 1;
-  revokeUrl(state.sourceUrl);
+  revokeActiveSourceUrl();
   state.sourceFont = undefined;
   state.sourceFile = undefined;
   state.sourceUrl = undefined;
@@ -269,15 +276,22 @@ async function loadFontFile(file: File): Promise<void> {
   setStatus("Parsing font...");
 
   try {
-    revokeUrl(state.sourceUrl);
-
     const buffer = await file.arrayBuffer();
     const sourceFont = parseFont(buffer);
     const sourceUrl = URL.createObjectURL(new Blob([buffer], { type: "font/ttf" }));
+    const previousUploadedUrl = state.uploadedUrl;
+
+    revokeActiveSourceUrl();
+    if (previousUploadedUrl) {
+      revokeUrl(previousUploadedUrl);
+    }
 
     state.sourceFont = sourceFont;
     state.sourceFile = file;
     state.sourceUrl = sourceUrl;
+    state.uploadedFont = sourceFont;
+    state.uploadedFile = file;
+    state.uploadedUrl = sourceUrl;
 
     installFontFace("SourcePreviewFont", sourceUrl);
     sampleText.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
@@ -313,7 +327,9 @@ async function generatePixelFont(): Promise<void> {
 
   try {
     const generated = await pixelizeFont(sourceFont, getPixelizeOptions(), (done, total) => {
-      setStatus(`Generating ${done}/${total}`);
+      if (runId === generationRunId) {
+        setStatus(`Generating ${done}/${total}`);
+      }
     });
 
     const blob = new Blob([generated.arrayBuffer], { type: "font/ttf" });
@@ -352,7 +368,7 @@ async function generatePixelFont(): Promise<void> {
 
 function syncSourceModeUI(): void {
   const isGoogleMode = state.sourceMode === "google";
-  const hasUploadedFont = state.sourceMode === "upload" && Boolean(state.sourceFile);
+  const hasUploadedFont = state.sourceMode === "upload" && Boolean(state.uploadedFile);
   const shouldShowUploadZone = state.sourceMode === "upload" && !hasUploadedFont;
   const shouldShowSourceEditor = isGoogleMode || hasUploadedFont;
 
@@ -451,17 +467,48 @@ function clearGeneratedFont(): void {
   renderDemoPreview();
 }
 
-function clearSourceFont({ keepGenerated = false }: { keepGenerated?: boolean } = {}): void {
+function clearSourceFont({
+  keepGenerated = false,
+  preserveUploaded = false,
+}: { keepGenerated?: boolean; preserveUploaded?: boolean } = {}): void {
   window.clearTimeout(autoGenerateTimer);
   generationRunId += 1;
-  revokeUrl(state.sourceUrl);
+  revokeActiveSourceUrl();
   state.sourceFont = undefined;
   state.sourceFile = undefined;
   state.sourceUrl = undefined;
+  if (!preserveUploaded) {
+    revokeUrl(state.uploadedUrl);
+    state.uploadedFont = undefined;
+    state.uploadedFile = undefined;
+    state.uploadedUrl = undefined;
+  }
   uploadInput.value = "";
   document.getElementById("font-face-SourcePreviewFont")?.remove();
   if (!keepGenerated) {
     clearGeneratedFont();
+  }
+}
+
+function activateUploadedFont(): void {
+  if (!state.uploadedFont || !state.uploadedFile || !state.uploadedUrl) {
+    return;
+  }
+
+  state.sourceFont = state.uploadedFont;
+  state.sourceFile = state.uploadedFile;
+  state.sourceUrl = state.uploadedUrl;
+  installFontFace("SourcePreviewFont", state.uploadedUrl);
+  sampleText.style.fontFamily = '"SourcePreviewFont", system-ui, sans-serif';
+  setStatus(`Generating from ${getFontLabel(state.uploadedFont)}...`);
+  syncSourceModeUI();
+  focusSourceTextAtEnd();
+  void generatePixelFont();
+}
+
+function revokeActiveSourceUrl(): void {
+  if (state.sourceUrl && state.sourceUrl !== state.uploadedUrl) {
+    revokeUrl(state.sourceUrl);
   }
 }
 
