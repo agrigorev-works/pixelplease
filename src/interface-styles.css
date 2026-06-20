@@ -359,6 +359,7 @@ textarea:focus {
   min-width: 0;
   padding: 16px;
   border-color: #111111;
+  border-radius: 999px;
   border-style: dashed;
   color: #111111;
   cursor: pointer;

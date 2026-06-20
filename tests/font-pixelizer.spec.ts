@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 import opentype from "opentype.js";
+import { UI_COPY } from "../src/interface-copy";
 import { createFixtureFont } from "./fixture-font";
 
 const artifactsDir = path.resolve("test-artifacts");
@@ -228,7 +229,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#google-font-select")).toBeVisible();
   await expect(page.locator("#google-font-field span")).toHaveCount(0);
   await expect(page.locator("#upload-zone")).toBeHidden();
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
 
@@ -244,7 +245,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   });
   const blobBeforeModeSwitch = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
 
-  await page.getByLabel("Your Font").check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await expect(page.locator("#source-mode-upload")).toBeChecked();
   await expect(page.locator("#sample-text")).toBeHidden();
   await expect(page.locator("#google-font-select")).toBeHidden();
@@ -252,19 +253,19 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await expect(page.getByText("choose font file")).toHaveCount(0);
-  await expect(page.locator("#upload-zone .upload-title")).toHaveText(
-    "drop a TTF/OTF here or click anywhere in this area",
-  );
+  await expect(page.locator("#upload-zone .upload-title")).toHaveText(UI_COPY.source.uploadTitle);
   await expect(page.getByText(/license to edit/i)).toBeVisible();
   await expect(page.locator(".upload-button")).toHaveCount(0);
   const uploadZoneStyles = await page.locator("#upload-zone").evaluate((zone) => {
     const styles = getComputedStyle(zone);
     return {
       borderColor: styles.borderColor,
+      borderRadius: styles.borderRadius,
       borderStyle: styles.borderStyle,
     };
   });
   expect(uploadZoneStyles.borderColor).toBe("rgb(17, 17, 17)");
+  expect(uploadZoneStyles.borderRadius).toBe("999px");
   expect(uploadZoneStyles.borderStyle).toBe("dashed");
 
   const uploadPanelBox = await page.locator(".source-panel").boundingBox();
@@ -283,7 +284,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   expect(outputAfterModeSwitch).toEqual(outputBeforeModeSwitch);
   expect(blobAfterModeSwitch).toBe(blobBeforeModeSwitch);
 
-  await page.getByRole("radio", { name: "Google Font" }).check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.google }).check();
   await expect(page.locator("#source-mode-google")).toBeChecked();
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#google-font-select")).toBeVisible();
@@ -302,18 +303,18 @@ test("switches Source between Google Font editing and same-size upload drop zone
   expect(outputAfterReturn).toEqual(outputBeforeModeSwitch);
   expect(blobAfterReturn).toBe(blobBeforeModeSwitch);
 
-  await page.getByLabel("Your Font").check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await expect(page.locator("#upload-zone")).toBeVisible();
   await page.locator("#font-upload").setInputFiles(sourcePath);
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
-  await expect(page.getByRole("button", { name: "upload new font" })).toBeVisible();
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.getByRole("button", { name: UI_COPY.source.replaceFont })).toBeVisible();
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 
   const uploadedPanelBox = await page.locator(".source-panel").boundingBox();
   const uploadedPreviewBox = await page.locator("#sample-text").boundingBox();
-  const replaceButtonBox = await page.getByRole("button", { name: "upload new font" }).boundingBox();
-  const replaceButtonStyles = await page.getByRole("button", { name: "upload new font" }).evaluate((button) => {
+  const replaceButtonBox = await page.getByRole("button", { name: UI_COPY.source.replaceFont }).boundingBox();
+  const replaceButtonStyles = await page.getByRole("button", { name: UI_COPY.source.replaceFont }).evaluate((button) => {
     const styles = getComputedStyle(button);
     return {
       borderColor: styles.borderColor,
@@ -327,19 +328,19 @@ test("switches Source between Google Font editing and same-size upload drop zone
   expect(replaceButtonStyles.borderColor).toBe("rgb(17, 17, 17)");
   expect(replaceButtonStyles.borderRadius).toBe("999px");
 
-  await page.getByRole("radio", { name: "Google Font" }).check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.google }).check();
   await expect(page.locator("#source-mode-google")).toBeChecked();
   await expect(page.locator("#google-font-select")).toBeVisible();
-  await expect(page.getByRole("button", { name: "upload new font" })).toBeHidden();
+  await expect(page.getByRole("button", { name: UI_COPY.source.replaceFont })).toBeHidden();
   await expect(page.locator("#upload-zone")).toBeHidden();
 
-  await page.getByRole("radio", { name: "Your Font" }).check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await expect(page.locator("#source-mode-upload")).toBeChecked();
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
-  await expect(page.getByRole("button", { name: "upload new font" })).toBeVisible();
+  await expect(page.getByRole("button", { name: UI_COPY.source.replaceFont })).toBeVisible();
   await expect(page.locator("#sample-text")).toHaveCSS("font-family", /SourcePreviewFont/);
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 });
 
 test("focuses source text at the end and offers curated Google demo fonts", async ({ page }) => {
@@ -361,7 +362,7 @@ test("focuses source text at the end and offers curated Google demo fonts", asyn
   await expect(page.locator("#google-font-select")).toBeVisible();
   const fontOptions = await page.locator("#google-font-select option").allTextContents();
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   const initialBlobUrl = await page.evaluate(() => window.__fontPixelizerLastBlobUrl);
 
   const currentFont = await page.locator("#google-font-select").inputValue();
@@ -393,7 +394,7 @@ test("focuses source text at the end and offers curated Google demo fonts", asyn
 test("renders a usable generated Google Font output before upload", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
@@ -423,7 +424,7 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
   await page.goto("/");
 
   await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
-  const resetButton = page.getByRole("button", { name: "reset defaults" });
+  const resetButton = page.getByRole("button", { name: UI_COPY.controls.resetDefaults });
   await expect(resetButton).toBeVisible();
   await expect(resetButton).toBeDisabled();
 
@@ -442,9 +443,9 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
   await expect(page.locator("#shift-y")).toHaveValue("0");
   await expect(resetButton).toBeDisabled();
 
-  await page.getByLabel("Your Font").check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await page.locator("#font-upload").setInputFiles(sourcePath);
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 
   const downloadStyles = await page.locator("#download-link").evaluate((link) => {
     const styles = getComputedStyle(link);
@@ -486,10 +487,8 @@ test("removes manual generation, resets controls, and keeps Download TTF primary
 test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a usable TTF", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByLabel("Your Font").check();
-  await expect(page.locator("#upload-zone .upload-title")).toHaveText(
-    "drop a TTF/OTF here or click anywhere in this area",
-  );
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
+  await expect(page.locator("#upload-zone .upload-title")).toHaveText(UI_COPY.source.uploadTitle);
   const fixtureBase64 = (await fs.readFile(sourcePath)).toString("base64");
   await page.evaluate((base64) => {
     const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
@@ -504,14 +503,14 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
     document.getElementById("upload-zone")?.dispatchEvent(event);
   }, fixtureBase64);
 
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 
   await page.locator("#pixels-per-em").fill("18");
   await page.locator("#threshold").fill("36");
   await page.locator("#shift-x").fill("0.25");
   await page.locator("#shift-y").fill("-0.2");
 
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await page.screenshot({ path: path.join(artifactsDir, "demo-generated.png"), fullPage: true });
@@ -545,7 +544,7 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   expect(fontFaceLoads).toBe(true);
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Download TTF" }).click();
+  await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
   await download.saveAs(generatedPath);
 
@@ -559,19 +558,19 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
 test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByLabel("Your Font").check();
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await page.locator("#font-upload").setInputFiles(latoSourcePath);
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 
   await page.locator("#pixels-per-em").fill("22");
   await page.locator("#threshold").fill("42");
   await page.locator("#shift-y").fill("0.3");
 
-  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await page.screenshot({ path: path.join(artifactsDir, "demo-lato-generated.png"), fullPage: true });
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Download TTF" }).click();
+  await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
   await download.saveAs(latoGeneratedPath);
 
