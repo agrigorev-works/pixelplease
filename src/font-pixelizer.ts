@@ -1,4 +1,12 @@
 import opentype from "opentype.js";
+import {
+  createCellMaskFromImageData,
+  expandCellMask,
+  isCellFilled,
+  type CellMask,
+} from "./pixel-grid";
+
+export { expandCellMask as dilateMask, type CellMask } from "./pixel-grid";
 
 export type PixelizeOptions = {
   pixelsPerEm: number;
@@ -12,12 +20,6 @@ export type FontMetrics = {
   unitsPerEm: number;
   ascender: number;
   descender: number;
-};
-
-export type CellMask = {
-  cols: number;
-  rows: number;
-  cells: Uint8Array;
 };
 
 export type CoverageItem = {
@@ -140,7 +142,7 @@ function pixelizeGlyph(
   }
 
   const mask = rasterizeGlyphToCells(sourceGlyph, metrics, options);
-  const expandedMask = options.expand > 0 ? dilateMask(mask, options.expand) : mask;
+  const expandedMask = expandCellMask(mask, options.expand);
   const path = cellsToPath(expandedMask, metrics, options);
 
   return new opentype.Glyph({
@@ -159,7 +161,7 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
     let col = 0;
 
     while (col < mask.cols) {
-      while (col < mask.cols && !isFilled(mask, col, row)) {
+      while (col < mask.cols && !isCellFilled(mask, col, row)) {
         col += 1;
       }
 
@@ -168,7 +170,7 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
       }
 
       const start = col;
-      while (col < mask.cols && isFilled(mask, col, row)) {
+      while (col < mask.cols && isCellFilled(mask, col, row)) {
         col += 1;
       }
 
@@ -182,28 +184,6 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
   }
 
   return path;
-}
-
-export function dilateMask(mask: CellMask, radius: number): CellMask {
-  const output = new Uint8Array(mask.cells.length);
-
-  for (let row = 0; row < mask.rows; row += 1) {
-    for (let col = 0; col < mask.cols; col += 1) {
-      if (!isFilled(mask, col, row)) {
-        continue;
-      }
-
-      for (let y = row - radius; y <= row + radius; y += 1) {
-        for (let x = col - radius; x <= col + radius; x += 1) {
-          if (x >= 0 && x < mask.cols && y >= 0 && y < mask.rows) {
-            output[y * mask.cols + x] = 1;
-          }
-        }
-      }
-    }
-  }
-
-  return { ...mask, cells: output };
 }
 
 function getMetrics(font: opentype.Font): FontMetrics {
@@ -267,29 +247,16 @@ function rasterizeGlyphToCells(
   context.fillStyle = "#000";
   sourceGlyph.draw(context, shiftX, metrics.ascender * scale + shiftY, metrics.unitsPerEm * scale);
 
-  const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
-  const cells = new Uint8Array(cols * rows);
   const threshold = clamp(options.threshold, 0.05, 0.95);
 
-  for (let row = 0; row < rows; row += 1) {
-    for (let col = 0; col < cols; col += 1) {
-      let alphaTotal = 0;
-
-      for (let y = 0; y < samplesPerCell; y += 1) {
-        for (let x = 0; x < samplesPerCell; x += 1) {
-          const pixelX = col * samplesPerCell + x;
-          const pixelY = row * samplesPerCell + y;
-          const alphaIndex = (pixelY * canvas.width + pixelX) * 4 + 3;
-          alphaTotal += data[alphaIndex];
-        }
-      }
-
-      const fillRatio = alphaTotal / (255 * samplesPerCell * samplesPerCell);
-      cells[row * cols + col] = fillRatio >= threshold ? 1 : 0;
-    }
-  }
-
-  return { cols, rows, cells };
+  return createCellMaskFromImageData({
+    data: context.getImageData(0, 0, canvas.width, canvas.height).data,
+    width: canvas.width,
+    height: canvas.height,
+    cellSize: samplesPerCell,
+    threshold,
+    mode: "alpha",
+  });
 }
 
 function createNotDefGlyph(metrics: FontMetrics, options: PixelizeOptions): opentype.Glyph {
@@ -324,10 +291,6 @@ function addRect(path: opentype.Path, x0: number, y0: number, x1: number, y1: nu
   path.lineTo(x1, y1);
   path.lineTo(x0, y1);
   path.close();
-}
-
-function isFilled(mask: CellMask, col: number, row: number): boolean {
-  return mask.cells[row * mask.cols + col] === 1;
 }
 
 function snapAdvance(advanceWidth: number, metrics: FontMetrics, options: PixelizeOptions): number {

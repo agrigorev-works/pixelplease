@@ -8,6 +8,7 @@ import {
   type CellMask,
   type FontMetrics,
 } from "../src/font-pixelizer";
+import { createCellMaskFromImageData } from "../src/pixel-grid";
 import { buildNoticeText, createStoredZip } from "../src/download-package";
 
 const metrics: FontMetrics = {
@@ -53,6 +54,33 @@ describe("font pixelizer core", () => {
       1, 1, 1,
       1, 1, 1,
     ]);
+  });
+
+  it("creates cell masks from raster data for both exported glyphs and live preview", () => {
+    const data = Uint8ClampedArray.from([
+      0, 0, 0, 255,
+      255, 255, 255, 255,
+    ]);
+
+    const alphaMask = createCellMaskFromImageData({
+      data,
+      width: 2,
+      height: 1,
+      cellSize: 1,
+      threshold: 0.5,
+      mode: "alpha",
+    });
+    const darknessMask = createCellMaskFromImageData({
+      data,
+      width: 2,
+      height: 1,
+      cellSize: 1,
+      threshold: 0.5,
+      mode: "darkness",
+    });
+
+    expect(Array.from(alphaMask.cells)).toEqual([1, 1]);
+    expect(Array.from(darknessMask.cells)).toEqual([1, 0]);
   });
 
   it("reports Basic Latin coverage from an opentype font", () => {

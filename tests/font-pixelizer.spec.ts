@@ -8,6 +8,7 @@ import { createFixtureFont } from "./fixture-font";
 const artifactsDir = path.resolve("test-artifacts");
 const sourcePath = path.join(artifactsDir, "fixture-source.ttf");
 const generatedPackagePath = path.join(artifactsDir, "generated-pixel.zip");
+const googleGeneratedPackagePath = path.join(artifactsDir, "google-generated-pixel.zip");
 const latoSourcePath = path.resolve("samples/Lato-Regular.ttf");
 const latoGeneratedPackagePath = path.join(artifactsDir, "lato-generated-pixel.zip");
 
@@ -397,9 +398,48 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   await page.goto("/");
 
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
   await expect(page.locator("#after-preview")).toBeVisible();
   await expect(page.locator("#demo-preview-canvas")).toBeHidden();
   await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
+
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
+  await expect(page.locator("#upload-zone")).toBeVisible();
+
+  const uploadModeBlobBeforeControls = await getGeneratedFontUrl(page);
+  await page.locator("#pixels-per-em").fill("21");
+  await expect
+    .poll(
+      async () => {
+        const url = await getGeneratedFontUrl(page);
+        return Boolean(url && url !== uploadModeBlobBeforeControls);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+
+  const googleDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
+  const googleDownload = await googleDownloadPromise;
+  await googleDownload.saveAs(googleGeneratedPackagePath);
+
+  const googlePackageBytes = await fs.readFile(googleGeneratedPackagePath);
+  const googlePackageEntries = readStoredZip(googlePackageBytes);
+  const googleNotice = new TextDecoder().decode(googlePackageEntries["NOTICE.txt"]);
+  const googleGenerated = googlePackageEntries["Pixelplease-Test.ttf"];
+  const googleParsed = opentype.parse(
+    googleGenerated.buffer.slice(googleGenerated.byteOffset, googleGenerated.byteOffset + googleGenerated.byteLength),
+  );
+
+  expect(Object.keys(googlePackageEntries).sort()).toEqual(["NOTICE.txt", "Pixelplease-Test.ttf"]);
+  expect(googleNotice).toContain("Merriweather");
+  expect(googleNotice).toContain("Source license: OFL");
+  expect(googleNotice).toContain("Merriweather[opsz,wdth,wght].ttf");
+  expect(googleParsed.names.fontFamily.en).toBe("Pixelplease Test");
+  expect(googleParsed.names.fontFamily.en).not.toContain("Merriweather");
+
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.google }).check();
+  await expect(page.locator("#sample-text")).toBeVisible();
 
   await page.locator("#sample-text").fill("Editable source text");
   await expect(page.locator("#after-preview")).toHaveText("Editable source text");
