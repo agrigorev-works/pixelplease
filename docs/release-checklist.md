@@ -12,6 +12,7 @@
 - Basic SEO head tags in `index.html`.
 - Favicon and app icon assets.
 - Final domain canonical URL and `og:url`.
+- Root domain launch target is `https://pixelplease.tools/`; `www` alias is intentionally not used.
 - Social preview image and `og:image` / Twitter image metadata.
 - `robots.txt` and `sitemap.xml`.
 - Root `/llms.txt` AI-discovery context file.
@@ -26,7 +27,6 @@
 - Add Search Console after DNS is live.
 - Add GitHub Actions CI after GitHub credentials allow pushing workflow files.
 - Optional final real-device spot check in Safari/iPhone after DNS finishes propagating.
-- Decide whether `www.pixelplease.tools` should be added as a DNS/app alias.
 
 ## Nice Next Iterations
 
