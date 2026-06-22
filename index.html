@@ -51,6 +51,94 @@
         "url": "https://pixelplease.tools/"
       }
     </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is pixelplease?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "pixelplease is a browser-based pixel font generator that turns a regular typeface into a pixel-style font. Start from a bundled Google font or upload your own TTF/OTF font, tune the effect, and export a test .ttf package."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I turn a regular font into a pixel font?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Pick a starting font, then adjust the grid, threshold, expand, and shift controls until the pixel look is right. pixelplease re-renders each glyph onto a pixel grid, so you can convert a font to a pixel-style font directly in the browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I start from a Google font?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. pixelplease ships with bundled demo Google fonts so you can create a pixel-style font without uploading anything first. These demo fonts include their OFL license files for testing the pixel effect."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I upload my own TTF or OTF font?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. You can upload a TTF or OTF font and pixelize it with the same controls as the bundled fonts. Your uploaded font stays on your machine, and you remain responsible for its license."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where does pixelplease process my font?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "All font processing happens locally in your browser. Uploaded fonts are not sent to a server, so your files never leave your device. That makes pixelplease a private local font converter with no backend upload step."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I export and install the pixel font?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When the effect looks right, pixelplease exports the pixel font as a TTF packaged in a ZIP. Install the .ttf like any other font and use it anywhere TTF fonts are accepted. The export is meant for testing and practical use, not full professional type production."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What do the grid, threshold, expand, and shift controls do?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The grid sets the pixel resolution, and the threshold decides which parts of each glyph become solid pixels. Expand and shift fine-tune weight and alignment so letters stay readable on the grid."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does pixelplease work with any font?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "pixelplease works with most standard TTF and OTF fonts, and clean geometric typefaces usually pixelize best. Very thin, decorative, or script fonts can lose detail on a low-resolution grid. It is a pixel font maker, not a complete font-production tool, and it does not guarantee every glyph or language."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use the exported pixel font commercially?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "That depends on the license of the source font, not on pixelplease. Pixelizing a font does not grant new rights, and the original license still controls how you may use the output. Always check the source font terms before using a generated pixel font commercially."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What does the OFL / SIL Open Font License mean here?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The bundled demo fonts are provided under the SIL Open Font License, a permissive license that allows use, modification, and redistribution. OFL fonts still require copyright and license notices to stay with the font. For any font you upload, its own license applies."
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <main id="app" class="app-shell">
@@ -146,6 +234,102 @@
       <footer class="site-footer" aria-label="">
         <p class="footer-copy"></p>
       </footer>
+
+      <section class="faq-section" aria-labelledby="faq-heading">
+        <div class="faq-inner">
+          <h2 id="faq-heading">FAQ</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>What is pixelplease?</h3>
+              <p>
+                pixelplease is a browser-based pixel font generator that turns a regular typeface into a
+                pixel-style font. Start from a bundled Google font or upload your own TTF/OTF font, tune the
+                effect, and export a test .ttf package.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>How do I turn a regular font into a pixel font?</h3>
+              <p>
+                Pick a starting font, then adjust the grid, threshold, expand, and shift controls until the pixel
+                look is right. pixelplease re-renders each glyph onto a pixel grid, so you can convert a font to a
+                pixel-style font directly in the browser.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>Can I start from a Google font?</h3>
+              <p>
+                Yes. pixelplease ships with bundled demo Google fonts so you can create a pixel-style font without
+                uploading anything first. These demo fonts include their OFL license files for testing the pixel
+                effect.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>Can I upload my own TTF or OTF font?</h3>
+              <p>
+                Yes. You can upload a TTF or OTF font and pixelize it with the same controls as the bundled fonts.
+                Your uploaded font stays on your machine, and you remain responsible for its license.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>Where does pixelplease process my font?</h3>
+              <p>
+                All font processing happens locally in your browser. Uploaded fonts are not sent to a server, so your
+                files never leave your device. That makes pixelplease a private local font converter with no backend
+                upload step.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>How do I export and install the pixel font?</h3>
+              <p>
+                When the effect looks right, pixelplease exports the pixel font as a TTF packaged in a ZIP. Install
+                the .ttf like any other font and use it anywhere TTF fonts are accepted. The export is meant for
+                testing and practical use, not full professional type production.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>What do the grid, threshold, expand, and shift controls do?</h3>
+              <p>
+                The grid sets the pixel resolution, and the threshold decides which parts of each glyph become solid
+                pixels. Expand and shift fine-tune weight and alignment so letters stay readable on the grid.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>Does pixelplease work with any font?</h3>
+              <p>
+                pixelplease works with most standard TTF and OTF fonts, and clean geometric typefaces usually
+                pixelize best. Very thin, decorative, or script fonts can lose detail on a low-resolution grid. It is
+                a pixel font maker, not a complete font-production tool, and it does not guarantee every glyph or
+                language.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>Can I use the exported pixel font commercially?</h3>
+              <p>
+                That depends on the license of the source font, not on pixelplease. Pixelizing a font does not grant
+                new rights, and the original license still controls how you may use the output. Always check the
+                source font terms before using a generated pixel font commercially.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <h3>What does the OFL / SIL Open Font License mean here?</h3>
+              <p>
+                The bundled demo fonts are provided under the SIL Open Font License, a permissive license that allows
+                use, modification, and redistribution. OFL fonts still require copyright and license notices to stay
+                with the font. For any font you upload, its own license applies.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

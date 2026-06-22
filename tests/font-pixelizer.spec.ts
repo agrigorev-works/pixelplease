@@ -100,12 +100,38 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(socialImageResponse.ok()).toBe(true);
   expect(socialImageResponse.headers()["content-type"]).toContain("image/png");
 
-  const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
-  expect(structuredData).toContain('"@type": "SoftwareApplication"');
-  expect(structuredData).toContain('"url": "https://pixelplease.tools/"');
-  expect(JSON.parse(structuredData ?? "{}")).toMatchObject({
+  const structuredDataItems = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((item) =>
+    JSON.parse(item),
+  );
+  const softwareApplication = structuredDataItems.find((item) => item["@type"] === "SoftwareApplication");
+  const faqPage = structuredDataItems.find((item) => item["@type"] === "FAQPage");
+
+  expect(softwareApplication).toMatchObject({
     description: UI_COPY.intro.copy,
+    url: "https://pixelplease.tools/",
   });
+  expect(faqPage?.mainEntity).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: "What is pixelplease?" }),
+      expect.objectContaining({ name: "Can I use the exported pixel font commercially?" }),
+    ]),
+  );
+});
+
+test("renders the SEO FAQ below the working app", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "FAQ" })).toBeVisible();
+  await expect(page.locator(".faq-item")).toHaveCount(10);
+  await expect(page.getByRole("heading", { name: "What is pixelplease?" })).toBeVisible();
+  await expect(page.getByText("browser-based pixel font generator")).toBeVisible();
+  await expect(page.getByText("Uploaded fonts are not sent to a server")).toBeVisible();
+  await expect(page.getByText("source font terms")).toBeVisible();
+
+  const faqTop = await page.locator(".faq-section").evaluate((element) => element.getBoundingClientRect().top);
+  const workspaceTop = await page.locator(".workspace").evaluate((element) => element.getBoundingClientRect().top);
+
+  expect(faqTop).toBeGreaterThan(workspaceTop);
 });
 
 test("does not load Google Analytics on local preview hosts", async ({ page }) => {
@@ -135,7 +161,7 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.getByText("font-to-pixel --local")).toHaveCount(0);
   await expect(page.locator("#app-status")).toBeHidden();
   await expect(page.locator(".pane-header")).toHaveCount(0);
-  await expect(page.locator("h2")).toHaveCount(0);
+  await expect(page.locator(".workspace h2")).toHaveCount(0);
   await expect(page.locator("#font-summary")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /generate/i })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "pixel please" })).toBeVisible();

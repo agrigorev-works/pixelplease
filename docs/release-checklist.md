@@ -16,6 +16,7 @@
 - Social preview image and `og:image` / Twitter image metadata.
 - `robots.txt` and `sitemap.xml`.
 - Root `/llms.txt` AI-discovery context file.
+- Below-app FAQ section with `FAQPage` structured data.
 - GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts.
 - Cross-browser launch sanity coverage.
 - Mobile/coarse-pointer first run does not autofocus the Source textarea, and local-only upload privacy copy is visible.
@@ -34,4 +35,3 @@
 - Presets for sharp, heavy, tiny, display, and text-friendly output.
 - Glyph sheet preview.
 - Example gallery generated from bundled fonts.
-- Self-contained `/examples` or `/faq` content section under the app for SEO depth.

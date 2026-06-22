@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const previewPort = process.env.PIXELPLEASE_PREVIEW_PORT ?? "4173";
+const previewUrl = `http://127.0.0.1:${previewPort}`;
+
 export default defineConfig({
   testDir: "./tests",
   testMatch: /launch-sanity\.spec\.ts/,
@@ -8,7 +11,7 @@ export default defineConfig({
     timeout: 10_000,
   },
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: previewUrl,
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
@@ -17,8 +20,8 @@ export default defineConfig({
     { name: "mobile-chromium", use: { ...devices["Pixel 5"] } },
   ],
   webServer: {
-    command: "npm run preview -- --port 4173",
-    url: "http://127.0.0.1:4173",
+    command: `npm run preview -- --port ${previewPort}`,
+    url: previewUrl,
     reuseExistingServer: false,
     timeout: 30_000,
   },

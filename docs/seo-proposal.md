@@ -74,13 +74,18 @@ Keep the tool as the first screen. Add lightweight SEO content below the working
 5. Below-app section: "What you can export"
 6. Below-app FAQ
 
-Suggested FAQ:
+Implemented FAQ topics:
 
-- Do uploaded fonts leave my browser?
-- Can I use any font?
-- What formats does pixelplease export?
-- Why is the export called a test font?
-- What glyphs are supported today?
+- What is pixelplease?
+- How do I turn a regular font into a pixel font?
+- Can I start from a Google font?
+- Can I upload my own TTF or OTF font?
+- Where does pixelplease process my font?
+- How do I export and install the pixel font?
+- What do the grid, threshold, expand, and shift controls do?
+- Does pixelplease work with any font?
+- Can I use the exported pixel font commercially?
+- What does the OFL / SIL Open Font License mean here?
 
 ## Technical SEO Tasks
 
@@ -96,6 +101,7 @@ Done now:
 - Canonical URL and `og:url` for `https://pixelplease.tools/`.
 - `robots.txt` and `sitemap.xml`.
 - SoftwareApplication structured data.
+- Below-app FAQ section with matching `FAQPage` structured data.
 - Root `/llms.txt` file for LLM-friendly product context.
 - GA4 measurement `G-717BB12JJ8`, loaded only on `pixelplease.tools` and `www.pixelplease.tools`.
 
