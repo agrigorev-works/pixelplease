@@ -64,7 +64,7 @@ test("keeps preview size controls usable and the layout stable on mobile", async
   );
   expect(overflow).toBeLessThan(1);
 
-  const sourceBox = await page.locator("#sample-text").boundingBox();
+  const sourceBox = await page.locator("#source-editor-field").boundingBox();
   const outputBox = await page.locator("#demo-preview-frame").boundingBox();
   expect(Math.abs((sourceBox?.height ?? 0) - (outputBox?.height ?? 0))).toBeLessThan(2);
 
@@ -76,6 +76,37 @@ test("keeps preview size controls usable and the layout stable on mobile", async
     () => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
   );
   expect(stillNoOverflow).toBeLessThan(1);
+});
+
+test("never lets the size controls overlap the preview content, even when enlarged", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+
+  // Push both previews well past the point where text overflows the box.
+  for (let i = 0; i < 8; i += 1) {
+    await page.getByRole("button", { name: UI_COPY.controls.sourceSizeIncrease }).click();
+    await page.getByRole("button", { name: UI_COPY.controls.outputSizeIncrease }).click();
+  }
+
+  const gaps = await page.evaluate(() => {
+    const rect = (selector: string) => document.querySelector(selector)?.getBoundingClientRect();
+    const source = rect("#sample-text");
+    const sourceBar = rect("#source-size-bar");
+    const scroll = rect("#demo-preview-scroll");
+    const outputBar = rect("#output-size-bar");
+    if (!source || !sourceBar || !scroll || !outputBar) {
+      throw new Error("Missing preview-size layout elements");
+    }
+    return {
+      sourceGap: sourceBar.top - source.bottom,
+      outputGap: outputBar.top - scroll.bottom,
+    };
+  });
+
+  // The control strip sits below the scrollable content, so it can never cover text/canvas.
+  expect(gaps.sourceGap).toBeGreaterThanOrEqual(-1);
+  expect(gaps.outputGap).toBeGreaterThanOrEqual(-1);
 });
 
 test("gives preview size controls accessible labels and desktop hover feedback", async ({ page }) => {

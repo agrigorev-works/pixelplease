@@ -467,25 +467,35 @@ select {
 }
 
 .source-editor-field {
-  position: relative;
-  display: grid;
   min-width: 0;
 }
 
-.output-panel {
-  position: relative;
+/* Bordered preview surface that stacks a scrollable region above a
+   flow-footer size control, so the control never overlaps the content. */
+.preview-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: var(--panel-height);
+  min-height: var(--panel-height);
+  border: 1px solid #e1e1dc;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.demo-preview-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
 .preview-size-bar {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  z-index: 2;
-  display: inline-flex;
+  flex: 0 0 auto;
+  display: flex;
   align-items: center;
   gap: 2px;
-  padding: 2px;
-  border: 1px solid #e1e1dc;
+  padding: 5px 8px;
+  border-top: 1px solid #e1e1dc;
   background: #ffffff;
 }
 
@@ -556,7 +566,6 @@ textarea:focus {
 }
 
 .preview-text,
-.demo-preview-frame,
 .upload-zone {
   width: 100%;
   height: var(--panel-height);
@@ -576,17 +585,24 @@ textarea:focus {
 }
 
 .source-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+  border: 0;
+  border-radius: 0;
   background: #f5f5f5;
-  /* leave room so resting text clears the floating size control */
-  padding-bottom: 50px;
+  color: #111111;
+  padding: 16px;
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 1.12;
+  letter-spacing: 0;
+  overflow: auto;
+  overflow-wrap: anywhere;
 }
 
 .source-editor:focus {
   background: #ffffff;
-}
-
-.demo-preview-frame {
-  overflow: auto;
 }
 
 .demo-preview-canvas {
@@ -733,7 +749,7 @@ textarea:focus {
   }
 
   .preview-text,
-  .demo-preview-frame,
+  .source-editor,
   .upload-zone {
     font-size: 34px;
   }

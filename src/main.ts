@@ -187,6 +187,7 @@ const controlsPanel = getSelector<HTMLElement>(".controls-panel");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
 const afterPreview = getElement<HTMLElement>("after-preview");
 const demoPreviewFrame = getElement<HTMLElement>("demo-preview-frame");
+const demoPreviewScroll = getElement<HTMLElement>("demo-preview-scroll");
 const demoPreviewCanvas = getElement<HTMLCanvasElement>("demo-preview-canvas");
 const appStatus = getElement<HTMLElement>("app-status");
 const sourceEditorLabel = getSelector<HTMLElement>("#source-editor-field .sr-only");
@@ -790,9 +791,9 @@ function renderDemoPreview(): void {
     return;
   }
 
-  const frameRect = demoPreviewFrame.getBoundingClientRect();
-  const width = Math.max(1, Math.round(demoPreviewFrame.clientWidth || frameRect.width || 720));
-  const visibleHeight = Math.max(1, Math.round(demoPreviewFrame.clientHeight || frameRect.height || 280));
+  const frameRect = demoPreviewScroll.getBoundingClientRect();
+  const width = Math.max(1, Math.round(demoPreviewScroll.clientWidth || frameRect.width || 720));
+  const visibleHeight = Math.max(1, Math.round(demoPreviewScroll.clientHeight || frameRect.height || 280));
   const source = document.createElement("canvas");
   source.width = width;
   source.height = 1;

@@ -457,7 +457,7 @@ test("renders a clean three-column source output settings layout", async ({ page
     const sourcePanel = document.querySelector(".source-panel");
     const outputPanel = document.querySelector(".output-panel");
     const controlsPanel = document.querySelector(".controls-panel");
-    const sourcePreview = document.querySelector("#sample-text");
+    const sourcePreview = document.querySelector("#source-editor-field");
     const outputPreview = [document.querySelector("#demo-preview-frame"), document.querySelector("#after-preview")]
       .filter((element): element is Element => Boolean(element))
       .find((element) => getComputedStyle(element).display !== "none");
@@ -585,7 +585,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expectPixelCanvasHasInk(page);
 
   const sourcePanelBox = await page.locator(".source-panel").boundingBox();
-  const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
+  const sourcePreviewBox = await page.locator("#source-editor-field").boundingBox();
   const googleSelectBox = await page.locator("#google-font-select").boundingBox();
   const outputBeforeModeSwitch = await page.locator("#after-preview").evaluate((preview) => {
     const styles = getComputedStyle(preview);
@@ -663,7 +663,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 
   const uploadedPanelBox = await page.locator(".source-panel").boundingBox();
-  const uploadedPreviewBox = await page.locator("#sample-text").boundingBox();
+  const uploadedPreviewBox = await page.locator("#source-editor-field").boundingBox();
   const replaceButtonBox = await page.getByRole("button", { name: UI_COPY.source.replaceFont }).boundingBox();
   const replaceButtonStyles = await page.getByRole("button", { name: UI_COPY.source.replaceFont }).evaluate((button) => {
     const styles = getComputedStyle(button);
@@ -1211,7 +1211,7 @@ type PanelLayoutMetrics = {
 async function getPanelLayoutMetrics(page: Page): Promise<PanelLayoutMetrics> {
   return page.locator(".workspace").evaluate((workspace) => {
     const shell = document.querySelector(".app-shell");
-    const sourcePreview = document.querySelector("#sample-text");
+    const sourcePreview = document.querySelector("#source-editor-field");
     const outputPreview = document.querySelector("#demo-preview-frame");
     const controlsPanel = document.querySelector(".controls-panel");
     const controlStack = document.querySelector(".control-stack");
@@ -1318,7 +1318,7 @@ async function getCanvasTypographySyncMetrics(page: Page): Promise<CanvasTypogra
 async function getPixelCanvasLayoutMetrics(page: Page): Promise<CanvasLayoutMetrics> {
   return page.locator("#demo-preview-canvas").evaluate((canvas) => {
     const element = canvas as HTMLCanvasElement;
-    const frame = document.querySelector("#demo-preview-frame");
+    const frame = document.querySelector("#demo-preview-scroll");
     const rect = element.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     const context = element.getContext("2d");
