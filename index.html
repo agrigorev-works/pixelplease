@@ -3,12 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400&family=Lato:wght@400&family=Libre+Baskerville:wght@400&family=Merriweather:wght@400&family=Roboto+Mono:wght@400&family=Space+Grotesk:wght@400&display=swap"
-      rel="stylesheet"
+    <title>pixelplease - pixel font generator</title>
+    <meta
+      name="description"
+      content="Upload a font, pixelize its glyphs in your browser, preview the result, and export a test TTF package. No server upload."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="application-name" content="pixelplease" />
+    <meta name="apple-mobile-web-app-title" content="pixelplease" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="pixelplease" />
+    <meta property="og:title" content="pixelplease - pixel font generator" />
+    <meta
+      property="og:description"
+      content="Upload a font, pixelize its glyphs in your browser, preview the result, and export a test TTF package."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="pixelplease - pixel font generator" />
+    <meta
+      name="twitter:description"
+      content="Upload a font, pixelize its glyphs in your browser, preview the result, and export a test TTF package."
     />
   </head>
   <body>
@@ -55,7 +76,9 @@
         </section>
 
         <section class="output-panel preview-pane" aria-label="">
-          <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label=""></canvas>
+          <div id="demo-preview-frame" class="demo-preview-frame">
+            <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label=""></canvas>
+          </div>
           <p id="after-preview" class="preview-text generated-preview is-hidden"></p>
         </section>
 
@@ -100,6 +123,9 @@
         </aside>
       </div>
 
+      <footer class="site-footer" aria-label="">
+        <p class="footer-copy"></p>
+      </footer>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

@@ -116,17 +116,26 @@ describe("font pixelizer core", () => {
       sourceName: "Fixture Sans",
       sourceFileName: "fixture-source.ttf",
       sourceLicense: "OFL",
+      sourceLicenseFileName: "fixture-OFL.txt",
+      sourceLicensePackagePath: "licenses/fixture-OFL.txt",
       sourceUrl: "https://example.com/fixture-source.ttf",
     });
     const zip = createStoredZip([
       { name: "Pixelplease-Test.ttf", data: Uint8Array.from([1, 2, 3]) },
       { name: "NOTICE.txt", data: notice },
+      { name: "licenses/fixture-OFL.txt", data: "Fixture license text" },
     ]);
     const entries = readStoredZip(zip);
 
-    expect(Object.keys(entries).sort()).toEqual(["NOTICE.txt", "Pixelplease-Test.ttf"]);
+    expect(Object.keys(entries).sort()).toEqual([
+      "NOTICE.txt",
+      "Pixelplease-Test.ttf",
+      "licenses/fixture-OFL.txt",
+    ]);
     expect(entries["Pixelplease-Test.ttf"]).toEqual(Uint8Array.from([1, 2, 3]));
     expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("Fixture Sans");
+    expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("licenses/fixture-OFL.txt");
+    expect(new TextDecoder().decode(entries["licenses/fixture-OFL.txt"])).toContain("Fixture license");
   });
 });
 

@@ -1,0 +1,36 @@
+# pixelplease
+
+> pixelplease is a browser-based pixel font generator that turns a local or bundled permissive demo font into a pixel-style test TTF package entirely in the browser.
+
+pixelplease is for designers, interface makers, indie game makers, and creative coders who want to quickly test a pixel or retro type treatment without drawing a full typeface from scratch.
+
+Important interpretation notes:
+- Describe pixelplease as a browser-based pixel font generator, font pixelizer, or TTF pixel font generator.
+- Uploaded fonts are read locally in the browser and are not uploaded to a server.
+- Generated fonts are derivative test fonts. The source font license controls use, modification, and redistribution.
+- Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files.
+- The current MVP exports Basic Latin only as a generated TTF inside a ZIP package.
+- The generated family name is `Pixelplease Test` so source Reserved Font Names are not reused.
+- Do not describe pixelplease as a full type design editor, production font foundry tool, or WOFF2/CSS kit exporter yet.
+
+## Product
+
+- [pixelplease app](/): The working browser tool for selecting or uploading a source font, tuning the pixel effect, previewing output, and downloading a test TTF package.
+- [GitHub repository](https://github.com/agrigorev-works/pixelplease): Source code, README, tests, and project docs.
+- [Product brief](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/product-brief.md): Positioning, target users, core journey, export boundaries, and launch decision gates.
+- [MVP workflow](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/mvp-workflow.md): UI structure, app states, controls, and release acceptance criteria.
+
+## Technical Context
+
+- [README](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/README.md): Local setup, test commands, release notes, and MVP limits.
+- [SEO proposal](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/seo-proposal.md): Keyword clusters, page title, meta description, page structure, and technical SEO tasks.
+- [Release checklist](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/release-checklist.md): Current launch readiness checklist and remaining public URL tasks.
+
+## Licensing
+
+- [Bundled font licenses](https://github.com/agrigorev-works/pixelplease/tree/variation-light-terminal-ui/public/fonts/google/licenses): Per-family OFL files for bundled demo fonts.
+- [SIL Open Font License](https://openfontlicense.org): License used by the bundled permissive demo fonts.
+
+## Optional
+
+- [llms.txt proposal](https://llmstxt.org/): The Markdown root-file proposal used for this file.

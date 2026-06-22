@@ -1,5 +1,5 @@
 export const UI_COPY = {
-  documentTitle: "pixelplease",
+  documentTitle: "pixelplease - pixel font generator",
   status: {
     demoMode: "demo mode",
     generatedReady: "Generated TTF ready",
@@ -14,7 +14,7 @@ export const UI_COPY = {
   intro: {
     logoAriaLabel: "pixel please",
     logoParts: ["pixel", "please"],
-    copy: "Upload a font, edit sample text, preview a pixel treatment, and export a test TTF",
+    copy: "Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf",
   },
   sections: {
     source: "Source font and text",
@@ -46,8 +46,15 @@ export const UI_COPY = {
     shiftY: "shift-y",
     shiftUnit: "cell",
     resetDefaults: "reset defaults",
-    downloadTtf: "Download package",
+    downloadTtf: "Download font",
     defaultDownloadName: "Pixelplease-Test.zip",
+  },
+  footer: {
+    ariaLabel: "Usage note",
+    lines: [
+      "Please use fonts according to the original typeface license.",
+      "Keep required copyright, license, and notice files when sharing.",
+    ],
   },
   errors: {
     missingElement: (id: string) => `Missing element #${id}`,

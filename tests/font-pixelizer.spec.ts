@@ -18,6 +18,52 @@ test.beforeAll(async () => {
   await fs.writeFile(sourcePath, Buffer.from(fixture.toArrayBuffer()));
 });
 
+test("serves an LLM discovery file from the site root", async ({ page }) => {
+  const response = await page.request.get("/llms.txt");
+
+  expect(response.ok()).toBe(true);
+
+  const body = await response.text();
+  expect(body).toContain("# pixelplease");
+  expect(body).toContain("browser-based pixel font generator");
+  expect(body).toContain("Uploaded fonts are read locally in the browser");
+  expect(body).toContain("## Product");
+  expect(body).toContain("## Licensing");
+  expect(body).toContain("[llms.txt proposal](https://llmstxt.org/)");
+});
+
+test("serves favicon and app icon assets", async ({ page }) => {
+  const iconPaths = [
+    "/favicon.ico",
+    "/icons/favicon-16.png",
+    "/icons/favicon-32.png",
+    "/icons/favicon-48.png",
+    "/apple-touch-icon.png",
+    "/icons/icon-192.png",
+    "/icons/icon-512.png",
+    "/site.webmanifest",
+  ];
+
+  for (const iconPath of iconPaths) {
+    const response = await page.request.get(iconPath);
+    expect(response.ok(), iconPath).toBe(true);
+  }
+
+  await page.goto("/");
+  await expect(page.locator('link[rel="icon"][href="/favicon.ico"]')).toHaveCount(1);
+  await expect(page.locator('link[rel="apple-touch-icon"][href="/apple-touch-icon.png"]')).toHaveCount(1);
+  await expect(page.locator('link[rel="manifest"][href="/site.webmanifest"]')).toHaveCount(1);
+
+  const manifest = await (await page.request.get("/site.webmanifest")).json();
+  expect(manifest.name).toBe("pixelplease");
+  expect(manifest.icons).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ src: "/icons/icon-192.png", sizes: "192x192" }),
+      expect.objectContaining({ src: "/icons/icon-512.png", sizes: "512x512" }),
+    ]),
+  );
+});
+
 test("uses the available desktop viewport instead of a fixed narrow shell", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto("/");
@@ -99,6 +145,43 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(introMetrics.copyFontSize).toBe(introMetrics.selectFontSize);
   expect(introMetrics.copyColor).toBe(introMetrics.selectColor);
   expect(introMetrics.controlsWidth).toBeLessThanOrEqual(300);
+  await expect(page.locator(".site-footer")).toHaveAttribute("aria-label", UI_COPY.footer.ariaLabel);
+  await expect(page.locator(".footer-copy")).toHaveText(UI_COPY.footer.lines.join("\n"));
+
+  const footerMetrics = await page.evaluate(() => {
+    const workspace = document.querySelector(".workspace");
+    const footer = document.querySelector(".site-footer");
+    const footerCopy = document.querySelector(".footer-copy");
+    const fieldLabel = document.querySelector(".field span");
+    if (!workspace || !footer || !footerCopy || !fieldLabel) {
+      throw new Error("Missing footer elements");
+    }
+
+    const workspaceBox = workspace.getBoundingClientRect();
+    const footerBox = footer.getBoundingClientRect();
+    const footerCopyBox = footerCopy.getBoundingClientRect();
+    const footerStyles = getComputedStyle(footerCopy);
+    const fieldLabelStyles = getComputedStyle(fieldLabel);
+
+    return {
+      footerCenterDelta: Math.abs(footerCopyBox.left + footerCopyBox.width / 2 - window.innerWidth / 2),
+      footerTopGap: footerBox.top - workspaceBox.bottom,
+      footerTextAlign: footerStyles.textAlign,
+      footerFontSize: footerStyles.fontSize,
+      footerLineHeight: footerStyles.lineHeight,
+      footerColor: footerStyles.color,
+      fieldFontSize: fieldLabelStyles.fontSize,
+      fieldLineHeight: fieldLabelStyles.lineHeight,
+      fieldColor: fieldLabelStyles.color,
+    };
+  });
+
+  expect(footerMetrics.footerCenterDelta).toBeLessThan(1);
+  expect(footerMetrics.footerTopGap).toBeGreaterThanOrEqual(48);
+  expect(footerMetrics.footerTextAlign).toBe("center");
+  expect(footerMetrics.footerFontSize).toBe(footerMetrics.fieldFontSize);
+  expect(footerMetrics.footerLineHeight).toBe(footerMetrics.fieldLineHeight);
+  expect(footerMetrics.footerColor).toBe(footerMetrics.fieldColor);
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();
@@ -113,7 +196,7 @@ test("renders a clean three-column source output settings layout", async ({ page
     const outputPanel = document.querySelector(".output-panel");
     const controlsPanel = document.querySelector(".controls-panel");
     const sourcePreview = document.querySelector("#sample-text");
-    const outputPreview = [document.querySelector("#demo-preview-canvas"), document.querySelector("#after-preview")]
+    const outputPreview = [document.querySelector("#demo-preview-frame"), document.querySelector("#after-preview")]
       .filter((element): element is Element => Boolean(element))
       .find((element) => getComputedStyle(element).display !== "none");
 
@@ -140,17 +223,7 @@ test("renders a clean three-column source output settings layout", async ({ page
       controlsPanelBottom: controlsPanelBox.bottom,
     };
   });
-  const previewTypography = await page.locator("#sample-text").evaluate((source) => {
-    const output = document.getElementById("after-preview");
-    const sourceStyle = getComputedStyle(source);
-    const outputStyle = output ? getComputedStyle(output) : undefined;
-    return {
-      sourceFontSize: sourceStyle.fontSize,
-      outputFontSize: outputStyle?.fontSize,
-      sourceLineHeight: sourceStyle.lineHeight,
-      outputLineHeight: outputStyle?.lineHeight,
-    };
-  });
+  const previewTypography = await getCanvasTypographySyncMetrics(page);
 
   expect(Math.abs(layoutMetrics.sourcePreviewHeight - layoutMetrics.outputPreviewHeight)).toBeLessThan(2);
   expect(Math.abs(layoutMetrics.sourcePreviewTop - layoutMetrics.outputPreviewTop)).toBeLessThan(1);
@@ -158,8 +231,11 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(Math.abs(layoutMetrics.sourcePreviewBottom - layoutMetrics.outputPreviewBottom)).toBeLessThan(1);
   expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.outputPanelBottom)).toBeLessThan(1);
   expect(Math.abs(layoutMetrics.sourcePanelBottom - layoutMetrics.controlsPanelBottom)).toBeLessThan(1);
-  expect(previewTypography.sourceFontSize).toBe(previewTypography.outputFontSize);
-  expect(previewTypography.sourceLineHeight).toBe(previewTypography.outputLineHeight);
+  expect(previewTypography.fontSizeDelta).toBeLessThan(0.01);
+  expect(previewTypography.lineHeightDelta).toBeLessThan(0.01);
+  expect(previewTypography.paddingLeftDelta).toBeLessThan(0.01);
+  expect(previewTypography.paddingTopDelta).toBeLessThan(0.01);
+  expect(previewTypography.canvasWidthDelta).toBeLessThan(1);
 });
 
 test("stacks the intro when the header no longer fits horizontally", async ({ page }) => {
@@ -182,11 +258,19 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
     const titleStyles = getComputedStyle(title);
     const copyStyles = getComputedStyle(copy);
     const workspaceStyles = getComputedStyle(workspace);
+    const copyRange = document.createRange();
+    copyRange.selectNodeContents(copy);
+    const copyLineCount = new Set(
+      Array.from(copyRange.getClientRects()).map((rect) => Math.round(rect.top)),
+    ).size;
+    copyRange.detach();
 
     return {
       titleCenterDelta: Math.abs(titleBox.left + titleBox.width / 2 - (introBox.left + introBox.width / 2)),
       copyCenterDelta: Math.abs(copyBox.left + copyBox.width / 2 - (introBox.left + introBox.width / 2)),
       copyBelowTitle: copyBox.top > titleBox.bottom,
+      titleCopyGap: copyBox.top - titleBox.bottom,
+      copyLineCount,
       titleTextAlign: titleStyles.textAlign,
       copyTextAlign: copyStyles.textAlign,
       controlsWidth: controls.getBoundingClientRect().width,
@@ -198,6 +282,8 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
   expect(metrics.titleCenterDelta).toBeLessThan(1);
   expect(metrics.copyCenterDelta).toBeLessThan(1);
   expect(metrics.copyBelowTitle).toBe(true);
+  expect(metrics.titleCopyGap).toBeCloseTo(22, 0);
+  expect(metrics.copyLineCount).toBe(3);
   expect(metrics.titleTextAlign).toBe("center");
   expect(metrics.copyTextAlign).toBe("center");
   expect(metrics.controlsWidth).toBeLessThanOrEqual(230);
@@ -231,8 +317,9 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#google-font-field span")).toHaveCount(0);
   await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
-  await expect(page.locator("#after-preview")).toBeVisible();
-  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
+  await expectPixelCanvasHasInk(page);
 
   const sourcePanelBox = await page.locator(".source-panel").boundingBox();
   const sourcePreviewBox = await page.locator("#sample-text").boundingBox();
@@ -251,8 +338,8 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#sample-text")).toBeHidden();
   await expect(page.locator("#google-font-select")).toBeHidden();
   await expect(page.locator("#upload-zone")).toBeVisible();
-  await expect(page.locator("#after-preview")).toBeVisible();
-  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
   await expect(page.getByText("choose font file")).toHaveCount(0);
   await expect(page.locator("#upload-zone .upload-title")).toHaveText(UI_COPY.source.uploadTitle);
   await expect(page.getByText(/license to edit/i)).toBeVisible();
@@ -290,8 +377,8 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#google-font-select")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
-  await expect(page.locator("#after-preview")).toBeVisible();
-  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
 
   const outputAfterReturn = await page.locator("#after-preview").evaluate((preview) => {
     const styles = getComputedStyle(preview);
@@ -399,8 +486,9 @@ test("renders a usable generated Google Font output before upload", async ({ pag
 
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
-  await expect(page.locator("#after-preview")).toBeVisible();
-  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
+  await expectPixelCanvasHasInk(page);
   await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
 
   await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
@@ -431,12 +519,22 @@ test("renders a usable generated Google Font output before upload", async ({ pag
     googleGenerated.buffer.slice(googleGenerated.byteOffset, googleGenerated.byteOffset + googleGenerated.byteLength),
   );
 
-  expect(Object.keys(googlePackageEntries).sort()).toEqual(["NOTICE.txt", "Pixelplease-Test.ttf"]);
+  expect(Object.keys(googlePackageEntries).sort()).toEqual([
+    "NOTICE.txt",
+    "Pixelplease-Test.ttf",
+    "licenses/merriweather-OFL.txt",
+  ]);
   expect(googleNotice).toContain("Merriweather");
   expect(googleNotice).toContain("Source license: OFL");
+  expect(googleNotice).toContain("Source license file: merriweather-OFL.txt");
+  expect(googleNotice).toContain("Bundled source license package path: licenses/merriweather-OFL.txt");
   expect(googleNotice).toContain("Merriweather[opsz,wdth,wght].ttf");
+  expect(new TextDecoder().decode(googlePackageEntries["licenses/merriweather-OFL.txt"])).toContain(
+    "Reserved Font Name \"Merriweather\"",
+  );
   expect(googleParsed.names.fontFamily.en).toBe("Pixelplease Test");
   expect(googleParsed.names.fontFamily.en).not.toContain("Merriweather");
+  expect(googleParsed.names.licenseURL.en).toBe("https://openfontlicense.org");
 
   await page.getByRole("radio", { name: UI_COPY.sourceModes.google }).check();
   await expect(page.locator("#sample-text")).toBeVisible();
@@ -460,6 +558,80 @@ test("renders a usable generated Google Font output before upload", async ({ pag
       { timeout: 20_000 },
     )
     .toBe(true);
+});
+
+test("keeps generated output canvas-backed at phone width", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
+  await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
+
+  const firstSignature = await expectPixelCanvasHasInk(page);
+  await page.locator("#sample-text").fill("Mobile pixel test");
+  await expect(page.locator("#after-preview")).toHaveText("Mobile pixel test");
+
+  await expect
+    .poll(
+      async () => {
+        const nextSignature = await getPixelCanvasSignature(page);
+        return nextSignature.hash !== firstSignature.hash && nextSignature.darkSamples > 12;
+      },
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+});
+
+test("wraps generated canvas output instead of squeezing it in narrow columns", async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 760 });
+  await page.goto("/");
+
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await page
+    .locator("#sample-text")
+    .fill(
+      [
+        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
+        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
+        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
+        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
+      ].join(" "),
+    );
+
+  await expect
+    .poll(
+      async () => {
+        const metrics = await getPixelCanvasLayoutMetrics(page);
+        return (
+          metrics.cssWidth < 320 &&
+          Math.abs(metrics.backingCssWidth - metrics.cssWidth) < 1 &&
+          metrics.frameScrollHeight > metrics.frameClientHeight + 40 &&
+          metrics.canvasCssHeight > metrics.frameClientHeight + 40 &&
+          metrics.bottomDarkSamples > 20
+        );
+      },
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+});
+
+test("keeps generated canvas typography synced with source across resizes", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  const desktopMetrics = await expectCanvasTypographySynced(page);
+
+  await page.setViewportSize({ width: 900, height: 760 });
+  const narrowMetrics = await expectCanvasTypographySynced(page);
+  expect(narrowMetrics.frameWidth).toBeLessThan(desktopMetrics.frameWidth);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const phoneMetrics = await expectCanvasTypographySynced(page);
+  expect(phoneMetrics.renderFontSize).toBeLessThan(desktopMetrics.renderFontSize);
+  expect(phoneMetrics.frameWidth).toBeLessThan(desktopMetrics.frameWidth);
 });
 
 test("removes manual generation, resets controls, and keeps Download package primary", async ({ page }) => {
@@ -523,7 +695,50 @@ test("removes manual generation, resets controls, and keeps Download package pri
   expect(downloadStyles.borderRadius).toBe("999px");
   expect(resetStyles.borderRadius).toBe("999px");
   expect(actionGap).toBeGreaterThanOrEqual(32);
-  expect(controlGap).toBe("22px");
+  expect(controlGap).toBe("18px");
+});
+
+test("keeps controls compact while separating buttons at small sizes", async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 560 });
+  await page.goto("/");
+
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+
+  const shortViewportMetrics = await getControlsSpacingMetrics(page);
+  expect(shortViewportMetrics.controlGap).toBe("18px");
+  expect(shortViewportMetrics.actionGap).toBeGreaterThanOrEqual(24);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileMetrics = await getControlsSpacingMetrics(page);
+  expect(mobileMetrics.controlGap).toBe("18px");
+  expect(mobileMetrics.actionGap).toBeGreaterThanOrEqual(48);
+});
+
+test("keeps stacked layout gutters and panel heights aligned", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 560 });
+  await page.goto("/");
+
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+
+  const shortDesktopMetrics = await getPanelLayoutMetrics(page);
+  expect(shortDesktopMetrics.gridColumnCount).toBe(3);
+  expect(shortDesktopMetrics.sourceOutputHeightDelta).toBeLessThan(1);
+  expect(shortDesktopMetrics.sourceControlsHeightDelta).toBeLessThan(1);
+  expect(shortDesktopMetrics.actionGap).toBeGreaterThanOrEqual(24);
+  expect(shortDesktopMetrics.actionOverflow).toBeLessThan(1);
+
+  await page.setViewportSize({ width: 390, height: 620 });
+  const stackedMetrics = await getPanelLayoutMetrics(page);
+
+  expect(stackedMetrics.gridColumnCount).toBe(1);
+  expect(stackedMetrics.shellPaddingLeft).toBeGreaterThanOrEqual(24);
+  expect(stackedMetrics.shellPaddingRight).toBe(stackedMetrics.shellPaddingLeft);
+  expect(Math.abs(stackedMetrics.workspaceLeftInset - stackedMetrics.shellPaddingLeft)).toBeLessThan(1);
+  expect(Math.abs(stackedMetrics.workspaceRightInset - stackedMetrics.shellPaddingRight)).toBeLessThan(1);
+  expect(stackedMetrics.sourceOutputHeightDelta).toBeLessThan(1);
+  expect(stackedMetrics.sourceControlsHeightDelta).toBeLessThan(1);
+  expect(stackedMetrics.actionGap).toBeGreaterThanOrEqual(24);
+  expect(stackedMetrics.actionOverflow).toBeLessThan(1);
 });
 
 test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloads a packaged usable TTF", async ({
@@ -555,8 +770,9 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   await page.locator("#shift-y").fill("-0.2");
 
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
-  await expect(page.locator("#after-preview")).toBeVisible();
-  await expect(page.locator("#demo-preview-canvas")).toBeHidden();
+  await expect(page.locator("#after-preview")).toBeHidden();
+  await expect(page.locator("#demo-preview-canvas")).toBeVisible();
+  await expectPixelCanvasHasInk(page);
   await page.screenshot({ path: path.join(artifactsDir, "demo-generated.png"), fullPage: true });
 
   const firstBlobUrl = await getGeneratedFontUrl(page);
@@ -605,6 +821,7 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   expect(parsed.names.fontFamily.en).toBe("Pixelplease Test");
   expect(parsed.names.fontFamily.en).not.toContain("Fixture");
   expect(parsed.names.license.en).toContain("Generated derivative for testing");
+  expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");
   expect(parsed.glyphs.length).toBeGreaterThan(10);
   expect(parsed.charToGlyph("A").advanceWidth).toBeGreaterThan(0);
 });
@@ -641,11 +858,236 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   expect(parsed.names.fontFamily.en).toBe("Pixelplease Test");
   expect(parsed.names.fontFamily.en).not.toContain("Lato");
   expect(parsed.names.license.en).toContain("Source font license controls use");
+  expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");
   expect(parsed.charToGlyph("P").advanceWidth).toBeGreaterThan(0);
 });
 
 async function getGeneratedFontUrl(page: Page): Promise<string | null> {
   return page.locator("#download-link").getAttribute("data-generated-font-url");
+}
+
+type CanvasSignature = {
+  width: number;
+  height: number;
+  darkSamples: number;
+  hash: number;
+};
+
+async function expectPixelCanvasHasInk(page: Page): Promise<CanvasSignature> {
+  const signature = await getPixelCanvasSignature(page);
+  expect(signature.width).toBeGreaterThan(0);
+  expect(signature.height).toBeGreaterThan(0);
+  expect(signature.darkSamples).toBeGreaterThan(12);
+  return signature;
+}
+
+async function getPixelCanvasSignature(page: Page): Promise<CanvasSignature> {
+  return page.locator("#demo-preview-canvas").evaluate((canvas) => {
+    const element = canvas as HTMLCanvasElement;
+    const context = element.getContext("2d");
+    if (!context) {
+      throw new Error("Missing preview canvas context");
+    }
+
+    const { data, width, height } = context.getImageData(0, 0, element.width, element.height);
+    let darkSamples = 0;
+    let hash = 2166136261;
+    const stride = 97 * 4;
+
+    for (let index = 0; index < data.length; index += stride) {
+      const red = data[index] ?? 255;
+      const green = data[index + 1] ?? 255;
+      const blue = data[index + 2] ?? 255;
+      if (red < 128 && green < 128 && blue < 128) {
+        darkSamples += 1;
+      }
+      hash ^= red + green * 3 + blue * 7 + index;
+      hash = Math.imul(hash, 16777619) >>> 0;
+    }
+
+    return { width, height, darkSamples, hash };
+  });
+}
+
+type CanvasLayoutMetrics = {
+  cssWidth: number;
+  backingCssWidth: number;
+  frameClientHeight: number;
+  frameScrollHeight: number;
+  canvasCssHeight: number;
+  bottomDarkSamples: number;
+};
+
+type CanvasTypographySyncMetrics = {
+  frameWidth: number;
+  renderFontSize: number;
+  fontSizeDelta: number;
+  lineHeightDelta: number;
+  paddingLeftDelta: number;
+  paddingTopDelta: number;
+  canvasWidthDelta: number;
+};
+
+type ControlsSpacingMetrics = {
+  actionGap: number;
+  controlGap: string;
+};
+
+type PanelLayoutMetrics = {
+  gridColumnCount: number;
+  shellPaddingLeft: number;
+  shellPaddingRight: number;
+  workspaceLeftInset: number;
+  workspaceRightInset: number;
+  sourceOutputHeightDelta: number;
+  sourceControlsHeightDelta: number;
+  actionGap: number;
+  actionOverflow: number;
+};
+
+async function getPanelLayoutMetrics(page: Page): Promise<PanelLayoutMetrics> {
+  return page.locator(".workspace").evaluate((workspace) => {
+    const shell = document.querySelector(".app-shell");
+    const sourcePreview = document.querySelector("#sample-text");
+    const outputPreview = document.querySelector("#demo-preview-frame");
+    const controlsPanel = document.querySelector(".controls-panel");
+    const controlStack = document.querySelector(".control-stack");
+    const actionStack = document.querySelector(".action-stack");
+    if (!shell || !sourcePreview || !outputPreview || !controlsPanel || !controlStack || !actionStack) {
+      throw new Error("Missing panel layout elements");
+    }
+
+    const shellBox = shell.getBoundingClientRect();
+    const workspaceBox = workspace.getBoundingClientRect();
+    const sourceBox = sourcePreview.getBoundingClientRect();
+    const outputBox = outputPreview.getBoundingClientRect();
+    const controlsBox = controlsPanel.getBoundingClientRect();
+    const controlBox = controlStack.getBoundingClientRect();
+    const actionBox = actionStack.getBoundingClientRect();
+    const shellStyles = getComputedStyle(shell);
+    const workspaceStyles = getComputedStyle(workspace);
+
+    return {
+      gridColumnCount: workspaceStyles.gridTemplateColumns.split(" ").length,
+      shellPaddingLeft: Number.parseFloat(shellStyles.paddingLeft),
+      shellPaddingRight: Number.parseFloat(shellStyles.paddingRight),
+      workspaceLeftInset: workspaceBox.left - shellBox.left,
+      workspaceRightInset: shellBox.right - workspaceBox.right,
+      sourceOutputHeightDelta: Math.abs(sourceBox.height - outputBox.height),
+      sourceControlsHeightDelta: Math.abs(sourceBox.height - controlsBox.height),
+      actionGap: actionBox.top - controlBox.bottom,
+      actionOverflow: Math.max(0, actionBox.bottom - controlsBox.bottom),
+    };
+  });
+}
+
+async function getControlsSpacingMetrics(page: Page): Promise<ControlsSpacingMetrics> {
+  return page.locator(".controls-panel").evaluate((panel) => {
+    const controlStack = panel.querySelector(".control-stack");
+    const actionStack = panel.querySelector(".action-stack");
+    if (!(controlStack instanceof HTMLElement) || !(actionStack instanceof HTMLElement)) {
+      throw new Error("Missing control/action stack");
+    }
+
+    const controlBox = controlStack.getBoundingClientRect();
+    const actionBox = actionStack.getBoundingClientRect();
+
+    return {
+      actionGap: actionBox.top - controlBox.bottom,
+      controlGap: getComputedStyle(controlStack).rowGap,
+    };
+  });
+}
+
+async function expectCanvasTypographySynced(page: Page): Promise<CanvasTypographySyncMetrics> {
+  await expect
+    .poll(
+      async () => {
+        const metrics = await getCanvasTypographySyncMetrics(page);
+        return (
+          metrics.fontSizeDelta < 0.01 &&
+          metrics.lineHeightDelta < 0.01 &&
+          metrics.paddingLeftDelta < 0.01 &&
+          metrics.paddingTopDelta < 0.01 &&
+          metrics.canvasWidthDelta < 1
+        );
+      },
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+
+  return getCanvasTypographySyncMetrics(page);
+}
+
+async function getCanvasTypographySyncMetrics(page: Page): Promise<CanvasTypographySyncMetrics> {
+  return page.locator("#sample-text").evaluate((source) => {
+    const sourceElement = source as HTMLTextAreaElement;
+    const frame = document.querySelector("#demo-preview-frame");
+    const canvas = document.querySelector("#demo-preview-canvas");
+    if (!(frame instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
+      throw new Error("Missing canvas preview elements");
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    const sourceStyles = getComputedStyle(sourceElement);
+    const sourceFontSize = Number.parseFloat(sourceStyles.fontSize);
+    const sourceLineHeight = Number.parseFloat(sourceStyles.lineHeight);
+    const sourcePaddingLeft = Number.parseFloat(sourceStyles.paddingLeft);
+    const sourcePaddingTop = Number.parseFloat(sourceStyles.paddingTop);
+    const renderFontSize = Number(canvas.dataset.renderFontSize);
+    const renderLineHeight = Number(canvas.dataset.renderLineHeight);
+    const renderPaddingLeft = Number(canvas.dataset.renderPaddingLeft);
+    const renderPaddingTop = Number(canvas.dataset.renderPaddingTop);
+    const backingCssWidth = canvas.width / dpr;
+
+    return {
+      frameWidth: frame.clientWidth,
+      renderFontSize,
+      fontSizeDelta: Math.abs(sourceFontSize - renderFontSize),
+      lineHeightDelta: Math.abs(sourceLineHeight - renderLineHeight),
+      paddingLeftDelta: Math.abs(sourcePaddingLeft - renderPaddingLeft),
+      paddingTopDelta: Math.abs(sourcePaddingTop - renderPaddingTop),
+      canvasWidthDelta: Math.abs(frame.clientWidth - backingCssWidth),
+    };
+  });
+}
+
+async function getPixelCanvasLayoutMetrics(page: Page): Promise<CanvasLayoutMetrics> {
+  return page.locator("#demo-preview-canvas").evaluate((canvas) => {
+    const element = canvas as HTMLCanvasElement;
+    const frame = document.querySelector("#demo-preview-frame");
+    const rect = element.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const context = element.getContext("2d");
+    if (!context || !(frame instanceof HTMLElement)) {
+      throw new Error("Missing preview canvas context or frame");
+    }
+
+    const { data, width, height } = context.getImageData(0, 0, element.width, element.height);
+    const lowerStart = Math.max(0, height - Math.round(90 * dpr));
+    let bottomDarkSamples = 0;
+
+    for (let y = lowerStart; y < height; y += Math.max(1, Math.round(2 * dpr))) {
+      for (let x = 0; x < width; x += Math.max(1, Math.round(2 * dpr))) {
+        const index = (y * width + x) * 4;
+        const red = data[index] ?? 255;
+        const green = data[index + 1] ?? 255;
+        const blue = data[index + 2] ?? 255;
+        if (red < 128 && green < 128 && blue < 128) {
+          bottomDarkSamples += 1;
+        }
+      }
+    }
+
+    return {
+      cssWidth: rect.width,
+      backingCssWidth: element.width / dpr,
+      frameClientHeight: frame.clientHeight,
+      frameScrollHeight: frame.scrollHeight,
+      canvasCssHeight: rect.height,
+      bottomDarkSamples,
+    };
+  });
 }
 
 function readStoredZip(data: Uint8Array): Record<string, Uint8Array> {

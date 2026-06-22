@@ -1,0 +1,60 @@
+# pixelplease product brief
+
+## Positioning
+
+pixelplease is a browser-based pixel font generator for designers, interface makers, and game-adjacent product teams. It takes a source font, applies a pixel-grid transformation, lets the user preview and tune the result, and exports a test TTF package.
+
+The sharp product promise:
+
+> Turn a normal font into a usable pixel-style test font in the browser.
+
+## Target Users
+
+- Product and brand designers who need a quick pixel/retro type treatment without drawing a full typeface.
+- Interface designers making game-like, terminal-like, lo-fi, or experimental UI concepts.
+- Indie game makers and creative coders who want a fast TTF starting point.
+- Type-curious creators who want to remix permissive fonts, with clear license reminders.
+
+## Core Journey
+
+1. Pick a bundled permissive demo font or upload a local TTF/OTF.
+2. Edit the sample text to judge the result on real copy.
+3. Tune pixel density, threshold, expand, and grid shift.
+4. Compare source and pixel output side by side.
+5. Download a ZIP with generated TTF and `NOTICE.txt`.
+
+## What The Effect Should Preserve
+
+- Overall source-font personality: serif/sans/mono feel, width, contrast, and rhythm.
+- Basic proportions: ascenders, descenders, x-height/cap-height relationship.
+- Readability at preview sizes.
+- A visible pixel-grid treatment that feels intentional, not just degraded.
+
+## MVP Export
+
+Current MVP export is intentionally narrow:
+
+- ZIP package with generated `.ttf`.
+- `NOTICE.txt` with source name, source file, license, upstream URL where relevant, and redistribution warning.
+- Bundled demo exports include the matching source OFL text under `licenses/`; user-upload exports do not invent license files.
+- Basic Latin glyph range.
+- Product-owned generated family naming (`Pixelplease Test`) to avoid reusing source Reserved Font Names.
+
+Future exports can add WOFF2, CSS snippets, glyph sheets, and named presets, but those are not launch blockers.
+
+## Decision Gate
+
+Go for public MVP if:
+
+- A user can understand the app within one screen and get a TTF in under one minute.
+- Generated fonts parse, load, and type in browser tests.
+- The demo-font path is self-contained and does not require runtime downloads from GitHub raw.
+- Licensing boundaries are visible: bundled demo fonts are permissive, user uploads stay local, and redistribution responsibility is clear.
+- SEO page framing explains the tool without turning the app into a generic landing page.
+
+No-go if:
+
+- Exported fonts regularly fail to parse/load.
+- The generated output looks like broken raster damage rather than a designed pixel treatment.
+- The product implies users can freely redistribute transformed commercial fonts.
+- Public launch depends on unstable external font URLs.

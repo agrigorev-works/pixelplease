@@ -7,6 +7,8 @@ export type NoticeSourceInfo = {
   sourceName: string;
   sourceFileName?: string;
   sourceLicense: string;
+  sourceLicenseFileName?: string;
+  sourceLicensePackagePath?: string;
   sourceUrl?: string;
 };
 
@@ -82,6 +84,10 @@ export function buildNoticeText(generatedFamilyName: string, source: NoticeSourc
     `Source font: ${source.sourceName}`,
     source.sourceFileName ? `Source file: ${source.sourceFileName}` : undefined,
     `Source license: ${source.sourceLicense}`,
+    source.sourceLicenseFileName ? `Source license file: ${source.sourceLicenseFileName}` : undefined,
+    source.sourceLicensePackagePath
+      ? `Bundled source license package path: ${source.sourceLicensePackagePath}`
+      : undefined,
     source.sourceUrl ? `Source URL: ${source.sourceUrl}` : undefined,
     "",
     "This generated font is a derivative of the source font.",

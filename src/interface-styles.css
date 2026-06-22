@@ -1,3 +1,39 @@
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/google/ibmplexsans/IBMPlexSans-var.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lato";
+  src: url("/fonts/google/lato/Lato-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libre Baskerville";
+  src: url("/fonts/google/librebaskerville/LibreBaskerville-var.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Merriweather";
+  src: url("/fonts/google/merriweather/Merriweather-var.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/google/robotomono/RobotoMono-var.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/google/spacegrotesk/SpaceGrotesk-var.ttf") format("truetype");
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   font-family:
@@ -32,6 +68,9 @@ label {
 }
 
 .app-shell {
+  --panel-min-height: 425px;
+  --panel-height: clamp(var(--panel-min-height), 52vh, 620px);
+
   width: 100%;
   margin: 0 auto;
   min-height: 100vh;
@@ -40,14 +79,15 @@ label {
 
 .license-reminder,
 .segment-option span,
-.field span {
+.field span,
+.footer-copy {
   font-size: 12px;
   line-height: 1.45;
 }
 
 .intro {
   display: grid;
-  grid-template-columns: minmax(0, 42ch) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 56ch) minmax(0, 1fr);
   gap: clamp(20px, 4vw, 48px);
   align-items: start;
   max-width: none;
@@ -85,14 +125,14 @@ h1 {
   grid-column: 1;
   grid-row: 1;
   justify-self: start;
-  max-width: 42ch;
+  max-width: 56ch;
   text-align: left;
 }
 
 @media (max-width: 1080px) {
   .intro {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 22px;
   }
 
   h1 {
@@ -134,7 +174,7 @@ h2 {
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 0;
-  height: clamp(360px, 52vh, 620px);
+  height: var(--panel-height);
   padding: 0;
   position: sticky;
   top: clamp(16px, 3vw, 40px);
@@ -184,8 +224,21 @@ h2 {
 }
 
 .license-reminder,
-.field span {
+.field span,
+.footer-copy {
   color: #555555;
+}
+
+.site-footer {
+  display: grid;
+  justify-items: center;
+  margin: clamp(48px, 5vw, 72px) auto 0;
+  text-align: center;
+}
+
+.footer-copy {
+  max-width: 68ch;
+  white-space: pre-line;
 }
 
 .source-toolbar {
@@ -214,7 +267,7 @@ select {
 
 .control-stack {
   display: grid;
-  gap: 22px;
+  gap: 18px;
 }
 
 .field {
@@ -264,6 +317,7 @@ select {
   display: grid;
   align-self: end;
   gap: 12px;
+  margin-top: 24px;
 }
 
 .secondary-action {
@@ -318,11 +372,11 @@ textarea:focus {
 }
 
 .preview-text,
-.demo-preview-canvas,
+.demo-preview-frame,
 .upload-zone {
   width: 100%;
-  height: clamp(360px, 52vh, 620px);
-  min-height: 360px;
+  height: var(--panel-height);
+  min-height: var(--panel-height);
   border: 1px solid #e1e1dc;
   background: #ffffff;
 }
@@ -345,9 +399,17 @@ textarea:focus {
   background: #ffffff;
 }
 
+.demo-preview-frame {
+  overflow: auto;
+}
+
 .demo-preview-canvas {
   display: block;
   align-self: start;
+  width: 100%;
+  min-width: 100%;
+  border: 0;
+  background: #ffffff;
   image-rendering: pixelated;
 }
 
@@ -411,7 +473,9 @@ textarea:focus {
 
 @media (max-width: 860px) {
   .app-shell {
-    padding: 24px 14px;
+    --panel-height: clamp(var(--panel-min-height), 54vh, 620px);
+
+    padding: clamp(24px, 4vw, 58px);
   }
 
   .workspace {
@@ -422,15 +486,14 @@ textarea:focus {
 
   .controls-panel {
     position: static;
-    height: auto;
-    gap: 36px;
+    height: var(--panel-height);
+    min-height: var(--panel-height);
+    gap: 0;
   }
 
   .preview-text,
-  .demo-preview-canvas,
+  .demo-preview-frame,
   .upload-zone {
-    height: 320px;
-    min-height: 320px;
     font-size: 34px;
   }
 }

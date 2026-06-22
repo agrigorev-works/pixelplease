@@ -12,6 +12,7 @@ import {
   createDownloadPackage,
   makePackageFileName,
   makeTtfFileName,
+  type DownloadPackageFile,
   type NoticeSourceInfo,
 } from "./download-package";
 import { UI_COPY } from "./interface-copy";
@@ -31,7 +32,10 @@ type DemoFontChoice = {
   family: string;
   cssFamily: string;
   license: "OFL" | "Apache-2.0";
+  licenseFileName: string;
+  licenseUrl: string;
   sourceUrl: string;
+  sourceReferenceUrl: string;
 };
 
 type GoogleSource = {
@@ -64,45 +68,71 @@ type SourceState =
       uploadedSource?: UploadedSource;
     };
 
+const OFL_LICENSE_URL = "https://openfontlicense.org";
+const SOURCE_LICENSE_PACKAGE_DIR = "licenses";
+
 const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
   {
     family: "IBM Plex Sans",
     cssFamily: '"IBM Plex Sans", system-ui, sans-serif',
     license: "OFL",
+    licenseFileName: "ibmplexsans-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
     sourceUrl:
+      "/fonts/google/ibmplexsans/IBMPlexSans-var.ttf",
+    sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
   },
   {
     family: "Lato",
     cssFamily: '"Lato", system-ui, sans-serif',
     license: "OFL",
-    sourceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf",
+    licenseFileName: "lato-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/lato/Lato-Regular.ttf",
+    sourceReferenceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf",
   },
   {
     family: "Libre Baskerville",
     cssFamily: '"Libre Baskerville", Georgia, serif',
     license: "OFL",
+    licenseFileName: "librebaskerville-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
     sourceUrl:
+      "/fonts/google/librebaskerville/LibreBaskerville-var.ttf",
+    sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
   },
   {
     family: "Merriweather",
     cssFamily: '"Merriweather", Georgia, serif',
     license: "OFL",
+    licenseFileName: "merriweather-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
     sourceUrl:
+      "/fonts/google/merriweather/Merriweather-var.ttf",
+    sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
   },
   {
     family: "Roboto Mono",
     cssFamily: '"Roboto Mono", ui-monospace, monospace',
     license: "OFL",
-    sourceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+    licenseFileName: "robotomono-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/robotomono/RobotoMono-var.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
   },
   {
     family: "Space Grotesk",
     cssFamily: '"Space Grotesk", system-ui, sans-serif',
     license: "OFL",
+    licenseFileName: "spacegrotesk-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
     sourceUrl:
+      "/fonts/google/spacegrotesk/SpaceGrotesk-var.ttf",
+    sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
   },
 ];
@@ -135,6 +165,8 @@ const resetButton = getElement<HTMLButtonElement>("reset-button");
 const downloadLink = getElement<HTMLAnchorElement>("download-link");
 const logoTitle = getElement<HTMLHeadingElement>("logo-title");
 const introCopy = getSelector<HTMLElement>(".intro-copy");
+const siteFooter = getSelector<HTMLElement>(".site-footer");
+const footerCopy = getSelector<HTMLElement>(".footer-copy");
 const sourcePanel = getSelector<HTMLElement>(".source-panel");
 const sourceModeControl = getSelector<HTMLFieldSetElement>(".source-mode-control");
 const sourceModeLegend = getSelector<HTMLElement>(".source-mode-control legend");
@@ -142,6 +174,7 @@ const outputPanel = getSelector<HTMLElement>(".output-panel");
 const controlsPanel = getSelector<HTMLElement>(".controls-panel");
 const sampleText = getElement<HTMLTextAreaElement>("sample-text");
 const afterPreview = getElement<HTMLElement>("after-preview");
+const demoPreviewFrame = getElement<HTMLElement>("demo-preview-frame");
 const demoPreviewCanvas = getElement<HTMLCanvasElement>("demo-preview-canvas");
 const appStatus = getElement<HTMLElement>("app-status");
 const sourceEditorLabel = getSelector<HTMLElement>("#source-editor-field .sr-only");
@@ -208,6 +241,8 @@ function applyInterfaceCopy(): void {
     part.textContent = UI_COPY.intro.logoParts[index] ?? "";
   });
   introCopy.textContent = UI_COPY.intro.copy;
+  siteFooter.setAttribute("aria-label", UI_COPY.footer.ariaLabel);
+  footerCopy.textContent = UI_COPY.footer.lines.join("\n");
 
   sourcePanel.setAttribute("aria-label", UI_COPY.sections.source);
   sourceModeControl.setAttribute("aria-label", UI_COPY.sections.sourceMode);
@@ -445,18 +480,20 @@ async function generatePixelFont(): Promise<void> {
   }
 
   try {
-    const generated = await pixelizeFont(generationSource.sourceFont, getPixelizeOptions(), (done, total) => {
-      if (run.isCurrent()) {
-        setStatus(UI_COPY.dynamicStatus.generatingProgress(done, total));
-      }
-    });
+    const generated = await pixelizeFont(
+      generationSource.sourceFont,
+      getPixelizeOptions(),
+      (done, total) => {
+        if (run.isCurrent()) {
+          setStatus(UI_COPY.dynamicStatus.generatingProgress(done, total));
+        }
+      },
+      getPixelizeMetadata(generationSource),
+    );
 
     const blob = new Blob([generated.arrayBuffer], { type: "font/ttf" });
     const url = URL.createObjectURL(blob);
-    const packageBlob = createDownloadPackage([
-      { name: makeTtfFileName(generated.familyName), data: generated.arrayBuffer },
-      { name: "NOTICE.txt", data: buildNoticeText(generated.familyName, getSourceNoticeInfo(generationSource)) },
-    ]);
+    const packageBlob = createDownloadPackage(await buildDownloadPackageFiles(generated, generationSource));
     const packageUrl = URL.createObjectURL(packageBlob);
 
     if (!run.isCurrent()) {
@@ -479,9 +516,10 @@ async function generatePixelFont(): Promise<void> {
       revokeUrl(previousGeneratedPackageUrl);
     }
     afterPreview.style.fontFamily = '"PixelizedPreviewFont", ui-monospace, monospace';
-    afterPreview.classList.remove("is-hidden");
+    afterPreview.classList.add("is-hidden");
     afterPreview.classList.remove("empty-preview");
-    demoPreviewCanvas.classList.add("is-hidden");
+    demoPreviewFrame.classList.remove("is-hidden");
+    demoPreviewCanvas.classList.remove("is-hidden");
     downloadLink.href = packageUrl;
     downloadLink.download = makePackageFileName(generated.familyName);
     downloadLink.classList.remove("is-disabled");
@@ -516,9 +554,9 @@ function syncSampleText(): void {
 
   if (state.generated) {
     afterPreview.textContent = value;
-  } else {
-    renderDemoPreview();
   }
+
+  renderDemoPreview();
 }
 
 function handleControlInput(): void {
@@ -606,6 +644,7 @@ function clearGeneratedFont(): void {
   afterPreview.classList.add("is-hidden");
   afterPreview.classList.remove("empty-preview");
   afterPreview.textContent = sampleText.value || " ";
+  demoPreviewFrame.classList.remove("is-hidden");
   demoPreviewCanvas.classList.remove("is-hidden");
   renderDemoPreview();
 }
@@ -655,30 +694,16 @@ async function handleDrop(event: DragEvent): Promise<void> {
 }
 
 function renderDemoPreview(): void {
-  if (state.generated || demoPreviewCanvas.classList.contains("is-hidden")) {
+  if (demoPreviewFrame.classList.contains("is-hidden") || demoPreviewCanvas.classList.contains("is-hidden")) {
     return;
   }
 
-  const rect = demoPreviewCanvas.getBoundingClientRect();
-  const width = Math.max(320, Math.round(rect.width || 720));
-  const height = Math.max(220, Math.round(rect.height || 280));
-  const dpr = window.devicePixelRatio || 1;
-  demoPreviewCanvas.width = Math.round(width * dpr);
-  demoPreviewCanvas.height = Math.round(height * dpr);
-
-  const context = demoPreviewCanvas.getContext("2d");
-  if (!context) {
-    return;
-  }
-
-  context.setTransform(dpr, 0, 0, dpr, 0, 0);
-  context.imageSmoothingEnabled = false;
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, width, height);
-
+  const frameRect = demoPreviewFrame.getBoundingClientRect();
+  const width = Math.max(1, Math.round(demoPreviewFrame.clientWidth || frameRect.width || 720));
+  const visibleHeight = Math.max(1, Math.round(demoPreviewFrame.clientHeight || frameRect.height || 280));
   const source = document.createElement("canvas");
   source.width = width;
-  source.height = height;
+  source.height = 1;
   const sourceContext = source.getContext("2d", { willReadFrequently: true });
   if (!sourceContext) {
     return;
@@ -688,32 +713,61 @@ function renderDemoPreview(): void {
   const previewStyles = getComputedStyle(sampleText);
   const previewFontSize = Number.parseFloat(previewStyles.fontSize) || 42;
   const previewLineHeight = Number.parseFloat(previewStyles.lineHeight) || previewFontSize * 1.12;
-  const previewPadding = Number.parseFloat(previewStyles.paddingLeft) || 16;
+  const previewPaddingLeft = Number.parseFloat(previewStyles.paddingLeft) || 16;
+  const previewPaddingRight = Number.parseFloat(previewStyles.paddingRight) || previewPaddingLeft;
+  const previewPaddingTop = Number.parseFloat(previewStyles.paddingTop) || previewPaddingLeft;
+  const previewPaddingBottom = Number.parseFloat(previewStyles.paddingBottom) || previewPaddingTop;
   const previewFontFamily =
     previewStyles.fontFamily || '"JetBrains Mono", "SFMono-Regular", ui-monospace, monospace';
   const cellSize = Math.max(1, Math.round(previewFontSize / options.pixelsPerEm));
   const shiftXPixels = options.shiftX ? options.shiftX * cellSize : 0;
   const shiftYPixels = options.shiftY ? options.shiftY * cellSize : 0;
+  sourceContext.font = `${previewFontSize}px ${previewFontFamily}`;
+  const lines = wrapText(sourceContext, sampleText.value || " ", width - previewPaddingLeft - previewPaddingRight);
+  const contentHeight = Math.max(
+    visibleHeight,
+    Math.ceil(previewPaddingTop + Math.max(0, shiftYPixels) + lines.length * previewLineHeight + previewPaddingBottom),
+  );
+  const dpr = window.devicePixelRatio || 1;
+
+  demoPreviewCanvas.style.height = `${contentHeight}px`;
+  demoPreviewCanvas.dataset.renderFontSize = `${previewFontSize}`;
+  demoPreviewCanvas.dataset.renderLineHeight = `${previewLineHeight}`;
+  demoPreviewCanvas.dataset.renderPaddingLeft = `${previewPaddingLeft}`;
+  demoPreviewCanvas.dataset.renderPaddingTop = `${previewPaddingTop}`;
+  demoPreviewCanvas.dataset.renderFontFamily = previewFontFamily;
+  demoPreviewCanvas.width = Math.round(width * dpr);
+  demoPreviewCanvas.height = Math.round(contentHeight * dpr);
+  source.height = contentHeight;
+
+  const context = demoPreviewCanvas.getContext("2d");
+  if (!context) {
+    return;
+  }
+
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+  context.imageSmoothingEnabled = false;
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, contentHeight);
 
   sourceContext.fillStyle = "#ffffff";
-  sourceContext.fillRect(0, 0, width, height);
+  sourceContext.fillRect(0, 0, width, contentHeight);
   sourceContext.fillStyle = "#111111";
   sourceContext.font = `${previewFontSize}px ${previewFontFamily}`;
   sourceContext.textBaseline = "top";
 
-  const lines = wrapText(sourceContext, sampleText.value || " ", width - previewPadding * 2);
-  lines.slice(0, 5).forEach((line, index) => {
+  lines.forEach((line, index) => {
     sourceContext.fillText(
       line,
-      previewPadding + shiftXPixels,
-      previewPadding + shiftYPixels + index * previewLineHeight,
+      previewPaddingLeft + shiftXPixels,
+      previewPaddingTop + shiftYPixels + index * previewLineHeight,
     );
   });
 
   const mask = createCellMaskFromImageData({
-    data: sourceContext.getImageData(0, 0, width, height).data,
+    data: sourceContext.getImageData(0, 0, width, contentHeight).data,
     width,
-    height,
+    height: contentHeight,
     cellSize,
     threshold: options.threshold,
     mode: "darkness",
@@ -736,6 +790,18 @@ function wrapText(context: CanvasRenderingContext2D, value: string, maxWidth: nu
   let current = "";
 
   for (const word of words.length > 0 ? words : [""]) {
+    if (context.measureText(word).width > maxWidth) {
+      if (current) {
+        lines.push(current);
+        current = "";
+      }
+
+      const chunks = splitWordByWidth(context, word, maxWidth);
+      lines.push(...chunks.slice(0, -1));
+      current = chunks.at(-1) ?? "";
+      continue;
+    }
+
     const next = current ? `${current} ${word}` : word;
     if (context.measureText(next).width <= maxWidth || !current) {
       current = next;
@@ -750,6 +816,27 @@ function wrapText(context: CanvasRenderingContext2D, value: string, maxWidth: nu
   }
 
   return lines.length > 0 ? lines : [" "];
+}
+
+function splitWordByWidth(context: CanvasRenderingContext2D, word: string, maxWidth: number): string[] {
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const character of Array.from(word)) {
+    const next = `${current}${character}`;
+    if (context.measureText(next).width <= maxWidth || !current) {
+      current = next;
+    } else {
+      chunks.push(current);
+      current = character;
+    }
+  }
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks.length > 0 ? chunks : [word];
 }
 
 function installFontFace(fontFamily: string, url: string): void {
@@ -775,6 +862,7 @@ function renderError(error: unknown, fallback: string): void {
   const message = error instanceof Error ? error.message : fallback;
   setStatus(UI_COPY.status.error);
   downloadLink.classList.add("is-disabled");
+  demoPreviewFrame.classList.add("is-hidden");
   demoPreviewCanvas.classList.add("is-hidden");
   afterPreview.classList.remove("is-hidden");
   afterPreview.classList.add("empty-preview");
@@ -793,11 +881,14 @@ function formatShiftValue(value: string): string {
 
 function getSourceNoticeInfo(source: ActiveSource): NoticeSourceInfo {
   if (source.kind === "google") {
+    const licensePackagePath = getSourceLicensePackagePath(source.demoFont);
     return {
       sourceName: source.demoFont.family,
-      sourceFileName: fileNameFromUrl(source.demoFont.sourceUrl),
+      sourceFileName: fileNameFromUrl(source.demoFont.sourceReferenceUrl),
       sourceLicense: source.demoFont.license,
-      sourceUrl: source.demoFont.sourceUrl,
+      sourceLicenseFileName: source.demoFont.licenseFileName,
+      sourceLicensePackagePath: licensePackagePath,
+      sourceUrl: source.demoFont.sourceReferenceUrl,
     };
   }
 
@@ -806,6 +897,38 @@ function getSourceNoticeInfo(source: ActiveSource): NoticeSourceInfo {
     sourceFileName: source.file.name,
     sourceLicense: "User-provided; rights not verified by pixelplease.",
   };
+}
+
+function getPixelizeMetadata(source: ActiveSource): { sourceLicenseUrl?: string } {
+  return source.kind === "google" ? { sourceLicenseUrl: source.demoFont.licenseUrl } : {};
+}
+
+async function buildDownloadPackageFiles(
+  generated: PixelizeResult,
+  source: ActiveSource,
+): Promise<DownloadPackageFile[]> {
+  const sourceNoticeInfo = getSourceNoticeInfo(source);
+  const files: DownloadPackageFile[] = [
+    { name: makeTtfFileName(generated.familyName), data: generated.arrayBuffer },
+    { name: "NOTICE.txt", data: buildNoticeText(generated.familyName, sourceNoticeInfo) },
+  ];
+
+  if (source.kind === "google") {
+    files.push({
+      name: getSourceLicensePackagePath(source.demoFont),
+      data: await fetchText(getSourceLicenseUrl(source.demoFont), `${source.demoFont.family} license`),
+    });
+  }
+
+  return files;
+}
+
+function getSourceLicensePackagePath(font: DemoFontChoice): string {
+  return `${SOURCE_LICENSE_PACKAGE_DIR}/${font.licenseFileName}`;
+}
+
+function getSourceLicenseUrl(font: DemoFontChoice): string {
+  return `/fonts/google/licenses/${font.licenseFileName}`;
 }
 
 function getActiveSource(): ActiveSource | undefined {
@@ -849,6 +972,26 @@ async function fetchFontBuffer(url: string, label: string): Promise<ArrayBuffer>
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error(`${label} font fetch timed out.`);
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+async function fetchText(url: string, label: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), FONT_FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    return await response.text();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(`${label} fetch timed out.`);
     }
     throw error;
   } finally {
