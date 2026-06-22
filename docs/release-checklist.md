@@ -14,6 +14,7 @@
 - Final domain canonical URL and `og:url`.
 - `robots.txt` and `sitemap.xml`.
 - Root `/llms.txt` AI-discovery context file.
+- GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts.
 - Product brief, MVP workflow, and SEO proposal.
 
 ## Before Public URL

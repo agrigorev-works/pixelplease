@@ -1,4 +1,5 @@
 import "./interface-styles.css";
+import { initializeAnalytics } from "./analytics";
 import {
   getFontLabel,
   parseFont,
@@ -17,6 +18,8 @@ import {
 } from "./download-package";
 import { UI_COPY } from "./interface-copy";
 import type opentype from "opentype.js";
+
+initializeAnalytics();
 
 type AppState = {
   source: SourceState;

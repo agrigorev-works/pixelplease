@@ -66,6 +66,7 @@ The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.
 - The upstream Google Fonts URLs are still kept in generated `NOTICE.txt` packages for source traceability.
 - Favicon and app icon assets are served from `public/`.
 - LLM-friendly product context is available at `/llms.txt` in deployed builds.
+- GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics.
 - SEO and launch planning live in `docs/seo-proposal.md`, `docs/product-brief.md`, `docs/mvp-workflow.md`, and `docs/release-checklist.md`.
 
 ## MVP Limits

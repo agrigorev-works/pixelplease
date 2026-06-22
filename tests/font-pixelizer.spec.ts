@@ -87,6 +87,14 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(structuredData).toContain('"url": "https://pixelplease.tools/"');
 });
 
+test("does not load Google Analytics on local preview hosts", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.locator('script[src*="googletagmanager.com/gtag/js"]')).toHaveCount(0);
+  const dataLayer = await page.evaluate(() => window.dataLayer);
+  expect(dataLayer).toBeUndefined();
+});
+
 test("uses the available desktop viewport instead of a fixed narrow shell", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto("/");

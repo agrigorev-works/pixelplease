@@ -96,11 +96,18 @@ Done now:
 - `robots.txt` and `sitemap.xml`.
 - SoftwareApplication structured data.
 - Root `/llms.txt` file for LLM-friendly product context.
+- GA4 measurement `G-717BB12JJ8`, loaded only on `pixelplease.tools` and `www.pixelplease.tools`.
 
 Add after final domain:
 
 - Social preview image.
 - Search Console property.
+
+Analytics note:
+
+- GA4 tracks the production pageview only.
+- The app does not send uploaded font files, generated font data, or edited sample text to analytics.
+- Local, LAN, Playwright, and temporary `ondigitalocean.app` hosts do not load the Google tag.
 
 ## AI Discovery
 

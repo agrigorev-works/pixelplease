@@ -10,6 +10,11 @@ import {
 } from "../src/font-pixelizer";
 import { createCellMaskFromImageData } from "../src/pixel-grid";
 import { buildNoticeText, createStoredZip } from "../src/download-package";
+import {
+  GA_MEASUREMENT_ID,
+  getGoogleTagScriptSrc,
+  shouldEnableAnalytics,
+} from "../src/analytics";
 
 const metrics: FontMetrics = {
   unitsPerEm: 1000,
@@ -18,6 +23,24 @@ const metrics: FontMetrics = {
 };
 
 describe("font pixelizer core", () => {
+  it("enables analytics only on the final production domain", () => {
+    expect(shouldEnableAnalytics("pixelplease.tools")).toBe(true);
+    expect(shouldEnableAnalytics("www.pixelplease.tools")).toBe(true);
+    expect(shouldEnableAnalytics(" Pixelplease.Tools ")).toBe(true);
+
+    expect(shouldEnableAnalytics("127.0.0.1")).toBe(false);
+    expect(shouldEnableAnalytics("localhost")).toBe(false);
+    expect(shouldEnableAnalytics("192.168.0.33")).toBe(false);
+    expect(shouldEnableAnalytics("pixelplease-mc6f2.ondigitalocean.app")).toBe(false);
+  });
+
+  it("uses the configured GA4 measurement id", () => {
+    expect(GA_MEASUREMENT_ID).toBe("G-717BB12JJ8");
+    expect(getGoogleTagScriptSrc()).toBe(
+      "https://www.googletagmanager.com/gtag/js?id=G-717BB12JJ8",
+    );
+  });
+
   it("groups adjacent cells into rectangular path runs", () => {
     const mask: CellMask = {
       cols: 4,
