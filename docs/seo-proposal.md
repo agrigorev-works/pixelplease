@@ -54,7 +54,7 @@ pixel font generator for TTF exports - pixelplease
 Current implementation:
 
 ```text
-Turn a font into a pixel-style typeface in your browser. Upload your own font or start with a bundled demo, tune the effect, and export a TTF package.
+Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf
 ```
 
 Shorter alternate:
@@ -133,7 +133,7 @@ Current implementation:
   "name": "pixelplease",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
-  "description": "A browser-based pixel font generator for previewing, tuning, and exporting TTF packages.",
+  "description": "Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf",
   "url": "https://pixelplease.tools/"
 }
 </script>

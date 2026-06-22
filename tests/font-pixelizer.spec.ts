@@ -92,6 +92,9 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
     "content",
     "https://pixelplease.tools/og-image.png",
   );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", UI_COPY.intro.copy);
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", UI_COPY.intro.copy);
+  await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute("content", UI_COPY.intro.copy);
 
   const socialImageResponse = await page.request.get("/og-image.png");
   expect(socialImageResponse.ok()).toBe(true);
@@ -100,6 +103,9 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
   expect(structuredData).toContain('"@type": "SoftwareApplication"');
   expect(structuredData).toContain('"url": "https://pixelplease.tools/"');
+  expect(JSON.parse(structuredData ?? "{}")).toMatchObject({
+    description: UI_COPY.intro.copy,
+  });
 });
 
 test("does not load Google Analytics on local preview hosts", async ({ page }) => {
