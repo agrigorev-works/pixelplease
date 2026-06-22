@@ -7,13 +7,13 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "generate:og-image": "node scripts/generate-og-image.mjs",
+    "check:og-image": "node scripts/check-og-image.mjs",
     "prepare:samples": "node scripts/prepare-samples.mjs",
     "clean": "rm -rf dist test-results test-artifacts",
     "test": "vitest run tests/*.test.ts",
     "test:smoke": "npm run build && npm run prepare:samples && playwright test",
     "test:launch": "npm run build && npm run prepare:samples && playwright test -c playwright.launch.config.ts",
-    "verify": "npm run test && npm run test:smoke"
+    "verify": "npm run check:og-image && npm run test && npm run test:smoke"
   },
   "dependencies": {
     "opentype.js": "^1.3.4"
