@@ -3,6 +3,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   testMatch: /.*\.spec\.ts/,
+  testIgnore: /launch-sanity\.spec\.ts/,
   timeout: 30_000,
   expect: {
     timeout: 10_000,

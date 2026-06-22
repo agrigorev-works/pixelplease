@@ -89,9 +89,10 @@ Done now:
 - Descriptive static `<title>`.
 - Meta description.
 - `robots` directive.
-- Open Graph and Twitter summary tags.
+- Open Graph and Twitter card tags.
 - Client-side privacy is reflected in copy.
 - Favicon and app icon assets.
+- Social preview image at `https://pixelplease.tools/og-image.png`.
 - Canonical URL and `og:url` for `https://pixelplease.tools/`.
 - `robots.txt` and `sitemap.xml`.
 - SoftwareApplication structured data.
@@ -100,7 +101,6 @@ Done now:
 
 Add after final domain:
 
-- Social preview image.
 - Search Console property.
 
 Analytics note:

@@ -81,6 +81,21 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://pixelplease.tools/");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    "https://pixelplease.tools/og-image.png",
+  );
+  await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1200");
+  await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute("content", "630");
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+    "content",
+    "https://pixelplease.tools/og-image.png",
+  );
+
+  const socialImageResponse = await page.request.get("/og-image.png");
+  expect(socialImageResponse.ok()).toBe(true);
+  expect(socialImageResponse.headers()["content-type"]).toContain("image/png");
 
   const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
   expect(structuredData).toContain('"@type": "SoftwareApplication"');

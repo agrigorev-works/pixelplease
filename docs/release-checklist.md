@@ -12,17 +12,20 @@
 - Basic SEO head tags in `index.html`.
 - Favicon and app icon assets.
 - Final domain canonical URL and `og:url`.
+- Social preview image and `og:image` / Twitter image metadata.
 - `robots.txt` and `sitemap.xml`.
 - Root `/llms.txt` AI-discovery context file.
 - GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts.
+- Cross-browser launch sanity coverage.
+- Generated ZIP package license spot-check: demo exports include bundled OFL text; user uploads do not invent a license URL.
 - Product brief, MVP workflow, and SEO proposal.
 
 ## Before Public URL
 
-- Add social preview image.
-- Re-check generated ZIP packages include the bundled source license file for demo fonts and no unverified license URL for user uploads.
-- Run final manual browser sanity: Chrome, Safari, Firefox, iPhone width, and a larger uploaded font.
 - Add Search Console after DNS is live.
+- Add GitHub Actions CI after GitHub credentials allow pushing workflow files.
+- Optional final real-device spot check in Safari/iPhone after DNS finishes propagating.
+- Decide whether `www.pixelplease.tools` should be added as a DNS/app alias.
 
 ## Nice Next Iterations
 
