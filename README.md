@@ -9,6 +9,7 @@ This branch contains a minimal mono, three-column variation of the first proof o
 - start each session with the deterministic Merriweather demo font;
 - upload a local `.ttf` / `.otf` through a same-size Source drop zone;
 - remind users to upload only fonts they have a license to edit;
+- state that uploaded fonts stay in the browser;
 - parse glyphs with `opentype.js`;
 - apply a simple pixelization effect;
 - tune pixels-per-em, threshold, expand, and X/Y grid shift;
@@ -69,6 +70,7 @@ The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.
 - LLM-friendly product context is available at `/llms.txt` in deployed builds.
 - GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics.
 - `npm run test:launch` runs a small launch sanity suite across Chromium, Firefox, WebKit, and a mobile Chromium viewport.
+- Mobile/coarse-pointer first run avoids auto-focusing the Source textarea so the keyboard does not immediately cover the app.
 - SEO and launch planning live in `docs/seo-proposal.md`, `docs/product-brief.md`, `docs/mvp-workflow.md`, and `docs/release-checklist.md`.
 
 ## MVP Limits

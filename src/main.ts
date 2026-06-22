@@ -221,10 +221,10 @@ void initializeLogoFont();
 syncSourceModeUI();
 syncControlLabels();
 syncSampleText();
-focusSourceTextAtEnd();
+focusSourceTextAtEndIfSafe();
 void document.fonts.ready.then(() => {
   renderDemoPreview();
-  focusSourceTextAtEnd();
+  focusSourceTextAtEndIfSafe();
 });
 
 async function handleUpload(): Promise<void> {
@@ -1041,6 +1041,20 @@ function focusSourceTextAtEnd(): void {
   const end = sampleText.value.length;
   sampleText.focus({ preventScroll: true });
   sampleText.setSelectionRange(end, end);
+}
+
+function focusSourceTextAtEndIfSafe(): void {
+  const shouldAvoidAutoFocus =
+    window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0 || window.innerWidth < 760;
+
+  if (shouldAvoidAutoFocus) {
+    if (document.activeElement === sampleText) {
+      sampleText.blur();
+    }
+    return;
+  }
+
+  focusSourceTextAtEnd();
 }
 
 function getElement<T extends HTMLElement>(id: string): T {

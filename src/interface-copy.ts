@@ -35,7 +35,7 @@ export const UI_COPY = {
     sampleTextDefault:
       "Hey, this is pixelplease. I quickly pixelize fonts, adding brutal web grit and old monitor vibes to your interface 123.",
     uploadTitle: "drop a TTF/OTF here",
-    licenseReminder: "Please use only fonts you have a license to edit",
+    licenseReminder: "Files stay in your browser. Use only fonts you have a license to edit",
   },
   controls: {
     pixelsPerEm: "pixels-per-em",
@@ -52,7 +52,7 @@ export const UI_COPY = {
   footer: {
     ariaLabel: "Usage note",
     lines: [
-      "Please use fonts according to the original typeface license.",
+      "Uploaded fonts stay in your browser. Use source fonts according to their license.",
       "Keep required copyright, license, and notice files when sharing.",
     ],
   },

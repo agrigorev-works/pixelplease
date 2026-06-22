@@ -17,6 +17,7 @@
 - Root `/llms.txt` AI-discovery context file.
 - GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts.
 - Cross-browser launch sanity coverage.
+- Mobile/coarse-pointer first run does not autofocus the Source textarea, and local-only upload privacy copy is visible.
 - Generated ZIP package license spot-check: demo exports include bundled OFL text; user uploads do not invent a license URL.
 - Product brief, MVP workflow, and SEO proposal.
 
