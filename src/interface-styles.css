@@ -198,6 +198,9 @@ h2 {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .segment-option + .segment-option {
@@ -233,48 +236,72 @@ h2 {
 .site-footer {
   display: grid;
   justify-items: center;
-  margin: clamp(48px, 5vw, 72px) auto 0;
+  margin: 0 auto;
   text-align: center;
 }
 
 .footer-copy {
   max-width: 68ch;
+  color: #555555;
+  font-size: 13px;
+  line-height: 1.58;
+  letter-spacing: 0;
   white-space: pre-line;
 }
 
 .faq-section {
   margin: clamp(64px, 8vw, 112px) auto 0;
-  padding-top: clamp(32px, 5vw, 64px);
-  border-top: 1px solid #e1e1dc;
 }
 
 .faq-inner {
   display: grid;
-  grid-template-columns: minmax(160px, 280px) minmax(0, 1fr);
-  gap: clamp(28px, 5vw, 80px);
+  gap: 16px;
   align-items: start;
+  max-width: 980px;
+  margin: 0 auto;
 }
 
 .faq-section h2 {
-  position: sticky;
-  top: clamp(16px, 3vw, 40px);
-  font-family: "Merriweather", Georgia, serif;
+  justify-self: center;
+  font-family: "PixelpleaseLogoFont", "Merriweather", Georgia, serif;
   font-size: clamp(26px, 4vw, 48px);
   line-height: 1;
   font-weight: 600;
+  text-align: center;
 }
 
 .faq-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(24px, 3vw, 42px) clamp(24px, 4vw, 56px);
+  margin-top: clamp(18px, 3vw, 34px);
+  border-top: 1px solid #e1e1dc;
 }
 
 .faq-item {
-  display: grid;
-  gap: 9px;
-  align-content: start;
   min-width: 0;
+  border-bottom: 1px solid #e1e1dc;
+}
+
+.faq-item summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 58px;
+  padding: 17px 16px;
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 4px;
 }
 
 .faq-item h3 {
@@ -287,19 +314,43 @@ h2 {
 
 .faq-item p {
   color: #555555;
+  max-width: none;
+  padding: 0 16px 18px;
   font-size: 13px;
   line-height: 1.58;
   letter-spacing: 0;
 }
 
-@media (max-width: 1080px) {
-  .faq-inner {
-    grid-template-columns: 1fr;
-  }
+.faq-toggle {
+  position: relative;
+  display: block;
+  width: 15px;
+  height: 15px;
+  color: #111111;
+}
 
-  .faq-section h2 {
-    position: static;
-  }
+.faq-toggle::before,
+.faq-toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 1px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.faq-toggle::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.faq-item[open] .faq-toggle::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(90deg) scaleX(0.35);
 }
 
 .source-toolbar {
@@ -324,6 +375,13 @@ select {
   background: #ffffff;
   color: #111111;
   font: inherit;
+  cursor: pointer;
+  outline: 1px solid transparent;
+  outline-offset: 0;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    outline-color 140ms ease;
 }
 
 .control-stack {
@@ -347,6 +405,8 @@ select {
   grid-column: 1 / -1;
   width: 100%;
   accent-color: #111111;
+  cursor: pointer;
+  transition: filter 140ms ease;
 }
 
 .secondary-action,
@@ -364,6 +424,7 @@ select {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+  transition: outline-color 140ms ease;
 }
 
 .replace-font-button {
@@ -487,6 +548,56 @@ textarea:focus {
   color: #111111;
   cursor: pointer;
   text-align: center;
+  transition:
+    background-color 140ms ease,
+    outline-color 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segment-option:hover:not(:has(input:checked)),
+  .faq-item summary:hover {
+    background: #f5f5f5;
+  }
+
+  select:hover,
+  textarea:hover:not(:focus) {
+    border-color: #111111;
+    background: #ffffff;
+  }
+
+  select:hover {
+    outline-color: #111111;
+  }
+
+  .field:hover span,
+  .field:hover output {
+    color: #111111;
+  }
+
+  .field:hover input {
+    filter: contrast(1.18);
+  }
+
+  .secondary-action:not(:disabled):hover {
+    background: #f5f5f5;
+    color: #111111;
+  }
+
+  .replace-font-button:hover {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  .download-action:not(.is-disabled):hover {
+    outline: 1px solid #111111;
+    outline-offset: 3px;
+  }
+
+  .upload-zone:hover {
+    background: #f5f5f5;
+    outline: 1px solid #111111;
+    outline-offset: -8px;
+  }
 }
 
 .upload-zone.is-dragging {

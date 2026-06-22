@@ -2,15 +2,19 @@
 
 ## Positioning
 
-pixelplease is a browser-based pixel font generator for designers, interface makers, and game-adjacent product teams. It takes a source font, applies a pixel-grid transformation, lets the user preview and tune the result, and exports a test TTF package.
+pixelplease is a browser-based pixel font generator for graphic designers, interface designers, and type experimenters. It takes a source font, applies a pixel-grid transformation, lets the user preview and tune the result, and exports a usable test TTF rather than a static image effect.
 
 The sharp product promise:
 
-> Turn a normal font into a usable pixel-style test font in the browser.
+> Turn a normal font into a usable pixel-style test TTF in the browser.
+
+SEO headline direction:
+
+> The fastest way to create a custom pixel font.
 
 ## Target Users
 
-- Product and brand designers who need a quick pixel/retro type treatment without drawing a full typeface.
+- Product, brand, and poster designers who need a quick pixel/retro type treatment without drawing a full typeface.
 - Interface designers making game-like, terminal-like, lo-fi, or experimental UI concepts.
 - Indie game makers and creative coders who want a fast TTF starting point.
 - Type-curious creators who want to remix permissive fonts, with clear license reminders.
@@ -22,6 +26,7 @@ The sharp product promise:
 3. Tune pixel density, threshold, expand, and grid shift.
 4. Compare source and pixel output side by side.
 5. Download a ZIP with generated TTF and `NOTICE.txt`.
+6. Install the generated `.ttf` and test it in design tools, interface mockups, posters, or any app that accepts TTF fonts.
 
 ## What The Effect Should Preserve
 

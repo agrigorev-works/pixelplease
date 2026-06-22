@@ -4,11 +4,11 @@
 
 Primary category:
 
-> Browser-based pixel font generator.
+> Fastest way to create a custom pixel font.
 
 Core message:
 
-> pixelplease turns a source font into a pixel-style typeface directly in the browser. Upload a font or start from a bundled permissive demo font, tune the pixel effect, preview the result, and export a TTF package.
+> pixelplease turns a source font into a usable pixel-style typeface directly in the browser. Upload a font or start from a bundled permissive demo font, tune the pixel effect, preview the result, and export an installable TTF package instead of a static image effect.
 
 ## Keyword Clusters
 
@@ -26,6 +26,7 @@ Secondary:
 - browser font generator
 - retro font generator
 - pixel typography tool
+- installable pixel font
 
 Long-tail:
 
@@ -33,18 +34,20 @@ Long-tail:
 - turn Google Font into pixel font
 - generate pixel TTF from font
 - make retro pixel font from existing font
+- make a usable pixel font for posters and interfaces
 
 ## Recommended Page Title
 
 Best default:
 
 ```text
-pixelplease - pixel font generator
+pixelplease - fastest way to create a custom pixel font
 ```
 
 Alternates:
 
 ```text
+pixelplease - pixel font generator
 pixelplease - make pixel fonts in your browser
 pixel font generator for TTF exports - pixelplease
 ```
@@ -60,7 +63,7 @@ Create a pixel-style font from a regular typeface. Upload your own font or start
 Shorter alternate:
 
 ```text
-Turn a font into a pixel-style typeface in your browser. Upload a font, tune the pixel effect, preview, and export a ZIP package.
+Turn a font into a usable pixel-style typeface in your browser. Upload a font, tune the effect, preview, and export an installable TTF package.
 ```
 
 ## First Page Structure
@@ -76,7 +79,7 @@ Keep the tool as the first screen. Add lightweight SEO content below the working
 
 Implemented FAQ topics:
 
-- What is pixelplease?
+- What is the fastest way to create a custom pixel font?
 - How do I turn a regular font into a pixel font?
 - Can I start from a Google font?
 - Can I upload my own TTF or OTF font?

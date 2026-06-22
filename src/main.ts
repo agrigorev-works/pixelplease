@@ -363,7 +363,7 @@ function setSourceMode(mode: SourceMode): void {
   syncSourceModeUI();
 
   if (!sourceEditorField.classList.contains("is-hidden")) {
-    focusSourceTextAtEnd();
+    focusSourceTextAtEndIfSafe();
   }
 }
 
@@ -405,7 +405,7 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
     };
     installSourcePreviewFont(state.source.googleSource);
     syncSourceModeUI();
-    focusSourceTextAtEnd();
+    focusSourceTextAtEndIfSafe();
     await generatePixelFont();
   } catch (error) {
     if (loadRun.isCurrent() && state.source.mode === "google" && state.source.selectedDemoFont === font) {
@@ -454,7 +454,7 @@ async function loadFontFile(file: File): Promise<void> {
     setStatus(UI_COPY.dynamicStatus.generatingFrom(label));
     googleFontSelect.disabled = true;
     syncSourceModeUI();
-    focusSourceTextAtEnd();
+    focusSourceTextAtEndIfSafe();
     await generatePixelFont();
   } catch (error) {
     if (loadRun.isCurrent()) {
@@ -661,7 +661,7 @@ function activateUploadedFont(): void {
   installSourcePreviewFont(uploadedSource);
   setStatus(UI_COPY.dynamicStatus.generatingFrom(getFontLabel(uploadedSource.sourceFont)));
   syncSourceModeUI();
-  focusSourceTextAtEnd();
+  focusSourceTextAtEndIfSafe();
   void generatePixelFont();
 }
 

@@ -79,8 +79,11 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(sitemap).toContain("<lastmod>2026-06-22</lastmod>");
 
   await page.goto("/");
+  await expect(page).toHaveTitle(UI_COPY.documentTitle);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://pixelplease.tools/");
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", UI_COPY.documentTitle);
+  await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute("content", UI_COPY.documentTitle);
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
     "https://pixelplease.tools/og-image.png",
@@ -112,26 +115,162 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   });
   expect(faqPage?.mainEntity).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ name: "What is pixelplease?" }),
+      expect.objectContaining({ name: "What is the fastest way to create a custom pixel font?" }),
       expect.objectContaining({ name: "Can I use the exported pixel font commercially?" }),
     ]),
   );
+  expect(JSON.stringify(faqPage)).toContain("usable pixel-style TTF");
+  expect(JSON.stringify(faqPage)).toContain("not just a raster image effect");
 });
 
 test("renders the SEO FAQ below the working app", async ({ page }) => {
   await page.goto("/");
+  await page.locator(".faq-section").scrollIntoViewIfNeeded();
 
   await expect(page.getByRole("heading", { name: "FAQ" })).toBeVisible();
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });
   await expect(page.locator(".faq-item")).toHaveCount(10);
-  await expect(page.getByRole("heading", { name: "What is pixelplease?" })).toBeVisible();
-  await expect(page.getByText("browser-based pixel font generator")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What is the fastest way to create a custom pixel font?" })).toBeVisible();
+  await expect(page.locator(".faq-toggle")).toHaveCount(10);
+  await expect(page.locator(".faq-item[open]")).toHaveCount(0);
+  await expect(page.locator(".faq-item").first().locator("p")).toBeHidden();
+  await expect(page.locator(".faq-section .footer-copy")).toHaveText(UI_COPY.footer.lines.join("\n"));
+
+  const closedMetrics = await page.locator(".faq-item").first().evaluate((item) => {
+    const summary = item.querySelector("summary");
+    const heading = item.querySelector("h3");
+    const toggle = item.querySelector(".faq-toggle");
+    if (!summary || !heading || !toggle) {
+      throw new Error("Missing FAQ controls");
+    }
+
+    const summaryBox = summary.getBoundingClientRect();
+    const headingBox = heading.getBoundingClientRect();
+    const toggleBox = toggle.getBoundingClientRect();
+    const toggleStyles = getComputedStyle(toggle);
+
+    return {
+      summaryHeight: summaryBox.height,
+      headingTopDelta: headingBox.top - summaryBox.top,
+      headingLeftDelta: headingBox.left - summaryBox.left,
+      toggleTopDelta: toggleBox.top - summaryBox.top,
+      toggleRightDelta: summaryBox.right - toggleBox.right,
+      toggleBorderWidth: toggleStyles.borderWidth,
+      toggleBorderRadius: toggleStyles.borderRadius,
+    };
+  });
+
+  await page.locator(".faq-item").first().locator("summary").click();
+  await expect(page.locator(".faq-item").first()).toHaveAttribute("open", "");
+  await expect(page.locator(".faq-item").first().locator("p")).toContainText("browser-based pixel font generator");
+  await expect(page.locator(".faq-item").first().locator("p")).toContainText("usable pixel-style TTF");
+  await expect(page.locator(".faq-item").first().locator("p")).toContainText("not just a raster image effect");
+  await expect(page.locator(".faq-item").first().locator("p")).toBeVisible();
+  const openMetrics = await page.locator(".faq-item").first().evaluate((item) => {
+    const summary = item.querySelector("summary");
+    const heading = item.querySelector("h3");
+    const answer = item.querySelector("p");
+    const toggle = item.querySelector(".faq-toggle");
+    if (!summary || !heading || !answer || !toggle) {
+      throw new Error("Missing FAQ expanded state");
+    }
+
+    const summaryBox = summary.getBoundingClientRect();
+    const headingBox = heading.getBoundingClientRect();
+    const answerBox = answer.getBoundingClientRect();
+    const itemBox = item.getBoundingClientRect();
+    const toggleBox = toggle.getBoundingClientRect();
+    const answerStyles = getComputedStyle(answer);
+
+    return {
+      summaryHeight: summaryBox.height,
+      headingTopDelta: headingBox.top - summaryBox.top,
+      headingLeftDelta: headingBox.left - summaryBox.left,
+      answerLeft: answerBox.left,
+      answerRight: answerBox.right,
+      itemLeft: itemBox.left,
+      itemRight: itemBox.right,
+      toggleTopDelta: toggleBox.top - summaryBox.top,
+      toggleRightDelta: summaryBox.right - toggleBox.right,
+      answerPaddingLeft: answerStyles.paddingLeft,
+      answerPaddingRight: answerStyles.paddingRight,
+    };
+  });
+
+  await page.locator(".faq-item").first().locator("summary").click();
+  await expect(page.locator(".faq-item[open]")).toHaveCount(0);
+  await expect(page.locator(".faq-item").first().locator("p")).toBeHidden();
+
+  await page.locator(".faq-item").filter({ hasText: "Where does pixelplease process my font?" }).locator("summary").click();
+  await expect(page.locator(".faq-item").filter({ hasText: "Where does pixelplease process my font?" })).toHaveAttribute(
+    "open",
+    "",
+  );
   await expect(page.getByText("Uploaded fonts are not sent to a server")).toBeVisible();
-  await expect(page.getByText("source font terms")).toBeVisible();
+  await page
+    .locator(".faq-item")
+    .filter({ hasText: "How do I export and install the pixel font?" })
+    .locator("summary")
+    .click();
+  await expect(page.getByText("design tools, interface mockups, posters")).toBeVisible();
 
-  const faqTop = await page.locator(".faq-section").evaluate((element) => element.getBoundingClientRect().top);
-  const workspaceTop = await page.locator(".workspace").evaluate((element) => element.getBoundingClientRect().top);
+  const faqMetrics = await page.locator(".faq-section").evaluate((section) => {
+    const workspace = document.querySelector(".workspace");
+    const heading = document.querySelector("#faq-heading");
+    const footer = section.querySelector(".site-footer");
+    const list = section.querySelector(".faq-list");
+    if (!workspace || !heading || !footer || !list) {
+      throw new Error("Missing FAQ layout elements");
+    }
 
-  expect(faqTop).toBeGreaterThan(workspaceTop);
+    const sectionBox = section.getBoundingClientRect();
+    const workspaceBox = workspace.getBoundingClientRect();
+    const headingBox = heading.getBoundingClientRect();
+    const footerBox = footer.getBoundingClientRect();
+    const listBox = list.getBoundingClientRect();
+    const sectionStyles = getComputedStyle(section);
+    const headingStyles = getComputedStyle(heading);
+    const footerCopy = section.querySelector(".footer-copy");
+    if (!footerCopy) {
+      throw new Error("Missing FAQ footer copy");
+    }
+    const footerRange = document.createRange();
+    footerRange.selectNodeContents(footerCopy);
+    const footerLineCount = new Set(
+      Array.from(footerRange.getClientRects()).map((rect) => Math.round(rect.top)),
+    ).size;
+    footerRange.detach();
+
+    return {
+      faqTop: sectionBox.top,
+      workspaceTop: workspaceBox.top,
+      borderTopWidth: sectionStyles.borderTopWidth,
+      headingCenterDelta: Math.abs(headingBox.left + headingBox.width / 2 - (sectionBox.left + sectionBox.width / 2)),
+      headingFontFamily: headingStyles.fontFamily,
+      footerBelowHeading: footerBox.top > headingBox.bottom,
+      footerAboveList: footerBox.bottom < listBox.top,
+      footerLineCount,
+    };
+  });
+
+  expect(closedMetrics.toggleBorderWidth).toBe("0px");
+  expect(closedMetrics.toggleBorderRadius).toBe("0px");
+  expect(Math.abs(openMetrics.summaryHeight - closedMetrics.summaryHeight)).toBeLessThan(1);
+  expect(Math.abs(openMetrics.headingTopDelta - closedMetrics.headingTopDelta)).toBeLessThan(1);
+  expect(Math.abs(openMetrics.headingLeftDelta - closedMetrics.headingLeftDelta)).toBeLessThan(1);
+  expect(Math.abs(openMetrics.toggleTopDelta - closedMetrics.toggleTopDelta)).toBeLessThan(1);
+  expect(Math.abs(openMetrics.toggleRightDelta - closedMetrics.toggleRightDelta)).toBeLessThan(1);
+  expect(openMetrics.answerPaddingLeft).toBe("16px");
+  expect(openMetrics.answerPaddingRight).toBe("16px");
+  expect(Math.abs(openMetrics.answerLeft - openMetrics.itemLeft)).toBeLessThan(1);
+  expect(Math.abs(openMetrics.answerRight - openMetrics.itemRight)).toBeLessThan(1);
+  expect(faqMetrics.faqTop).toBeGreaterThan(faqMetrics.workspaceTop);
+  expect(faqMetrics.borderTopWidth).toBe("0px");
+  expect(faqMetrics.headingCenterDelta).toBeLessThan(1);
+  expect(faqMetrics.headingFontFamily).toContain("PixelpleaseLogoFont");
+  expect(faqMetrics.footerBelowHeading).toBe(true);
+  expect(faqMetrics.footerAboveList).toBe(true);
+  expect(faqMetrics.footerLineCount).toBe(UI_COPY.footer.lines.length);
 });
 
 test("does not load Google Analytics on local preview hosts", async ({ page }) => {
@@ -140,6 +279,46 @@ test("does not load Google Analytics on local preview hosts", async ({ page }) =
   await expect(page.locator('script[src*="googletagmanager.com/gtag/js"]')).toHaveCount(0);
   const dataLayer = await page.evaluate(() => window.dataLayer);
   expect(dataLayer).toBeUndefined();
+});
+
+test("adds light desktop hover feedback to interactive controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+
+  await page.locator("#google-font-select").hover();
+  await expect(page.locator("#google-font-select")).toHaveCSS("border-color", "rgb(17, 17, 17)");
+  await expect(page.locator("#google-font-select")).toHaveCSS("outline-color", "rgb(17, 17, 17)");
+  await expect(page.locator("#google-font-select")).toHaveCSS("cursor", "pointer");
+
+  await page.locator(".segment-option").nth(1).hover();
+  await expect(page.locator(".segment-option").nth(1)).toHaveCSS("background-color", "rgb(245, 245, 245)");
+
+  await page.locator(".field").first().hover();
+  await expect(page.locator(".field").first().locator("span")).toHaveCSS("color", "rgb(17, 17, 17)");
+  await expect(page.locator("#pixels-per-em")).toHaveCSS("cursor", "pointer");
+
+  await page.locator("#pixels-per-em").fill("21");
+  await expect(page.getByRole("button", { name: UI_COPY.controls.resetDefaults })).toBeEnabled();
+  await page.getByRole("button", { name: UI_COPY.controls.resetDefaults }).hover();
+  await expect(page.getByRole("button", { name: UI_COPY.controls.resetDefaults })).toHaveCSS(
+    "background-color",
+    "rgb(245, 245, 245)",
+  );
+
+  await page.locator("#download-link").hover();
+  await expect(page.locator("#download-link")).toHaveCSS("outline-style", "solid");
+
+  await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
+  await expect(page.locator("#upload-zone")).toBeVisible();
+  await page.locator("#upload-zone").hover();
+  await expect(page.locator("#upload-zone")).toHaveCSS("background-color", "rgb(245, 245, 245)");
+
+  await page.locator(".faq-item").first().locator("summary").hover();
+  await expect(page.locator(".faq-item").first().locator("summary")).toHaveCSS(
+    "background-color",
+    "rgb(245, 245, 245)",
+  );
 });
 
 test("uses the available desktop viewport instead of a fixed narrow shell", async ({ page }) => {
@@ -231,7 +410,8 @@ test("renders a clean three-column source output settings layout", async ({ page
     const footer = document.querySelector(".site-footer");
     const footerCopy = document.querySelector(".footer-copy");
     const fieldLabel = document.querySelector(".field span");
-    if (!workspace || !footer || !footerCopy || !fieldLabel) {
+    const faqAnswer = document.querySelector(".faq-item p");
+    if (!workspace || !footer || !footerCopy || !fieldLabel || !faqAnswer) {
       throw new Error("Missing footer elements");
     }
 
@@ -240,6 +420,7 @@ test("renders a clean three-column source output settings layout", async ({ page
     const footerCopyBox = footerCopy.getBoundingClientRect();
     const footerStyles = getComputedStyle(footerCopy);
     const fieldLabelStyles = getComputedStyle(fieldLabel);
+    const faqAnswerStyles = getComputedStyle(faqAnswer);
 
     return {
       footerCenterDelta: Math.abs(footerCopyBox.left + footerCopyBox.width / 2 - window.innerWidth / 2),
@@ -251,15 +432,18 @@ test("renders a clean three-column source output settings layout", async ({ page
       fieldFontSize: fieldLabelStyles.fontSize,
       fieldLineHeight: fieldLabelStyles.lineHeight,
       fieldColor: fieldLabelStyles.color,
+      answerFontSize: faqAnswerStyles.fontSize,
+      answerLineHeight: faqAnswerStyles.lineHeight,
+      answerColor: faqAnswerStyles.color,
     };
   });
 
   expect(footerMetrics.footerCenterDelta).toBeLessThan(1);
   expect(footerMetrics.footerTopGap).toBeGreaterThanOrEqual(48);
   expect(footerMetrics.footerTextAlign).toBe("center");
-  expect(footerMetrics.footerFontSize).toBe(footerMetrics.fieldFontSize);
-  expect(footerMetrics.footerLineHeight).toBe(footerMetrics.fieldLineHeight);
-  expect(footerMetrics.footerColor).toBe(footerMetrics.fieldColor);
+  expect(footerMetrics.footerFontSize).toBe(footerMetrics.answerFontSize);
+  expect(footerMetrics.footerLineHeight).toBe(footerMetrics.answerLineHeight);
+  expect(footerMetrics.footerColor).toBe(footerMetrics.answerColor);
   await expect(page.locator(".source-panel #sample-text")).toBeVisible();
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();

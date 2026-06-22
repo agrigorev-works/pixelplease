@@ -1,5 +1,5 @@
 export const UI_COPY = {
-  documentTitle: "pixelplease - pixel font generator",
+  documentTitle: "pixelplease - fastest way to create a custom pixel font",
   status: {
     demoMode: "demo mode",
     generatedReady: "Generated TTF ready",
@@ -53,7 +53,8 @@ export const UI_COPY = {
   footer: {
     ariaLabel: "Usage note",
     lines: [
-      "Uploaded fonts stay in your browser. Use source fonts according to their license.",
+      "Uploaded fonts stay in your browser.",
+      "Use source fonts according to their license.",
       "Keep required copyright, license, and notice files when sharing.",
     ],
   },
