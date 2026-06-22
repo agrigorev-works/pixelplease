@@ -467,8 +467,70 @@ select {
 }
 
 .source-editor-field {
+  position: relative;
   display: grid;
   min-width: 0;
+}
+
+.output-panel {
+  position: relative;
+}
+
+.preview-size-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #e1e1dc;
+  background: #ffffff;
+}
+
+.preview-size-bar.is-hidden {
+  display: none;
+}
+
+.size-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #111111;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.size-step:disabled {
+  color: #b5b5b0;
+  cursor: not-allowed;
+}
+
+.size-step:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: -2px;
+}
+
+.size-readout {
+  min-width: 46px;
+  padding: 0 4px;
+  color: #555555;
+  font-size: 11px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  letter-spacing: 0;
 }
 
 textarea {
@@ -515,6 +577,8 @@ textarea:focus {
 
 .source-editor {
   background: #f5f5f5;
+  /* leave room so resting text clears the floating size control */
+  padding-bottom: 50px;
 }
 
 .source-editor:focus {
@@ -579,6 +643,11 @@ textarea:focus {
   }
 
   .secondary-action:not(:disabled):hover {
+    background: #f5f5f5;
+    color: #111111;
+  }
+
+  .size-step:not(:disabled):hover {
     background: #f5f5f5;
     color: #111111;
   }

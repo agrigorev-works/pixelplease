@@ -145,9 +145,18 @@ const FONT_FETCH_TIMEOUT_MS = 15_000;
 const DEFAULT_DEMO_FONT_FAMILY = "Merriweather";
 const LOGO_FONT_FAMILY = "PixelpleaseLogoFont";
 const LOGO_SOURCE_FAMILY = DEFAULT_DEMO_FONT_FAMILY;
+const MIN_PREVIEW_FONT_SIZE = 16;
+const MAX_PREVIEW_FONT_SIZE = 120;
+const PREVIEW_FONT_SIZE_STEP = 2;
+const FALLBACK_PREVIEW_FONT_SIZE = 42;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
+// null = follow the responsive default; a number pins an explicit preview size.
+// Output size falls back to the source size, so the two controls start linked
+// and become fully independent once each is set. Reset returns both to null.
+let sourcePreviewFontSize: number | null = null;
+let outputPreviewFontSize: number | null = null;
 
 const state: AppState = {
   source: {
@@ -188,6 +197,14 @@ const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
 const shiftX = getElement<HTMLInputElement>("shift-x");
 const shiftY = getElement<HTMLInputElement>("shift-y");
+const sourceSizeBar = getElement<HTMLElement>("source-size-bar");
+const sourceSizeDecrease = getElement<HTMLButtonElement>("source-size-decrease");
+const sourceSizeIncrease = getElement<HTMLButtonElement>("source-size-increase");
+const sourceSizeReadout = getElement<HTMLOutputElement>("source-size-readout");
+const outputSizeBar = getElement<HTMLElement>("output-size-bar");
+const outputSizeDecrease = getElement<HTMLButtonElement>("output-size-decrease");
+const outputSizeIncrease = getElement<HTMLButtonElement>("output-size-increase");
+const outputSizeReadout = getElement<HTMLOutputElement>("output-size-readout");
 const pixelsPerEmValue = getElement<HTMLOutputElement>("pixels-per-em-value");
 const thresholdValue = getElement<HTMLOutputElement>("threshold-value");
 const expandValue = getElement<HTMLOutputElement>("expand-value");
@@ -214,16 +231,23 @@ threshold.addEventListener("input", handleControlInput);
 expand.addEventListener("input", handleControlInput);
 shiftX.addEventListener("input", handleControlInput);
 shiftY.addEventListener("input", handleControlInput);
-window.addEventListener("resize", renderDemoPreview);
+sourceSizeDecrease.addEventListener("click", () => adjustSourcePreviewSize(-PREVIEW_FONT_SIZE_STEP));
+sourceSizeIncrease.addEventListener("click", () => adjustSourcePreviewSize(PREVIEW_FONT_SIZE_STEP));
+outputSizeDecrease.addEventListener("click", () => adjustOutputPreviewSize(-PREVIEW_FONT_SIZE_STEP));
+outputSizeIncrease.addEventListener("click", () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
+window.addEventListener("resize", syncPreviewSizes);
 
 initializeDemoFonts();
 void initializeLogoFont();
 syncSourceModeUI();
 syncControlLabels();
+applySourcePreviewSize();
+syncPreviewSizes();
 syncSampleText();
 focusSourceTextAtEndIfSafe();
 void document.fonts.ready.then(() => {
   renderDemoPreview();
+  syncPreviewSizes();
   focusSourceTextAtEndIfSafe();
 });
 
@@ -272,6 +296,17 @@ function applyInterfaceCopy(): void {
   resetButton.textContent = UI_COPY.controls.resetDefaults;
   downloadLink.textContent = UI_COPY.controls.downloadTtf;
   downloadLink.download = UI_COPY.controls.defaultDownloadName;
+
+  sourceSizeBar.setAttribute("aria-label", UI_COPY.controls.sourceSizeGroup);
+  sourceSizeDecrease.textContent = UI_COPY.controls.sizeDecreaseSymbol;
+  sourceSizeDecrease.setAttribute("aria-label", UI_COPY.controls.sourceSizeDecrease);
+  sourceSizeIncrease.textContent = UI_COPY.controls.sizeIncreaseSymbol;
+  sourceSizeIncrease.setAttribute("aria-label", UI_COPY.controls.sourceSizeIncrease);
+  outputSizeBar.setAttribute("aria-label", UI_COPY.controls.outputSizeGroup);
+  outputSizeDecrease.textContent = UI_COPY.controls.sizeDecreaseSymbol;
+  outputSizeDecrease.setAttribute("aria-label", UI_COPY.controls.outputSizeDecrease);
+  outputSizeIncrease.textContent = UI_COPY.controls.sizeIncreaseSymbol;
+  outputSizeIncrease.setAttribute("aria-label", UI_COPY.controls.outputSizeIncrease);
 }
 
 function initializeDemoFonts(): void {
@@ -577,13 +612,64 @@ function resetControlsToDefaults(): void {
     input.value = input.defaultValue;
   });
 
+  sourcePreviewFontSize = null;
+  outputPreviewFontSize = null;
+  applySourcePreviewSize();
+
   syncControlLabels();
+  syncPreviewSizes();
 
   if (getGenerationSource()) {
     void generatePixelFont();
   } else {
     renderDemoPreview();
   }
+}
+
+function getComputedSourceFontSize(): number {
+  return Number.parseFloat(getComputedStyle(sampleText).fontSize) || FALLBACK_PREVIEW_FONT_SIZE;
+}
+
+function getEffectiveSourceFontSize(): number {
+  return sourcePreviewFontSize ?? getComputedSourceFontSize();
+}
+
+function getEffectiveOutputFontSize(): number {
+  return outputPreviewFontSize ?? getEffectiveSourceFontSize();
+}
+
+function clampPreviewFontSize(value: number): number {
+  return Math.min(MAX_PREVIEW_FONT_SIZE, Math.max(MIN_PREVIEW_FONT_SIZE, Math.round(value)));
+}
+
+function applySourcePreviewSize(): void {
+  sampleText.style.fontSize = sourcePreviewFontSize === null ? "" : `${sourcePreviewFontSize}px`;
+}
+
+function adjustSourcePreviewSize(delta: number): void {
+  const base = sourcePreviewFontSize ?? Math.round(getComputedSourceFontSize());
+  sourcePreviewFontSize = clampPreviewFontSize(base + delta);
+  applySourcePreviewSize();
+  syncPreviewSizes();
+}
+
+function adjustOutputPreviewSize(delta: number): void {
+  const base = outputPreviewFontSize ?? Math.round(getEffectiveOutputFontSize());
+  outputPreviewFontSize = clampPreviewFontSize(base + delta);
+  syncPreviewSizes();
+}
+
+function syncPreviewSizes(): void {
+  const sourceSize = Math.round(getEffectiveSourceFontSize());
+  const outputSize = Math.round(getEffectiveOutputFontSize());
+  sourceSizeReadout.textContent = UI_COPY.controls.previewSizeReadout(sourceSize);
+  outputSizeReadout.textContent = UI_COPY.controls.previewSizeReadout(outputSize);
+  sourceSizeDecrease.disabled = sourceSize <= MIN_PREVIEW_FONT_SIZE;
+  sourceSizeIncrease.disabled = sourceSize >= MAX_PREVIEW_FONT_SIZE;
+  outputSizeDecrease.disabled = outputSize <= MIN_PREVIEW_FONT_SIZE;
+  outputSizeIncrease.disabled = outputSize >= MAX_PREVIEW_FONT_SIZE;
+  syncResetButton();
+  renderDemoPreview();
 }
 
 function syncControlLabels(): void {
@@ -600,9 +686,11 @@ function syncControlLabels(): void {
 }
 
 function syncResetButton(): void {
-  resetButton.disabled = [pixelsPerEm, threshold, expand, shiftX, shiftY].every(
+  const rangesAtDefault = [pixelsPerEm, threshold, expand, shiftX, shiftY].every(
     (input) => input.value === input.defaultValue,
   );
+  const sizesAtDefault = sourcePreviewFontSize === null && outputPreviewFontSize === null;
+  resetButton.disabled = rangesAtDefault && sizesAtDefault;
 }
 
 function scheduleAutoGenerate(): void {
@@ -649,6 +737,7 @@ function clearGeneratedFont(): void {
   afterPreview.textContent = sampleText.value || " ";
   demoPreviewFrame.classList.remove("is-hidden");
   demoPreviewCanvas.classList.remove("is-hidden");
+  outputSizeBar.classList.remove("is-hidden");
   renderDemoPreview();
 }
 
@@ -714,12 +803,17 @@ function renderDemoPreview(): void {
 
   const options = getPixelizeOptions();
   const previewStyles = getComputedStyle(sampleText);
-  const previewFontSize = Number.parseFloat(previewStyles.fontSize) || 42;
-  const previewLineHeight = Number.parseFloat(previewStyles.lineHeight) || previewFontSize * 1.12;
+  const sourceFontSize = Number.parseFloat(previewStyles.fontSize) || FALLBACK_PREVIEW_FONT_SIZE;
+  const sourceLineHeight = Number.parseFloat(previewStyles.lineHeight) || sourceFontSize * 1.12;
+  // The pixel output preview is sized independently of the source textarea.
+  const previewFontSize = getEffectiveOutputFontSize();
+  const previewLineHeight = previewFontSize * (sourceLineHeight / sourceFontSize);
   const previewPaddingLeft = Number.parseFloat(previewStyles.paddingLeft) || 16;
   const previewPaddingRight = Number.parseFloat(previewStyles.paddingRight) || previewPaddingLeft;
   const previewPaddingTop = Number.parseFloat(previewStyles.paddingTop) || previewPaddingLeft;
-  const previewPaddingBottom = Number.parseFloat(previewStyles.paddingBottom) || previewPaddingTop;
+  // Mirror the top padding so the source textarea's reserved bottom space
+  // (for the floating size control) never inflates the output canvas height.
+  const previewPaddingBottom = previewPaddingTop;
   const previewFontFamily =
     previewStyles.fontFamily || '"JetBrains Mono", "SFMono-Regular", ui-monospace, monospace';
   const cellSize = Math.max(1, Math.round(previewFontSize / options.pixelsPerEm));
@@ -867,6 +961,7 @@ function renderError(error: unknown, fallback: string): void {
   downloadLink.classList.add("is-disabled");
   demoPreviewFrame.classList.add("is-hidden");
   demoPreviewCanvas.classList.add("is-hidden");
+  outputSizeBar.classList.add("is-hidden");
   afterPreview.classList.remove("is-hidden");
   afterPreview.classList.add("empty-preview");
   afterPreview.textContent = `${fallback} ${message}`;

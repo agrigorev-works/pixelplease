@@ -171,10 +171,15 @@
             <button id="replace-font-button" class="replace-font-button is-hidden" type="button"></button>
           </div>
 
-          <label id="source-editor-field" class="source-editor-field" for="sample-text">
-            <span class="sr-only"></span>
+          <div id="source-editor-field" class="source-editor-field">
+            <label class="sr-only" for="sample-text"></label>
             <textarea id="sample-text" class="preview-text source-editor" rows="8"></textarea>
-          </label>
+            <div id="source-size-bar" class="preview-size-bar" role="group" aria-label="">
+              <button id="source-size-decrease" class="size-step" type="button" aria-label=""></button>
+              <output id="source-size-readout" class="size-readout" for="sample-text"></output>
+              <button id="source-size-increase" class="size-step" type="button" aria-label=""></button>
+            </div>
+          </div>
 
           <label id="upload-zone" class="upload-zone is-hidden" for="font-upload">
             <span class="upload-title"></span>
@@ -188,6 +193,11 @@
             <canvas id="demo-preview-canvas" class="demo-preview-canvas" aria-label=""></canvas>
           </div>
           <p id="after-preview" class="preview-text generated-preview is-hidden"></p>
+          <div id="output-size-bar" class="preview-size-bar" role="group" aria-label="">
+            <button id="output-size-decrease" class="size-step" type="button" aria-label=""></button>
+            <output id="output-size-readout" class="size-readout"></output>
+            <button id="output-size-increase" class="size-step" type="button" aria-label=""></button>
+          </div>
         </section>
 
         <aside class="controls-panel" aria-label="">
