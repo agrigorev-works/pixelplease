@@ -14,7 +14,7 @@ export const UI_COPY = {
   intro: {
     logoAriaLabel: "pixel please",
     logoParts: ["pixel", "please"],
-    copy: "Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf",
+    copy: "Turn your font into a pixel-style typeface you can preview, tune, and export.",
   },
   sections: {
     source: "Source font and text",

@@ -329,7 +329,8 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
   expect(metrics.copyCenterDelta).toBeLessThan(1);
   expect(metrics.copyBelowTitle).toBe(true);
   expect(metrics.titleCopyGap).toBeCloseTo(22, 0);
-  expect(metrics.copyLineCount).toBe(3);
+  expect(metrics.copyLineCount).toBeGreaterThanOrEqual(2);
+  expect(metrics.copyLineCount).toBeLessThanOrEqual(3);
   expect(metrics.titleTextAlign).toBe("center");
   expect(metrics.copyTextAlign).toBe("center");
   expect(metrics.controlsWidth).toBeLessThanOrEqual(230);

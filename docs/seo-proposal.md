@@ -8,7 +8,7 @@ Primary category:
 
 Core message:
 
-> pixelplease turns a source font into a pixel-style test TTF directly in the browser. Upload a font or start from a bundled permissive demo font, tune the pixel effect, preview the result, and export a package.
+> pixelplease turns a source font into a pixel-style typeface directly in the browser. Upload a font or start from a bundled permissive demo font, tune the pixel effect, preview the result, and export a TTF package.
 
 ## Keyword Clusters
 
@@ -54,13 +54,13 @@ pixel font generator for TTF exports - pixelplease
 Current implementation:
 
 ```text
-Upload a font, pixelize its glyphs in your browser, preview the result, and export a test TTF package. No server upload.
+Turn a font into a pixel-style typeface in your browser. Upload your own font or start with a bundled demo, tune the effect, and export a TTF package.
 ```
 
 Shorter alternate:
 
 ```text
-Turn a font into a pixel-style test TTF in your browser. Upload a font, tune the pixel effect, preview, and export a ZIP package.
+Turn a font into a pixel-style typeface in your browser. Upload a font, tune the pixel effect, preview, and export a ZIP package.
 ```
 
 ## First Page Structure
@@ -133,7 +133,7 @@ Current implementation:
   "name": "pixelplease",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
-  "description": "A browser-based pixel font generator for previewing and exporting test TTF packages.",
+  "description": "A browser-based pixel font generator for previewing, tuning, and exporting TTF packages.",
   "url": "https://pixelplease.tools/"
 }
 </script>
