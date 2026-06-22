@@ -64,6 +64,29 @@ test("serves favicon and app icon assets", async ({ page }) => {
   );
 });
 
+test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
+  const robotsResponse = await page.request.get("/robots.txt");
+  expect(robotsResponse.ok()).toBe(true);
+  const robots = await robotsResponse.text();
+  expect(robots).toContain("User-agent: *");
+  expect(robots).toContain("Allow: /");
+  expect(robots).toContain("Sitemap: https://pixelplease.tools/sitemap.xml");
+
+  const sitemapResponse = await page.request.get("/sitemap.xml");
+  expect(sitemapResponse.ok()).toBe(true);
+  const sitemap = await sitemapResponse.text();
+  expect(sitemap).toContain("<loc>https://pixelplease.tools/</loc>");
+  expect(sitemap).toContain("<lastmod>2026-06-22</lastmod>");
+
+  await page.goto("/");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://pixelplease.tools/");
+
+  const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
+  expect(structuredData).toContain('"@type": "SoftwareApplication"');
+  expect(structuredData).toContain('"url": "https://pixelplease.tools/"');
+});
+
 test("uses the available desktop viewport instead of a fixed narrow shell", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto("/");

@@ -15,7 +15,7 @@ Important interpretation notes:
 
 ## Product
 
-- [pixelplease app](/): The working browser tool for selecting or uploading a source font, tuning the pixel effect, previewing output, and downloading a test TTF package.
+- [pixelplease app](https://pixelplease.tools/): The working browser tool for selecting or uploading a source font, tuning the pixel effect, previewing output, and downloading a test TTF package.
 - [GitHub repository](https://github.com/agrigorev-works/pixelplease): Source code, README, tests, and project docs.
 - [Product brief](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/product-brief.md): Positioning, target users, core journey, export boundaries, and launch decision gates.
 - [MVP workflow](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/mvp-workflow.md): UI structure, app states, controls, and release acceptance criteria.

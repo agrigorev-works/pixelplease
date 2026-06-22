@@ -92,15 +92,14 @@ Done now:
 - Open Graph and Twitter summary tags.
 - Client-side privacy is reflected in copy.
 - Favicon and app icon assets.
+- Canonical URL and `og:url` for `https://pixelplease.tools/`.
+- `robots.txt` and `sitemap.xml`.
+- SoftwareApplication structured data.
 - Root `/llms.txt` file for LLM-friendly product context.
 
 Add after final domain:
 
-- Canonical URL.
-- `og:url`.
 - Social preview image.
-- `robots.txt`.
-- `sitemap.xml`.
 - Search Console property.
 
 ## AI Discovery
@@ -117,7 +116,7 @@ This complements `robots.txt` and `sitemap.xml`; it does not replace crawler acc
 
 ## Structured Data
 
-Add after final domain and visible page copy are stable:
+Current implementation:
 
 ```html
 <script type="application/ld+json">
@@ -128,7 +127,7 @@ Add after final domain and visible page copy are stable:
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
   "description": "A browser-based pixel font generator for previewing and exporting test TTF packages.",
-  "url": "https://FINAL-DOMAIN-HERE/"
+  "url": "https://pixelplease.tools/"
 }
 </script>
 ```
