@@ -47,7 +47,7 @@ Current MVP export is intentionally narrow:
 - `NOTICE.txt` with source name, source file, license, upstream URL where relevant, and redistribution warning.
 - Bundled demo exports include the matching source OFL text under `licenses/`; user-upload exports do not invent license files.
 - Basic Latin glyph range.
-- Product-owned generated family naming (`Pixelplease Test`) to avoid reusing source Reserved Font Names.
+- Product-owned generated family naming (`pixelplease-Font`) to avoid reusing source Reserved Font Names.
 
 Future exports can add WOFF2, CSS snippets, glyph sheets, and named presets, but those are not launch blockers.
 

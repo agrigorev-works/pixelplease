@@ -44,9 +44,9 @@ export type PixelizeMetadata = {
 
 const BASIC_LATIN_START = 32;
 const BASIC_LATIN_END = 126;
-const DERIVATIVE_FAMILY_NAME = "Pixelplease Test";
+const DERIVATIVE_FAMILY_NAME = "pixelplease-Font";
 const DERIVATIVE_STYLE_NAME = "Regular";
-const DERIVATIVE_POSTSCRIPT_NAME = "PixelpleaseTest-Regular";
+const DERIVATIVE_POSTSCRIPT_NAME = "pixelplease-Font-Regular";
 const MIN_PIXELS_PER_EM = 8;
 const MAX_PIXELS_PER_EM = 64;
 

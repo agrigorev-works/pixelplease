@@ -786,15 +786,15 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   const googlePackageBytes = await fs.readFile(googleGeneratedPackagePath);
   const googlePackageEntries = readStoredZip(googlePackageBytes);
   const googleNotice = new TextDecoder().decode(googlePackageEntries["NOTICE.txt"]);
-  const googleGenerated = googlePackageEntries["Pixelplease-Test.ttf"];
+  const googleGenerated = googlePackageEntries["pixelplease-Font.ttf"];
   const googleParsed = opentype.parse(
     googleGenerated.buffer.slice(googleGenerated.byteOffset, googleGenerated.byteOffset + googleGenerated.byteLength),
   );
 
   expect(Object.keys(googlePackageEntries).sort()).toEqual([
     "NOTICE.txt",
-    "Pixelplease-Test.ttf",
     "licenses/merriweather-OFL.txt",
+    "pixelplease-Font.ttf",
   ]);
   expect(googleNotice).toContain("Merriweather");
   expect(googleNotice).toContain("Source license: OFL");
@@ -804,7 +804,7 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   expect(new TextDecoder().decode(googlePackageEntries["licenses/merriweather-OFL.txt"])).toContain(
     "Reserved Font Name \"Merriweather\"",
   );
-  expect(googleParsed.names.fontFamily.en).toBe("Pixelplease Test");
+  expect(googleParsed.names.fontFamily.en).toBe("pixelplease-Font");
   expect(googleParsed.names.fontFamily.en).not.toContain("Merriweather");
   expect(googleParsed.names.licenseURL.en).toBe("https://openfontlicense.org");
 
@@ -1130,19 +1130,19 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("Pixelplease-Test.zip");
+  expect(download.suggestedFilename()).toBe("pixelplease-Font.zip");
   await download.saveAs(generatedPackagePath);
 
   const packageBytes = await fs.readFile(generatedPackagePath);
   const packageEntries = readStoredZip(packageBytes);
   const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
-  const generated = packageEntries["Pixelplease-Test.ttf"];
+  const generated = packageEntries["pixelplease-Font.ttf"];
   const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
 
-  expect(Object.keys(packageEntries).sort()).toEqual(["NOTICE.txt", "Pixelplease-Test.ttf"]);
+  expect(Object.keys(packageEntries).sort()).toEqual(["NOTICE.txt", "pixelplease-Font.ttf"]);
   expect(notice).toContain("Fixture Sans");
   expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
-  expect(parsed.names.fontFamily.en).toBe("Pixelplease Test");
+  expect(parsed.names.fontFamily.en).toBe("pixelplease-Font");
   expect(parsed.names.fontFamily.en).not.toContain("Fixture");
   expect(parsed.names.license.en).toContain("Generated derivative for testing");
   expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");
@@ -1167,19 +1167,19 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("Pixelplease-Test.zip");
+  expect(download.suggestedFilename()).toBe("pixelplease-Font.zip");
   await download.saveAs(latoGeneratedPackagePath);
 
   const packageBytes = await fs.readFile(latoGeneratedPackagePath);
   const packageEntries = readStoredZip(packageBytes);
   const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
-  const generated = packageEntries["Pixelplease-Test.ttf"];
+  const generated = packageEntries["pixelplease-Font.ttf"];
   const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
 
   expect(notice).toContain("Lato Regular");
   expect(notice).toContain("Lato-Regular.ttf");
   expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
-  expect(parsed.names.fontFamily.en).toBe("Pixelplease Test");
+  expect(parsed.names.fontFamily.en).toBe("pixelplease-Font");
   expect(parsed.names.fontFamily.en).not.toContain("Lato");
   expect(parsed.names.license.en).toContain("Source font license controls use");
   expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");

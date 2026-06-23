@@ -79,7 +79,7 @@ The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.
 - Basic Latin export only.
 - No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup beyond basic release-safety names and notice packaging.
 - The algorithm is intentionally simple: rasterize glyphs to a grid, optionally offset the sampling grid, sample filled cells, optionally expand cells, convert horizontal filled runs into rectangular outlines, then build a derivative TTF.
-- Generated font family names use the product-owned `Pixelplease Test` name rather than preserving source family names, to avoid Reserved Font Name reuse.
+- Generated font family names use the product-owned `pixelplease-Font` name rather than preserving source family names, to avoid Reserved Font Name reuse.
 - Download packages include `NOTICE.txt`; bundled demo packages also include the source OFL file under `licenses/`.
 - User-uploaded font licenses still need manual verification before redistribution.
 

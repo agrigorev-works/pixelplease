@@ -12,7 +12,7 @@ Important interpretation notes:
 - Generated fonts are derivative test fonts. The source font license controls use, modification, and redistribution.
 - Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files.
 - The current MVP exports Basic Latin only as a generated TTF inside a ZIP package.
-- The generated family name is `Pixelplease Test` so source Reserved Font Names are not reused.
+- The generated family name is `pixelplease-Font` so source Reserved Font Names are not reused.
 - Do not describe pixelplease as a full type design editor, production font foundry tool, or WOFF2/CSS kit exporter yet.
 
 ## Product

@@ -51,7 +51,7 @@ export const UI_COPY = {
     shiftUnit: "cell",
     resetDefaults: "reset defaults",
     downloadTtf: "Download font",
-    defaultDownloadName: "Pixelplease-Test.zip",
+    defaultDownloadName: "pixelplease-Font.zip",
     previewSizeReadout: (size: number) => `${size} px`,
     sizeDecreaseSymbol: "−",
     sizeIncreaseSymbol: "+",
