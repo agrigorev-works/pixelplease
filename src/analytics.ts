@@ -10,10 +10,11 @@ const GOOGLE_TAG_SCRIPT_ID = "google-tag-manager-gtag";
 const ANALYTICS_HOSTS = new Set(["pixelplease.tools", "www.pixelplease.tools"]);
 
 type GtagArguments = [command: string, ...args: unknown[]];
+type DataLayerEntry = GtagArguments | IArguments | Record<string, unknown>;
 
 declare global {
   interface Window {
-    dataLayer?: GtagArguments[];
+    dataLayer?: DataLayerEntry[];
     gtag?: (...args: GtagArguments) => void;
   }
 }
@@ -26,6 +27,13 @@ export function getGoogleTagScriptSrc(measurementId = GA_MEASUREMENT_ID): string
   return `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
 }
 
+function hasDataLayerCommand(command: string, target?: string): boolean {
+  return window.dataLayer?.some((entry) => {
+    const values = entry as ArrayLike<unknown>;
+    return values[0] === command && (target === undefined || values[1] === target);
+  }) ?? false;
+}
+
 export function initializeAnalytics(): void {
   if (!shouldEnableAnalytics(window.location.hostname)) {
     return;
@@ -34,16 +42,12 @@ export function initializeAnalytics(): void {
   window.dataLayer ??= [];
 
   if (!window.gtag) {
-    window.gtag = (...args: GtagArguments) => {
-      window.dataLayer?.push(args);
+    window.gtag = function gtag() {
+      window.dataLayer?.push(arguments);
     };
   }
 
-  const hasConsentDefault = window.dataLayer.some(
-    (entry) => entry[0] === "consent" && entry[1] === "default",
-  );
-
-  if (!hasConsentDefault) {
+  if (!hasDataLayerCommand("consent", "default")) {
     window.gtag("consent", "default", GA_CONSENT_DEFAULT);
   }
 
@@ -55,11 +59,7 @@ export function initializeAnalytics(): void {
     document.head.appendChild(script);
   }
 
-  const isAlreadyConfigured = window.dataLayer.some(
-    (entry) => entry[0] === "config" && entry[1] === GA_MEASUREMENT_ID,
-  );
-
-  if (isAlreadyConfigured) {
+  if (hasDataLayerCommand("config", GA_MEASUREMENT_ID)) {
     return;
   }
 
