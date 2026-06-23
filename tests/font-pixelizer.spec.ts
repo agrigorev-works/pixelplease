@@ -832,6 +832,44 @@ test("renders a usable generated Google Font output before upload", async ({ pag
     .toBe(true);
 });
 
+test("switches between square and round pixel shapes for preview and generated font", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await expect(page.getByRole("radio", { name: UI_COPY.controls.squarePixels })).toBeChecked();
+  await expect(page.locator("#pixel-shape-control")).toBeVisible();
+
+  const squareSignature = await getPixelCanvasSignature(page);
+  const squareGeneratedUrl = await getGeneratedFontUrl(page);
+
+  await page.getByRole("radio", { name: UI_COPY.controls.roundPixels }).check();
+  await expect(page.getByRole("radio", { name: UI_COPY.controls.roundPixels })).toBeChecked();
+  await expect(page.getByRole("button", { name: UI_COPY.controls.resetDefaults })).toBeEnabled();
+
+  await expect
+    .poll(
+      async () => {
+        const signature = await getPixelCanvasSignature(page);
+        return signature.hash !== squareSignature.hash && signature.darkSamples > 12;
+      },
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+
+  await expect
+    .poll(
+      async () => {
+        const url = await getGeneratedFontUrl(page);
+        return Boolean(url && url !== squareGeneratedUrl);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+
+  await page.getByRole("button", { name: UI_COPY.controls.resetDefaults }).click();
+  await expect(page.getByRole("radio", { name: UI_COPY.controls.squarePixels })).toBeChecked();
+});
+
 test("keeps generated output canvas-backed at phone width", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

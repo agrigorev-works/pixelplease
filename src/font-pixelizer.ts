@@ -14,7 +14,10 @@ export type PixelizeOptions = {
   expand: number;
   shiftX?: number;
   shiftY?: number;
+  pixelShape?: PixelShape;
 };
+
+export type PixelShape = "square" | "round";
 
 export type FontMetrics = {
   unitsPerEm: number;
@@ -162,6 +165,11 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
   const path = new opentype.Path();
   const cellSize = getCellSize(metrics, options);
 
+  if (options.pixelShape === "round") {
+    addRoundCellsToPath(path, mask, metrics, cellSize);
+    return path;
+  }
+
   for (let row = 0; row < mask.rows; row += 1) {
     let col = 0;
 
@@ -189,6 +197,22 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
   }
 
   return path;
+}
+
+function addRoundCellsToPath(path: opentype.Path, mask: CellMask, metrics: FontMetrics, cellSize: number): void {
+  for (let row = 0; row < mask.rows; row += 1) {
+    for (let col = 0; col < mask.cols; col += 1) {
+      if (!isCellFilled(mask, col, row)) {
+        continue;
+      }
+
+      const x0 = col * cellSize;
+      const x1 = x0 + cellSize;
+      const yTop = metrics.ascender - row * cellSize;
+      const yBottom = yTop - cellSize;
+      addEllipse(path, x0, yBottom, x1, yTop);
+    }
+  }
 }
 
 function getMetrics(font: opentype.Font): FontMetrics {
@@ -295,6 +319,21 @@ function addRect(path: opentype.Path, x0: number, y0: number, x1: number, y1: nu
   path.lineTo(x1, y0);
   path.lineTo(x1, y1);
   path.lineTo(x0, y1);
+  path.close();
+}
+
+function addEllipse(path: opentype.Path, x0: number, y0: number, x1: number, y1: number): void {
+  const kappa = 0.5522847498307936;
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  const rx = (x1 - x0) / 2;
+  const ry = (y1 - y0) / 2;
+
+  path.moveTo(cx + rx, cy);
+  path.curveTo(cx + rx, cy + ry * kappa, cx + rx * kappa, cy + ry, cx, cy + ry);
+  path.curveTo(cx - rx * kappa, cy + ry, cx - rx, cy + ry * kappa, cx - rx, cy);
+  path.curveTo(cx - rx, cy - ry * kappa, cx - rx * kappa, cy - ry, cx, cy - ry);
+  path.curveTo(cx + rx * kappa, cy - ry, cx + rx, cy - ry * kappa, cx + rx, cy);
   path.close();
 }
 

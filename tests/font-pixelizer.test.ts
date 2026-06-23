@@ -59,6 +59,28 @@ describe("font pixelizer core", () => {
     expect(closeCommands).toHaveLength(3);
   });
 
+  it("can draw filled cells as round pixel paths", () => {
+    const mask: CellMask = {
+      cols: 2,
+      rows: 1,
+      cells: Uint8Array.from([1, 1]),
+    };
+
+    const path = cellsToPath(mask, metrics, {
+      pixelsPerEm: 10,
+      threshold: 0.5,
+      expand: 0,
+      pixelShape: "round",
+    });
+    const moveCommands = path.commands.filter((command) => command.type === "M");
+    const curveCommands = path.commands.filter((command) => command.type === "C");
+    const lineCommands = path.commands.filter((command) => command.type === "L");
+
+    expect(moveCommands).toHaveLength(2);
+    expect(curveCommands).toHaveLength(8);
+    expect(lineCommands).toHaveLength(0);
+  });
+
   it("expands filled cells by the requested radius", () => {
     const mask: CellMask = {
       cols: 3,

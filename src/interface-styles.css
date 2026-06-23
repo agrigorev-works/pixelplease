@@ -494,9 +494,22 @@ select {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 5px 8px;
+  padding: 5px;
   border-top: 1px solid #e1e1dc;
   background: #ffffff;
+}
+
+.preview-shape-control {
+  display: flex;
+  min-width: 0;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 1px solid #111111;
+}
+
+.preview-shape-control .segment-option {
+  min-width: 58px;
+  min-height: 26px;
 }
 
 .preview-size-bar.is-hidden {

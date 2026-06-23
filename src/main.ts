@@ -6,6 +6,7 @@ import {
   pixelizeFont,
   type PixelizeResult,
   type PixelizeOptions,
+  type PixelShape,
 } from "./font-pixelizer";
 import { createCellMaskFromImageData, expandCellMask, isCellFilled } from "./pixel-grid";
 import {
@@ -196,6 +197,8 @@ const licenseReminder = getSelector<HTMLElement>(".license-reminder");
 const pixelsPerEm = getElement<HTMLInputElement>("pixels-per-em");
 const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
+const pixelShapeSquare = getElement<HTMLInputElement>("pixel-shape-square");
+const pixelShapeRound = getElement<HTMLInputElement>("pixel-shape-round");
 const shiftX = getElement<HTMLInputElement>("shift-x");
 const shiftY = getElement<HTMLInputElement>("shift-y");
 const sourceSizeBar = getElement<HTMLElement>("source-size-bar");
@@ -206,14 +209,15 @@ const outputSizeBar = getElement<HTMLElement>("output-size-bar");
 const outputSizeDecrease = getElement<HTMLButtonElement>("output-size-decrease");
 const outputSizeIncrease = getElement<HTMLButtonElement>("output-size-increase");
 const outputSizeReadout = getElement<HTMLOutputElement>("output-size-readout");
+const pixelShapeLegend = getSelector<HTMLElement>("#pixel-shape-control legend");
 const pixelsPerEmValue = getElement<HTMLOutputElement>("pixels-per-em-value");
 const thresholdValue = getElement<HTMLOutputElement>("threshold-value");
 const expandValue = getElement<HTMLOutputElement>("expand-value");
 const shiftXValue = getElement<HTMLOutputElement>("shift-x-value");
 const shiftYValue = getElement<HTMLOutputElement>("shift-y-value");
 const logoParts = Array.from(logoTitle.querySelectorAll<HTMLElement>("span"));
-const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".segment-option span"));
-const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".field span"));
+const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".source-mode-control .segment-option span"));
+const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".control-stack > .field > span"));
 
 applyInterfaceCopy();
 uploadInput.addEventListener("change", handleUpload);
@@ -230,6 +234,8 @@ sampleText.addEventListener("input", syncSampleText);
 pixelsPerEm.addEventListener("input", handleControlInput);
 threshold.addEventListener("input", handleControlInput);
 expand.addEventListener("input", handleControlInput);
+pixelShapeSquare.addEventListener("change", handleControlInput);
+pixelShapeRound.addEventListener("change", handleControlInput);
 shiftX.addEventListener("input", handleControlInput);
 shiftY.addEventListener("input", handleControlInput);
 sourceSizeDecrease.addEventListener("click", () => adjustSourcePreviewSize(-PREVIEW_FONT_SIZE_STEP));
@@ -294,6 +300,17 @@ function applyInterfaceCopy(): void {
   setText(controlLabels[2], UI_COPY.controls.expand, "expand control label");
   setText(controlLabels[3], UI_COPY.controls.shiftX, "shift-x control label");
   setText(controlLabels[4], UI_COPY.controls.shiftY, "shift-y control label");
+  setText(pixelShapeLegend, UI_COPY.controls.pixelShape, "pixel shape control label");
+  setText(
+    (pixelShapeSquare.nextElementSibling as HTMLElement | null) ?? undefined,
+    UI_COPY.controls.squarePixels,
+    "square pixel shape label",
+  );
+  setText(
+    (pixelShapeRound.nextElementSibling as HTMLElement | null) ?? undefined,
+    UI_COPY.controls.roundPixels,
+    "round pixel shape label",
+  );
   resetButton.textContent = UI_COPY.controls.resetDefaults;
   downloadLink.textContent = UI_COPY.controls.downloadTtf;
   downloadLink.download = UI_COPY.controls.defaultDownloadName;
@@ -612,6 +629,8 @@ function resetControlsToDefaults(): void {
   [pixelsPerEm, threshold, expand, shiftX, shiftY].forEach((input) => {
     input.value = input.defaultValue;
   });
+  pixelShapeSquare.checked = true;
+  pixelShapeRound.checked = false;
 
   sourcePreviewFontSize = null;
   outputPreviewFontSize = null;
@@ -690,8 +709,9 @@ function syncResetButton(): void {
   const rangesAtDefault = [pixelsPerEm, threshold, expand, shiftX, shiftY].every(
     (input) => input.value === input.defaultValue,
   );
+  const shapeAtDefault = getPixelShape() === "square";
   const sizesAtDefault = sourcePreviewFontSize === null && outputPreviewFontSize === null;
-  resetButton.disabled = rangesAtDefault && sizesAtDefault;
+  resetButton.disabled = rangesAtDefault && shapeAtDefault && sizesAtDefault;
 }
 
 function scheduleAutoGenerate(): void {
@@ -707,6 +727,7 @@ function getPixelizeOptions(): PixelizeOptions {
     pixelsPerEm: Number(pixelsPerEm.value),
     threshold: Number(threshold.value) / 100,
     expand: Number(expand.value),
+    pixelShape: getPixelShape(),
     shiftX: Number(shiftX.value),
     shiftY: Number(shiftY.value),
   };
@@ -717,9 +738,14 @@ function getDefaultPixelizeOptions(): PixelizeOptions {
     pixelsPerEm: Number(pixelsPerEm.defaultValue),
     threshold: Number(threshold.defaultValue) / 100,
     expand: Number(expand.defaultValue),
+    pixelShape: "square",
     shiftX: Number(shiftX.defaultValue),
     shiftY: Number(shiftY.defaultValue),
   };
+}
+
+function getPixelShape(): PixelShape {
+  return pixelShapeRound.checked ? "round" : "square";
 }
 
 function clearGeneratedFont(): void {
@@ -876,10 +902,28 @@ function renderDemoPreview(): void {
   for (let row = 0; row < expanded.rows; row += 1) {
     for (let col = 0; col < expanded.cols; col += 1) {
       if (isCellFilled(expanded, col, row)) {
-        context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        drawPreviewPixelCell(context, options.pixelShape ?? "square", col * cellSize, row * cellSize, cellSize);
       }
     }
   }
+}
+
+function drawPreviewPixelCell(
+  context: CanvasRenderingContext2D,
+  pixelShape: PixelShape,
+  x: number,
+  y: number,
+  size: number,
+): void {
+  if (pixelShape === "round") {
+    const radius = size / 2;
+    context.beginPath();
+    context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+    context.fill();
+    return;
+  }
+
+  context.fillRect(x, y, size, size);
 }
 
 function wrapText(context: CanvasRenderingContext2D, value: string, maxWidth: number): string[] {
