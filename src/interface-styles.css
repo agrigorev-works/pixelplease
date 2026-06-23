@@ -37,6 +37,8 @@
 :root {
   --pixel-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 4 L6 35 L15 27 L21 41 L27 38 L21 24 L33 24 Z' fill='%23111111' stroke='%23ffffff' stroke-width='3' stroke-linejoin='miter'/%3E%3Cpath d='M6 4 L6 35 L15 27 L21 41 L27 38 L21 24 L33 24 Z' fill='none' stroke='%23111111' stroke-width='1' stroke-linejoin='miter'/%3E%3C/svg%3E") 6 4,
     auto;
+  --pixel-pointer-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z' fill='%23111111' stroke='%23ffffff' stroke-width='3' stroke-linejoin='miter'/%3E%3Cpath d='M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z' fill='none' stroke='%23111111' stroke-width='1' stroke-linejoin='miter'/%3E%3C/svg%3E") 19 6,
+    pointer;
 
   color-scheme: light;
   font-family:
@@ -76,11 +78,10 @@ a:not(.is-disabled),
 label,
 select:not(:disabled),
 input:not(:disabled),
-textarea:not(:disabled),
 summary,
 .upload-zone,
 .segment-option {
-  cursor: var(--pixel-cursor);
+  cursor: var(--pixel-pointer-cursor);
 }
 
 .click-pixel-layer {
@@ -806,13 +807,11 @@ textarea:focus {
   border: 0;
 }
 
-body,
 button:not(:disabled),
 a:not(.is-disabled),
 label,
 select:not(:disabled),
 input:not(:disabled),
-textarea:not(:disabled),
 summary,
 .segment-option,
 .upload-zone,
@@ -821,7 +820,7 @@ summary,
 .secondary-action:not(:disabled),
 .download-action:not(.is-disabled),
 .replace-font-button:not(:disabled) {
-  cursor: var(--pixel-cursor);
+  cursor: var(--pixel-pointer-cursor);
 }
 
 @media (max-width: 860px) {

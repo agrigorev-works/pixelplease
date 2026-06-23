@@ -298,14 +298,14 @@ test("adds light desktop hover feedback to interactive controls", async ({ page 
   await page.locator("#google-font-select").hover();
   await expect(page.locator("#google-font-select")).toHaveCSS("border-color", "rgb(17, 17, 17)");
   await expect(page.locator("#google-font-select")).toHaveCSS("outline-color", "rgb(17, 17, 17)");
-  await expect(page.locator("#google-font-select")).toHaveCSS("cursor", /url/);
+  await expect(page.locator("#google-font-select")).toHaveCSS("cursor", /pointer/);
 
   await page.locator(".segment-option").nth(1).hover();
   await expect(page.locator(".segment-option").nth(1)).toHaveCSS("background-color", "rgb(245, 245, 245)");
 
   await page.locator(".field").first().hover();
   await expect(page.locator(".field").first().locator("span")).toHaveCSS("color", "rgb(17, 17, 17)");
-  await expect(page.locator("#pixels-per-em")).toHaveCSS("cursor", /url/);
+  await expect(page.locator("#pixels-per-em")).toHaveCSS("cursor", /pointer/);
 
   await page.locator("#pixels-per-em").fill("21");
   await expect(page.getByRole("button", { name: UI_COPY.controls.resetDefaults })).toBeEnabled();
@@ -333,7 +333,14 @@ test("adds light desktop hover feedback to interactive controls", async ({ page 
 test("adds an experimental large cursor and click pixel burst", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.locator("body")).toHaveCSS("cursor", /url/);
+  await expect(page.locator("body")).toHaveCSS("cursor", /auto/);
+  await expect(page.locator("#download-link")).toHaveCSS("cursor", /pointer/);
+
+  const cursorPair = await page.evaluate(() => ({
+    body: getComputedStyle(document.body).cursor,
+    download: getComputedStyle(document.querySelector("#download-link") as Element).cursor,
+  }));
+  expect(cursorPair.body).not.toBe(cursorPair.download);
 
   const layerMetrics = await page.locator(".click-pixel-layer").evaluate((layer) => {
     const styles = getComputedStyle(layer);
