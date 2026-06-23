@@ -116,11 +116,16 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(faqPage?.mainEntity).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ name: "What is the fastest way to create a custom pixel font?" }),
+      expect.objectContaining({ name: "Are my uploaded fonts and data private?" }),
       expect.objectContaining({ name: "Can I use the exported pixel font commercially?" }),
     ]),
   );
+  expect(faqPage?.mainEntity?.[1]).toMatchObject({ name: "Are my uploaded fonts and data private?" });
   expect(JSON.stringify(faqPage)).toContain("usable pixel-style TTF");
   expect(JSON.stringify(faqPage)).toContain("not just a raster image effect");
+  expect(JSON.stringify(faqPage)).toContain("no registration, login, or account is needed");
+  expect(JSON.stringify(faqPage)).toContain("does not upload it, store it on a server");
+  expect(JSON.stringify(faqPage)).toContain("generated TTF data to analytics");
 });
 
 test("renders the SEO FAQ below the working app", async ({ page }) => {
@@ -201,12 +206,16 @@ test("renders the SEO FAQ below the working app", async ({ page }) => {
   await expect(page.locator(".faq-item[open]")).toHaveCount(0);
   await expect(page.locator(".faq-item").first().locator("p")).toBeHidden();
 
-  await page.locator(".faq-item").filter({ hasText: "Where does pixelplease process my font?" }).locator("summary").click();
-  await expect(page.locator(".faq-item").filter({ hasText: "Where does pixelplease process my font?" })).toHaveAttribute(
+  const privacyFaqItem = page.locator(".faq-item").filter({ hasText: "Are my uploaded fonts and data private?" });
+  await expect(page.locator(".faq-item").nth(1)).toContainText("Are my uploaded fonts and data private?");
+  await privacyFaqItem.locator("summary").click();
+  await expect(privacyFaqItem).toHaveAttribute(
     "open",
     "",
   );
-  await expect(page.getByText("Uploaded fonts are not sent to a server")).toBeVisible();
+  await expect(privacyFaqItem.locator("p")).toContainText("no registration, login, or account is needed");
+  await expect(privacyFaqItem.locator("p")).toContainText("does not upload it, store it on a server");
+  await expect(privacyFaqItem.locator("p")).toContainText("generated TTF data to analytics");
   await page
     .locator(".faq-item")
     .filter({ hasText: "How do I export and install the pixel font?" })

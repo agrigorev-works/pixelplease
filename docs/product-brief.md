@@ -28,6 +28,10 @@ SEO headline direction:
 5. Download a ZIP with generated TTF and `NOTICE.txt`.
 6. Install the generated `.ttf` and test it in design tools, interface mockups, posters, or any app that accepts TTF fonts.
 
+## Privacy Boundary
+
+pixelplease should feel safe because the tool does not need user accounts or server-side font handling. Uploaded TTF/OTF files are read inside the browser for the current session, transformed locally, and packaged locally for download. The app must not upload, store, or analyze source fonts, sample text, or generated TTF data.
+
 ## What The Effect Should Preserve
 
 - Overall source-font personality: serif/sans/mono feel, width, contrast, and rhythm.
@@ -54,7 +58,7 @@ Go for public MVP if:
 - A user can understand the app within one screen and get a TTF in under one minute.
 - Generated fonts parse, load, and type in browser tests.
 - The demo-font path is self-contained and does not require runtime downloads from GitHub raw.
-- Licensing boundaries are visible: bundled demo fonts are permissive, user uploads stay local, and redistribution responsibility is clear.
+- Privacy and licensing boundaries are visible: no registration/login, user uploads stay local, bundled demo fonts are permissive, and redistribution responsibility is clear.
 - SEO page framing explains the tool without turning the app into a generic landing page.
 
 No-go if:

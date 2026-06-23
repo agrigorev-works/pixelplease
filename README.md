@@ -9,7 +9,7 @@ This branch contains a minimal mono, three-column variation of the first proof o
 - start each session with the deterministic Merriweather demo font;
 - upload a local `.ttf` / `.otf` through a same-size Source drop zone;
 - remind users to upload only fonts they have a license to edit;
-- state that uploaded fonts stay in the browser;
+- state that uploaded fonts stay in the browser and do not require registration, login, or server storage;
 - parse glyphs with `opentype.js`;
 - apply a simple pixelization effect;
 - tune pixels-per-em, threshold, expand, and X/Y grid shift;
@@ -21,7 +21,7 @@ This branch contains a minimal mono, three-column variation of the first proof o
 - download a `.zip` package containing the generated `.ttf`, `NOTICE.txt`, and bundled source license material when applicable;
 - verify the generated font can be parsed and loaded in the browser.
 
-The app is static and client-side: uploaded fonts are read in the browser and are not sent to a server.
+The app is static and client-side: uploaded fonts are read in the browser and are not sent to a server. pixelplease does not require registration or login, and it does not store uploaded fonts, sample text, or generated TTF data.
 
 ## Branch
 

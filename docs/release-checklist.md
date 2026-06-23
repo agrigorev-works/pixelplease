@@ -17,6 +17,7 @@
 - `robots.txt` and `sitemap.xml`.
 - Root `/llms.txt` AI-discovery context file.
 - Below-app FAQ section with `FAQPage` structured data.
+- Dedicated FAQ privacy item near the top: no registration/login, no uploaded font storage, and no font/sample/output analytics.
 - GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts.
 - Cross-browser launch sanity coverage.
 - Mobile/coarse-pointer first run does not autofocus the Source textarea, and local-only upload privacy copy is visible.

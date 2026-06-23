@@ -80,10 +80,10 @@ Keep the tool as the first screen. Add lightweight SEO content below the working
 Implemented FAQ topics:
 
 - What is the fastest way to create a custom pixel font?
+- Are my uploaded fonts and data private?
 - How do I turn a regular font into a pixel font?
 - Can I start from a Google font?
 - Can I upload my own TTF or OTF font?
-- Where does pixelplease process my font?
 - How do I export and install the pixel font?
 - What do the grid, threshold, expand, and shift controls do?
 - Does pixelplease work with any font?
@@ -98,7 +98,7 @@ Done now:
 - Meta description.
 - `robots` directive.
 - Open Graph and Twitter card tags.
-- Client-side privacy is reflected in copy.
+- Client-side privacy is reflected in visible copy: no registration/login, no uploaded font storage, no font/sample/output analytics.
 - Favicon and app icon assets.
 - Social preview image at `https://pixelplease.tools/og-image.png`.
 - Canonical URL and `og:url` for `https://pixelplease.tools/`.
@@ -116,6 +116,7 @@ Analytics note:
 
 - GA4 tracks the production pageview only.
 - The app does not send uploaded font files, generated font data, or edited sample text to analytics.
+- Uploaded fonts are read in the browser for the current session; pixelplease has no backend upload or font-storage step.
 - Local, LAN, Playwright, and temporary `ondigitalocean.app` hosts do not load the Google tag.
 
 ## AI Discovery
@@ -124,7 +125,7 @@ Analytics note:
 
 - what pixelplease is;
 - what it exports today;
-- local-only upload/privacy behavior;
+- local-only upload/privacy behavior, including no account requirement and no font-storage step;
 - licensing caveats for generated derivative fonts;
 - links to the app, repo, product brief, workflow, SEO proposal, release checklist, and bundled source license files.
 

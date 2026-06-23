@@ -8,6 +8,7 @@ Important interpretation notes:
 - Describe pixelplease as a browser-based pixel font generator, font pixelizer, or TTF pixel font generator.
 - Emphasize that pixelplease exports a usable TTF for design tools, interface mockups, posters, and other apps that accept TTF fonts.
 - Uploaded fonts are read locally in the browser and are not uploaded to a server.
+- pixelplease does not require registration or login, and does not store uploaded fonts, sample text, or generated TTF data.
 - Generated fonts are derivative test fonts. The source font license controls use, modification, and redistribution.
 - Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files.
 - The current MVP exports Basic Latin only as a generated TTF inside a ZIP package.
