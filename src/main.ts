@@ -72,6 +72,13 @@ type SourceState =
       uploadedSource?: UploadedSource;
     };
 
+type PointerBurstStart = {
+  pointerId: number;
+  x: number;
+  y: number;
+  startedAt: number;
+};
+
 const OFL_LICENSE_URL = "https://openfontlicense.org";
 const SOURCE_LICENSE_PACKAGE_DIR = "licenses";
 
@@ -154,6 +161,8 @@ const CLICK_PIXEL_COUNT = 14;
 const CLICK_PIXEL_MIN_TRAVEL = 24;
 const CLICK_PIXEL_MAX_TRAVEL = 62;
 const CLICK_PIXEL_LIFETIME_MS = 780;
+const CLICK_PIXEL_MAX_TAP_MS = 280;
+const CLICK_PIXEL_MAX_TAP_DRIFT = 8;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
@@ -227,6 +236,7 @@ const logoParts = Array.from(logoTitle.querySelectorAll<HTMLElement>("span"));
 const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".source-mode-control .segment-option span"));
 const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".control-stack > .field > span"));
 const clickPixelLayer = createClickPixelLayer();
+let pendingClickPixelPointer: PointerBurstStart | null = null;
 
 applyInterfaceCopy();
 uploadInput.addEventListener("change", handleUpload);
@@ -252,7 +262,10 @@ sourceSizeIncrease.addEventListener("click", () => adjustSourcePreviewSize(PREVI
 outputSizeDecrease.addEventListener("click", () => adjustOutputPreviewSize(-PREVIEW_FONT_SIZE_STEP));
 outputSizeIncrease.addEventListener("click", () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
 window.addEventListener("resize", syncPreviewSizes);
-window.addEventListener("pointerdown", handlePointerBurst, { passive: true });
+window.addEventListener("pointerdown", handlePointerBurstStart, { passive: true });
+window.addEventListener("pointerup", handlePointerBurstEnd, { passive: true });
+window.addEventListener("pointercancel", clearPendingPointerBurst, { passive: true });
+window.addEventListener("blur", clearPendingPointerBurst);
 
 initializeDemoFonts();
 void initializeLogoFont();
@@ -285,12 +298,58 @@ function createClickPixelLayer(): HTMLElement {
   return layer;
 }
 
-function handlePointerBurst(event: PointerEvent): void {
+function handlePointerBurstStart(event: PointerEvent): void {
   if (event.button !== 0 || event.pointerType === "touch") {
+    pendingClickPixelPointer = null;
+    return;
+  }
+
+  pendingClickPixelPointer = {
+    pointerId: event.pointerId,
+    x: event.clientX,
+    y: event.clientY,
+    startedAt: window.performance.now(),
+  };
+}
+
+function handlePointerBurstEnd(event: PointerEvent): void {
+  const pointerStart = pendingClickPixelPointer;
+  pendingClickPixelPointer = null;
+
+  if (!pointerStart || pointerStart.pointerId !== event.pointerId) {
+    return;
+  }
+
+  const heldForMs = window.performance.now() - pointerStart.startedAt;
+  const movedBy = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
+  if (
+    heldForMs > CLICK_PIXEL_MAX_TAP_MS ||
+    movedBy > CLICK_PIXEL_MAX_TAP_DRIFT ||
+    hasActiveTextSelection()
+  ) {
     return;
   }
 
   spawnClickPixels(event.clientX, event.clientY);
+}
+
+function clearPendingPointerBurst(): void {
+  pendingClickPixelPointer = null;
+}
+
+function hasActiveTextSelection(): boolean {
+  if ((window.getSelection()?.toString().trim().length ?? 0) > 0) {
+    return true;
+  }
+
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+    const selectionStart = activeElement.selectionStart ?? 0;
+    const selectionEnd = activeElement.selectionEnd ?? 0;
+    return selectionEnd > selectionStart;
+  }
+
+  return false;
 }
 
 function spawnClickPixels(x: number, y: number): void {

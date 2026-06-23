@@ -370,6 +370,25 @@ test("adds an experimental large cursor and click pixel burst", async ({ page })
   expect(colors).toContain("rgb(255, 255, 255)");
 
   await expect(page.locator(".click-pixel")).toHaveCount(0, { timeout: 2_000 });
+
+  await page.mouse.move(128, 128);
+  await page.mouse.down();
+  await page.waitForTimeout(360);
+  await page.mouse.up();
+  await page.waitForTimeout(120);
+  await expect(page.locator(".click-pixel")).toHaveCount(0);
+
+  const introBox = await page.locator(".intro-copy").boundingBox();
+  expect(introBox).not.toBeNull();
+  await page.mouse.move(introBox!.x + 12, introBox!.y + introBox!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(introBox!.x + Math.min(introBox!.width - 12, 240), introBox!.y + introBox!.height / 2, {
+    steps: 6,
+  });
+  await page.mouse.up();
+  await page.waitForTimeout(120);
+  await expect(page.locator(".click-pixel")).toHaveCount(0);
+  await page.evaluate(() => window.getSelection()?.removeAllRanges());
 });
 
 test("uses the available desktop viewport instead of a fixed narrow shell", async ({ page }) => {
