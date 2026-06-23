@@ -163,6 +163,11 @@ const CLICK_PIXEL_MAX_TRAVEL = 62;
 const CLICK_PIXEL_LIFETIME_MS = 780;
 const CLICK_PIXEL_MAX_TAP_MS = 280;
 const CLICK_PIXEL_MAX_TAP_DRIFT = 8;
+const TRAIL_PIXEL_MIN_DISTANCE = 12;
+const TRAIL_PIXEL_MIN_INTERVAL_MS = 34;
+const TRAIL_PIXEL_LIFETIME_MS = 460;
+const TRAIL_PIXEL_MIN_DRIFT = 8;
+const TRAIL_PIXEL_MAX_DRIFT = 20;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
@@ -237,6 +242,10 @@ const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".sou
 const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".control-stack > .field > span"));
 const clickPixelLayer = createClickPixelLayer();
 let pendingClickPixelPointer: PointerBurstStart | null = null;
+let lastTrailPixelX: number | undefined;
+let lastTrailPixelY: number | undefined;
+let lastTrailPixelAt = 0;
+let trailPixelIndex = 0;
 
 applyInterfaceCopy();
 uploadInput.addEventListener("change", handleUpload);
@@ -263,9 +272,10 @@ outputSizeDecrease.addEventListener("click", () => adjustOutputPreviewSize(-PREV
 outputSizeIncrease.addEventListener("click", () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
 window.addEventListener("resize", syncPreviewSizes);
 window.addEventListener("pointerdown", handlePointerBurstStart, { passive: true });
+window.addEventListener("pointermove", handlePointerTrail, { passive: true });
 window.addEventListener("pointerup", handlePointerBurstEnd, { passive: true });
 window.addEventListener("pointercancel", clearPendingPointerBurst, { passive: true });
-window.addEventListener("blur", clearPendingPointerBurst);
+window.addEventListener("blur", resetPointerEffects);
 
 initializeDemoFonts();
 void initializeLogoFont();
@@ -312,6 +322,33 @@ function handlePointerBurstStart(event: PointerEvent): void {
   };
 }
 
+function handlePointerTrail(event: PointerEvent): void {
+  if (event.pointerType !== "mouse" || event.buttons !== 0) {
+    resetPointerTrail();
+    return;
+  }
+
+  if (lastTrailPixelX === undefined || lastTrailPixelY === undefined) {
+    lastTrailPixelX = event.clientX;
+    lastTrailPixelY = event.clientY;
+    lastTrailPixelAt = window.performance.now();
+    return;
+  }
+
+  const now = window.performance.now();
+  const movementX = event.clientX - lastTrailPixelX;
+  const movementY = event.clientY - lastTrailPixelY;
+  const movedBy = Math.hypot(movementX, movementY);
+  if (movedBy < TRAIL_PIXEL_MIN_DISTANCE || now - lastTrailPixelAt < TRAIL_PIXEL_MIN_INTERVAL_MS) {
+    return;
+  }
+
+  spawnCursorTrailPixel(event.clientX, event.clientY, movementX, movementY);
+  lastTrailPixelX = event.clientX;
+  lastTrailPixelY = event.clientY;
+  lastTrailPixelAt = now;
+}
+
 function handlePointerBurstEnd(event: PointerEvent): void {
   const pointerStart = pendingClickPixelPointer;
   pendingClickPixelPointer = null;
@@ -337,6 +374,17 @@ function clearPendingPointerBurst(): void {
   pendingClickPixelPointer = null;
 }
 
+function resetPointerTrail(): void {
+  lastTrailPixelX = undefined;
+  lastTrailPixelY = undefined;
+  lastTrailPixelAt = 0;
+}
+
+function resetPointerEffects(): void {
+  clearPendingPointerBurst();
+  resetPointerTrail();
+}
+
 function hasActiveTextSelection(): boolean {
   if ((window.getSelection()?.toString().trim().length ?? 0) > 0) {
     return true;
@@ -350,6 +398,28 @@ function hasActiveTextSelection(): boolean {
   }
 
   return false;
+}
+
+function spawnCursorTrailPixel(x: number, y: number, movementX: number, movementY: number): void {
+  const movementLength = Math.hypot(movementX, movementY) || 1;
+  const drift = TRAIL_PIXEL_MIN_DRIFT + Math.random() * (TRAIL_PIXEL_MAX_DRIFT - TRAIL_PIXEL_MIN_DRIFT);
+  const jitter = (Math.random() - 0.5) * 6;
+  const size = 4 + Math.round(Math.random() * 3);
+  const pixel = document.createElement("span");
+  const isDark = trailPixelIndex % 2 === 0;
+  trailPixelIndex += 1;
+
+  pixel.className = `click-pixel cursor-trail-pixel ${isDark ? "is-dark" : "is-light"}`;
+  pixel.style.setProperty("--x", `${x}px`);
+  pixel.style.setProperty("--y", `${y}px`);
+  pixel.style.setProperty("--dx", `${(-movementX / movementLength) * drift + jitter}px`);
+  pixel.style.setProperty("--dy", `${(-movementY / movementLength) * drift + jitter}px`);
+  pixel.style.setProperty("--size", `${size}px`);
+  clickPixelLayer.append(pixel);
+
+  window.setTimeout(() => {
+    pixel.remove();
+  }, TRAIL_PIXEL_LIFETIME_MS);
 }
 
 function spawnClickPixels(x: number, y: number): void {

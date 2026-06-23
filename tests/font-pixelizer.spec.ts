@@ -374,6 +374,26 @@ test("adds an experimental large cursor and click pixel burst", async ({ page })
     inset: "0px 0px 0px 0px",
   });
 
+  await page.mouse.move(120, 120);
+  for (let step = 1; step <= 5; step += 1) {
+    await page.mouse.move(120 + step * 18, 120 + step * 6);
+    await page.waitForTimeout(45);
+  }
+
+  await expect
+    .poll(async () => page.locator(".cursor-trail-pixel").count(), { timeout: 1_000 })
+    .toBeGreaterThan(2);
+
+  const trailColors = await page.locator(".cursor-trail-pixel").evaluateAll((pixels) =>
+    pixels.map((pixel) => getComputedStyle(pixel).backgroundColor),
+  );
+  expect(trailColors).toContain("rgb(17, 17, 17)");
+  expect(trailColors).toContain("rgb(255, 255, 255)");
+
+  await expect(page.locator(".cursor-trail-pixel")).toHaveCount(0, { timeout: 1_500 });
+  await page.waitForTimeout(160);
+  await expect(page.locator(".cursor-trail-pixel")).toHaveCount(0);
+
   await page.mouse.click(96, 96);
 
   await expect

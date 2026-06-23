@@ -118,6 +118,10 @@ summary,
   background: #ffffff;
 }
 
+.cursor-trail-pixel {
+  animation: cursor-trail-fade 460ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 @keyframes click-pixel-burst {
   0% {
     opacity: 1;
@@ -131,6 +135,18 @@ summary,
   100% {
     opacity: 0;
     transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.45);
+  }
+}
+
+@keyframes cursor-trail-fade {
+  0% {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.35);
   }
 }
 
