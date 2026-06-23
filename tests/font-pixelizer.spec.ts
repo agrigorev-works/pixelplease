@@ -329,6 +329,23 @@ test("adds light desktop hover feedback to interactive controls", async ({ page 
     "rgb(245, 245, 245)",
   );
   await expect(page.locator(".faq-item").first().locator("summary")).toHaveCSS("cursor", /pointer/);
+
+  const selectionStyles = await page.evaluate(() => {
+    const introSelection = getComputedStyle(document.querySelector(".intro-copy") as Element, "::selection");
+    const sourceSelection = getComputedStyle(document.querySelector("#sample-text") as Element, "::selection");
+    return {
+      introBackground: introSelection.backgroundColor,
+      introColor: introSelection.color,
+      sourceBackground: sourceSelection.backgroundColor,
+      sourceColor: sourceSelection.color,
+    };
+  });
+  expect(selectionStyles).toEqual({
+    introBackground: "rgb(214, 255, 0)",
+    introColor: "rgb(17, 17, 17)",
+    sourceBackground: "rgb(214, 255, 0)",
+    sourceColor: "rgb(17, 17, 17)",
+  });
 });
 
 test("adds an experimental large cursor and click pixel burst", async ({ page }) => {

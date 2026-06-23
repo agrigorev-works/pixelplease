@@ -39,6 +39,8 @@
     auto;
   --pixel-pointer-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z' fill='%23111111' stroke='%23ffffff' stroke-width='3' stroke-linejoin='miter'/%3E%3Cpath d='M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z' fill='none' stroke='%23111111' stroke-width='1' stroke-linejoin='miter'/%3E%3C/svg%3E") 19 6,
     pointer;
+  --acid-selection-bg: #d6ff00;
+  --acid-selection-fg: #111111;
 
   color-scheme: light;
   font-family:
@@ -51,6 +53,11 @@
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background: var(--acid-selection-bg);
+  color: var(--acid-selection-fg);
 }
 
 body {
