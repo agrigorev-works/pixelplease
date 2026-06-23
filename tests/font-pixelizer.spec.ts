@@ -328,6 +328,7 @@ test("adds light desktop hover feedback to interactive controls", async ({ page 
     "background-color",
     "rgb(245, 245, 245)",
   );
+  await expect(page.locator(".faq-item").first().locator("summary")).toHaveCSS("cursor", /pointer/);
 });
 
 test("adds an experimental large cursor and click pixel burst", async ({ page }) => {
