@@ -69,7 +69,7 @@ The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.
 - Social preview metadata points to `https://pixelplease.tools/og-image-20260623.png`.
 - `npm run verify` checks that social preview images stay at the required 1200x630 size.
 - LLM-friendly product context is available at `/llms.txt` in deployed builds.
-- GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics.
+- GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics. Production consent defaults allow pageview analytics and deny ad signals.
 - `npm run test:launch` runs a small launch sanity suite across Chromium, Firefox, WebKit, and a mobile Chromium viewport.
 - Mobile/coarse-pointer first run avoids auto-focusing the Source textarea so the keyboard does not immediately cover the app.
 - SEO and launch planning live in `docs/seo-proposal.md`, `docs/product-brief.md`, `docs/mvp-workflow.md`, and `docs/release-checklist.md`.

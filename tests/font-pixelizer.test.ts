@@ -11,6 +11,7 @@ import {
 import { createCellMaskFromImageData } from "../src/pixel-grid";
 import { buildNoticeText, createStoredZip } from "../src/download-package";
 import {
+  GA_CONSENT_DEFAULT,
   GA_MEASUREMENT_ID,
   getGoogleTagScriptSrc,
   shouldEnableAnalytics,
@@ -39,6 +40,15 @@ describe("font pixelizer core", () => {
     expect(getGoogleTagScriptSrc()).toBe(
       "https://www.googletagmanager.com/gtag/js?id=G-717BB12JJ8",
     );
+  });
+
+  it("allows production pageview analytics while denying ad signals", () => {
+    expect(GA_CONSENT_DEFAULT).toEqual({
+      analytics_storage: "granted",
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+    });
   });
 
   it("groups adjacent cells into rectangular path runs", () => {

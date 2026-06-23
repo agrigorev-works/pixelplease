@@ -1,4 +1,10 @@
 export const GA_MEASUREMENT_ID = "G-717BB12JJ8";
+export const GA_CONSENT_DEFAULT = {
+  analytics_storage: "granted",
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+} as const;
 
 const GOOGLE_TAG_SCRIPT_ID = "google-tag-manager-gtag";
 const ANALYTICS_HOSTS = new Set(["pixelplease.tools", "www.pixelplease.tools"]);
@@ -31,6 +37,14 @@ export function initializeAnalytics(): void {
     window.gtag = (...args: GtagArguments) => {
       window.dataLayer?.push(args);
     };
+  }
+
+  const hasConsentDefault = window.dataLayer.some(
+    (entry) => entry[0] === "consent" && entry[1] === "default",
+  );
+
+  if (!hasConsentDefault) {
+    window.gtag("consent", "default", GA_CONSENT_DEFAULT);
   }
 
   if (!document.getElementById(GOOGLE_TAG_SCRIPT_ID)) {

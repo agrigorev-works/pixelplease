@@ -106,7 +106,7 @@ Done now:
 - SoftwareApplication structured data.
 - Below-app FAQ section with matching `FAQPage` structured data.
 - Root `/llms.txt` file for LLM-friendly product context.
-- GA4 measurement `G-717BB12JJ8`, loaded only on `pixelplease.tools` and `www.pixelplease.tools`.
+- GA4 measurement `G-717BB12JJ8`, loaded only on `pixelplease.tools` and `www.pixelplease.tools`, with pageview analytics allowed and ad signals denied.
 
 Add after final domain:
 
@@ -116,6 +116,7 @@ Analytics note:
 
 - GA4 tracks the production pageview only.
 - The app does not send uploaded font files, generated font data, or edited sample text to analytics.
+- GA consent defaults explicitly grant `analytics_storage` and deny `ad_storage`, `ad_user_data`, and `ad_personalization`.
 - Uploaded fonts are read in the browser for the current session; pixelplease has no backend upload or font-storage step.
 - Local, LAN, Playwright, and temporary `ondigitalocean.app` hosts do not load the Google tag.
 
