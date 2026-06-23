@@ -408,7 +408,7 @@ async function applyDemoFont(font: DemoFontChoice): Promise<void> {
 
   sampleText.style.fontFamily = font.cssFamily;
   renderDemoPreview();
-  void document.fonts.load(`400 48px ${font.cssFamily}`).then(renderDemoPreview);
+  void document.fonts.load(`400 44px ${font.cssFamily}`).then(renderDemoPreview);
 
   if (state.source.mode === "google") {
     await loadDemoFontFile(font);

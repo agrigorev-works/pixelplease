@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { UI_COPY } from "../src/interface-copy";
 
+const DEFAULT_DESKTOP_PREVIEW_FONT_SIZE = 44;
+
 async function getSourceFontSize(page: Page): Promise<number> {
   return page.locator("#sample-text").evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
 }
@@ -16,11 +18,17 @@ test("resizes source and pixel output previews independently and resets them", a
 
   await expect(page.locator("#source-size-bar")).toBeVisible();
   await expect(page.locator("#output-size-bar")).toBeVisible();
-  await expect(page.locator("#source-size-readout")).toContainText("px");
-  await expect(page.locator("#output-size-readout")).toContainText("px");
+  await expect(page.locator("#source-size-readout")).toContainText(
+    UI_COPY.controls.previewSizeReadout(DEFAULT_DESKTOP_PREVIEW_FONT_SIZE),
+  );
+  await expect(page.locator("#output-size-readout")).toContainText(
+    UI_COPY.controls.previewSizeReadout(DEFAULT_DESKTOP_PREVIEW_FONT_SIZE),
+  );
 
   const initialSource = await getSourceFontSize(page);
   const initialRender = await getRenderFontSize(page);
+  expect(Math.abs(initialSource - DEFAULT_DESKTOP_PREVIEW_FONT_SIZE)).toBeLessThan(0.5);
+  expect(Math.abs(initialRender - DEFAULT_DESKTOP_PREVIEW_FONT_SIZE)).toBeLessThan(0.5);
 
   // By default the output preview follows the source size.
   await page.getByRole("button", { name: UI_COPY.controls.sourceSizeIncrease }).click();

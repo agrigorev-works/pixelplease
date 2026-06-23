@@ -579,7 +579,7 @@ textarea:focus {
   overflow-wrap: anywhere;
   overflow: auto;
   padding: 16px;
-  font-size: clamp(34px, 3.2vw, 48px);
+  font-size: clamp(34px, 3.2vw, 44px);
   line-height: 1.12;
   letter-spacing: 0;
 }
@@ -594,7 +594,7 @@ textarea:focus {
   background: #f5f5f5;
   color: #111111;
   padding: 16px;
-  font-size: clamp(34px, 3.2vw, 48px);
+  font-size: clamp(34px, 3.2vw, 44px);
   line-height: 1.12;
   letter-spacing: 0;
   overflow: auto;
