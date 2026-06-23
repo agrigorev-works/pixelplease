@@ -86,20 +86,20 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute("content", UI_COPY.documentTitle);
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
-    "https://pixelplease.tools/og-image.png",
+    "https://pixelplease.tools/og-image-20260623.png",
   );
   await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1200");
   await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute("content", "630");
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
     "content",
-    "https://pixelplease.tools/og-image.png",
+    "https://pixelplease.tools/og-image-20260623.png",
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", UI_COPY.intro.copy);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", UI_COPY.intro.copy);
   await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute("content", UI_COPY.intro.copy);
 
-  const socialImageResponse = await page.request.get("/og-image.png");
+  const socialImageResponse = await page.request.get("/og-image-20260623.png");
   expect(socialImageResponse.ok()).toBe(true);
   expect(socialImageResponse.headers()["content-type"]).toContain("image/png");
 

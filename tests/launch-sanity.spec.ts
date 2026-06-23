@@ -7,7 +7,7 @@ test("loads, generates a demo font, and keeps launch metadata healthy", async ({
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
-    "https://pixelplease.tools/og-image.png",
+    "https://pixelplease.tools/og-image-20260623.png",
   );
   await expect(page.locator('script[src*="googletagmanager.com/gtag/js"]')).toHaveCount(0);
   await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });

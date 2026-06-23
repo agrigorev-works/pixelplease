@@ -66,8 +66,8 @@ The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.
 - Bundled demo font license files are vendored per family in `public/fonts/google/licenses/`.
 - The upstream Google Fonts URLs are still kept in generated `NOTICE.txt` packages for source traceability.
 - Favicon and app icon assets are served from `public/`.
-- Social preview metadata points to `https://pixelplease.tools/og-image.png`.
-- `npm run verify` checks that `public/og-image.png` stays at the required 1200x630 size.
+- Social preview metadata points to `https://pixelplease.tools/og-image-20260623.png`.
+- `npm run verify` checks that social preview images stay at the required 1200x630 size.
 - LLM-friendly product context is available at `/llms.txt` in deployed builds.
 - GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics.
 - `npm run test:launch` runs a small launch sanity suite across Chromium, Firefox, WebKit, and a mobile Chromium viewport.

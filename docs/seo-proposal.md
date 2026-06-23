@@ -100,7 +100,7 @@ Done now:
 - Open Graph and Twitter card tags.
 - Client-side privacy is reflected in visible copy: no registration/login, no uploaded font storage, no font/sample/output analytics.
 - Favicon and app icon assets.
-- Social preview image at `https://pixelplease.tools/og-image.png`.
+- Social preview image at `https://pixelplease.tools/og-image-20260623.png`.
 - Canonical URL and `og:url` for `https://pixelplease.tools/`.
 - `robots.txt` and `sitemap.xml`.
 - SoftwareApplication structured data.
