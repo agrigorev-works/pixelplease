@@ -35,10 +35,6 @@
 }
 
 :root {
-  --pixel-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 4 L6 35 L15 27 L21 41 L27 38 L21 24 L33 24 Z' fill='%23111111' stroke='%23ffffff' stroke-width='3' stroke-linejoin='miter'/%3E%3Cpath d='M6 4 L6 35 L15 27 L21 41 L27 38 L21 24 L33 24 Z' fill='none' stroke='%23111111' stroke-width='1' stroke-linejoin='miter'/%3E%3C/svg%3E") 6 4,
-    auto;
-  --pixel-pointer-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z' fill='%23111111' stroke='%23ffffff' stroke-width='3' stroke-linejoin='miter'/%3E%3Cpath d='M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z' fill='none' stroke='%23111111' stroke-width='1' stroke-linejoin='miter'/%3E%3C/svg%3E") 19 6,
-    pointer;
   --acid-selection-bg: #d6ff00;
   --acid-selection-fg: #111111;
 
@@ -65,7 +61,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: #ffffff;
-  cursor: var(--pixel-cursor);
+  cursor: auto;
+}
+
+body.has-custom-cursor,
+body.has-custom-cursor * {
+  cursor: none !important;
 }
 
 button,
@@ -88,15 +89,47 @@ input:not(:disabled),
 summary,
 .upload-zone,
 .segment-option {
-  cursor: var(--pixel-pointer-cursor);
+  cursor: pointer;
 }
 
 .click-pixel-layer {
   position: fixed;
   inset: 0;
-  z-index: 2147483647;
+  z-index: 2147483646;
   overflow: hidden;
   pointer-events: none;
+}
+
+.custom-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  z-index: 2147483647;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(var(--cursor-x, -96px), var(--cursor-y, -96px), 0);
+  transition: opacity 80ms linear;
+  will-change: opacity, transform;
+  contain: layout paint size;
+}
+
+.custom-cursor.is-visible {
+  opacity: 1;
+}
+
+.custom-cursor svg {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 48px;
+  height: 48px;
+}
+
+.custom-cursor[data-cursor-shape="arrow"] .custom-cursor-arrow,
+.custom-cursor[data-cursor-shape="pointer"] .custom-cursor-pointer {
+  display: block;
 }
 
 .click-pixel {
@@ -844,7 +877,7 @@ summary,
 .secondary-action:not(:disabled),
 .download-action:not(.is-disabled),
 .replace-font-button:not(:disabled) {
-  cursor: var(--pixel-pointer-cursor);
+  cursor: pointer;
 }
 
 @media (max-width: 860px) {

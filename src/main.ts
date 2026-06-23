@@ -79,8 +79,32 @@ type PointerBurstStart = {
   startedAt: number;
 };
 
+type CustomCursorShape = "arrow" | "pointer";
+
 const OFL_LICENSE_URL = "https://openfontlicense.org";
 const SOURCE_LICENSE_PACKAGE_DIR = "licenses";
+
+const INTERACTIVE_CURSOR_SELECTOR = [
+  "button:not(:disabled)",
+  "a:not(.is-disabled)",
+  "label",
+  "select:not(:disabled)",
+  "input:not(:disabled)",
+  "summary",
+  ".faq-item summary",
+  ".segment-option",
+  ".upload-zone",
+  ".field input:not(:disabled)",
+  ".size-step:not(:disabled)",
+  ".secondary-action:not(:disabled)",
+  ".download-action:not(.is-disabled)",
+  ".replace-font-button:not(:disabled)",
+].join(", ");
+
+const CUSTOM_CURSOR_OFFSETS: Record<CustomCursorShape, { x: number; y: number }> = {
+  arrow: { x: 6, y: 4 },
+  pointer: { x: 19, y: 6 },
+};
 
 const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
   {
@@ -241,6 +265,7 @@ const logoParts = Array.from(logoTitle.querySelectorAll<HTMLElement>("span"));
 const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".source-mode-control .segment-option span"));
 const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".control-stack > .field > span"));
 const clickPixelLayer = createClickPixelLayer();
+const customCursor = createCustomCursor();
 let pendingClickPixelPointer: PointerBurstStart | null = null;
 let lastTrailPixelX: number | undefined;
 let lastTrailPixelY: number | undefined;
@@ -271,6 +296,9 @@ sourceSizeIncrease.addEventListener("click", () => adjustSourcePreviewSize(PREVI
 outputSizeDecrease.addEventListener("click", () => adjustOutputPreviewSize(-PREVIEW_FONT_SIZE_STEP));
 outputSizeIncrease.addEventListener("click", () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
 window.addEventListener("resize", syncPreviewSizes);
+window.addEventListener("pointerover", handleCustomCursorMove, { passive: true });
+window.addEventListener("pointermove", handleCustomCursorMove, { passive: true });
+window.addEventListener("pointerout", handleCustomCursorLeave, { passive: true });
 window.addEventListener("pointerdown", handlePointerBurstStart, { passive: true });
 window.addEventListener("pointermove", handlePointerTrail, { passive: true });
 window.addEventListener("pointerup", handlePointerBurstEnd, { passive: true });
@@ -306,6 +334,54 @@ function createClickPixelLayer(): HTMLElement {
   layer.setAttribute("aria-hidden", "true");
   document.body.append(layer);
   return layer;
+}
+
+function createCustomCursor(): HTMLElement {
+  const cursor = document.createElement("div");
+  cursor.className = "custom-cursor";
+  cursor.dataset.cursorShape = "arrow";
+  cursor.setAttribute("aria-hidden", "true");
+  cursor.innerHTML = `
+    <svg class="custom-cursor-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+      <path d="M6 4 L6 35 L15 27 L21 41 L27 38 L21 24 L33 24 Z" fill="#111111" stroke="#ffffff" stroke-width="3" stroke-linejoin="miter"/>
+      <path d="M6 4 L6 35 L15 27 L21 41 L27 38 L21 24 L33 24 Z" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="miter"/>
+    </svg>
+    <svg class="custom-cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+      <path d="M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z" fill="#111111" stroke="#ffffff" stroke-width="3" stroke-linejoin="miter"/>
+      <path d="M17 5 H24 V24 H26 V13 H32 V26 H34 V19 H40 V33 L34 43 H19 L8 29 L12 25 L17 30 Z" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="miter"/>
+    </svg>
+  `;
+  document.body.classList.add("has-custom-cursor");
+  document.body.append(cursor);
+  return cursor;
+}
+
+function handleCustomCursorMove(event: PointerEvent): void {
+  if (event.pointerType !== "mouse") {
+    hideCustomCursor();
+    return;
+  }
+
+  const shape = getCustomCursorShape(event.target);
+  const offset = CUSTOM_CURSOR_OFFSETS[shape];
+  customCursor.dataset.cursorShape = shape;
+  customCursor.style.setProperty("--cursor-x", `${event.clientX - offset.x}px`);
+  customCursor.style.setProperty("--cursor-y", `${event.clientY - offset.y}px`);
+  customCursor.classList.add("is-visible");
+}
+
+function handleCustomCursorLeave(event: PointerEvent): void {
+  if (event.pointerType === "mouse" && !event.relatedTarget) {
+    hideCustomCursor();
+  }
+}
+
+function hideCustomCursor(): void {
+  customCursor.classList.remove("is-visible");
+}
+
+function getCustomCursorShape(target: EventTarget | null): CustomCursorShape {
+  return target instanceof Element && target.closest(INTERACTIVE_CURSOR_SELECTOR) ? "pointer" : "arrow";
 }
 
 function handlePointerBurstStart(event: PointerEvent): void {
