@@ -150,6 +150,10 @@ const MIN_PREVIEW_FONT_SIZE = 16;
 const MAX_PREVIEW_FONT_SIZE = 120;
 const PREVIEW_FONT_SIZE_STEP = 2;
 const FALLBACK_PREVIEW_FONT_SIZE = 42;
+const CLICK_PIXEL_COUNT = 14;
+const CLICK_PIXEL_MIN_TRAVEL = 24;
+const CLICK_PIXEL_MAX_TRAVEL = 62;
+const CLICK_PIXEL_LIFETIME_MS = 780;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
@@ -222,6 +226,7 @@ const shiftYValue = getElement<HTMLOutputElement>("shift-y-value");
 const logoParts = Array.from(logoTitle.querySelectorAll<HTMLElement>("span"));
 const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".source-mode-control .segment-option span"));
 const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".control-stack > .field > span"));
+const clickPixelLayer = createClickPixelLayer();
 
 applyInterfaceCopy();
 uploadInput.addEventListener("change", handleUpload);
@@ -247,6 +252,7 @@ sourceSizeIncrease.addEventListener("click", () => adjustSourcePreviewSize(PREVI
 outputSizeDecrease.addEventListener("click", () => adjustOutputPreviewSize(-PREVIEW_FONT_SIZE_STEP));
 outputSizeIncrease.addEventListener("click", () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
 window.addEventListener("resize", syncPreviewSizes);
+window.addEventListener("pointerdown", handlePointerBurst, { passive: true });
 
 initializeDemoFonts();
 void initializeLogoFont();
@@ -269,6 +275,44 @@ async function handleUpload(): Promise<void> {
   }
 
   await loadFontFile(file);
+}
+
+function createClickPixelLayer(): HTMLElement {
+  const layer = document.createElement("div");
+  layer.className = "click-pixel-layer";
+  layer.setAttribute("aria-hidden", "true");
+  document.body.append(layer);
+  return layer;
+}
+
+function handlePointerBurst(event: PointerEvent): void {
+  if (event.button !== 0 || event.pointerType === "touch") {
+    return;
+  }
+
+  spawnClickPixels(event.clientX, event.clientY);
+}
+
+function spawnClickPixels(x: number, y: number): void {
+  for (let index = 0; index < CLICK_PIXEL_COUNT; index += 1) {
+    const angle = (Math.PI * 2 * index) / CLICK_PIXEL_COUNT + (Math.random() - 0.5) * 0.58;
+    const distance =
+      CLICK_PIXEL_MIN_TRAVEL + Math.random() * (CLICK_PIXEL_MAX_TRAVEL - CLICK_PIXEL_MIN_TRAVEL);
+    const size = 5 + Math.round(Math.random() * 3);
+    const pixel = document.createElement("span");
+
+    pixel.className = `click-pixel ${index % 2 === 0 ? "is-dark" : "is-light"}`;
+    pixel.style.setProperty("--x", `${x}px`);
+    pixel.style.setProperty("--y", `${y}px`);
+    pixel.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    pixel.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    pixel.style.setProperty("--size", `${size}px`);
+    clickPixelLayer.append(pixel);
+
+    window.setTimeout(() => {
+      pixel.remove();
+    }, CLICK_PIXEL_LIFETIME_MS);
+  }
 }
 
 function applyInterfaceCopy(): void {
