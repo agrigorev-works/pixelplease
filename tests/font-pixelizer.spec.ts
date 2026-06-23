@@ -836,15 +836,28 @@ test("switches between square and round pixel shapes for preview and generated f
   await page.goto("/");
 
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", "square");
   await expect(page.getByRole("radio", { name: UI_COPY.controls.squarePixels })).toBeChecked();
   await expect(page.locator("#pixel-shape-control")).toBeVisible();
 
   const squareSignature = await getPixelCanvasSignature(page);
   const squareGeneratedUrl = await getGeneratedFontUrl(page);
+  const squareLogoCommands = await getInstalledFontGlyphCommandTypes(page, "PixelpleaseLogoFont", "p");
+  const squareHeadingMetrics = await getLogoHeadingMetrics(page);
+  expect(squareLogoCommands).toContain("L");
+  expect(squareLogoCommands).not.toContain("C");
 
   await page.getByRole("radio", { name: UI_COPY.controls.roundPixels }).check();
   await expect(page.getByRole("radio", { name: UI_COPY.controls.roundPixels })).toBeChecked();
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", "round");
   await expect(page.getByRole("button", { name: UI_COPY.controls.resetDefaults })).toBeEnabled();
+
+  const roundLogoCommands = await getInstalledFontGlyphCommandTypes(page, "PixelpleaseLogoFont", "p");
+  const roundHeadingMetrics = await getLogoHeadingMetrics(page);
+  expect(roundLogoCommands).toContain("C");
+  expect(roundHeadingMetrics).toEqual(squareHeadingMetrics);
 
   await expect
     .poll(
@@ -868,6 +881,7 @@ test("switches between square and round pixel shapes for preview and generated f
 
   await page.getByRole("button", { name: UI_COPY.controls.resetDefaults }).click();
   await expect(page.getByRole("radio", { name: UI_COPY.controls.squarePixels })).toBeChecked();
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", "square");
 });
 
 test("keeps generated output canvas-backed at phone width", async ({ page }) => {
@@ -1174,6 +1188,48 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
 
 async function getGeneratedFontUrl(page: Page): Promise<string | null> {
   return page.locator("#download-link").getAttribute("data-generated-font-url");
+}
+
+async function getInstalledFontGlyphCommandTypes(page: Page, fontFamily: string, character: string): Promise<string[]> {
+  const bytes = await page.evaluate(async (family) => {
+    const style = document.getElementById(`font-face-${family}`);
+    const match = style?.textContent?.match(/url\("([^"]+)"\)/);
+    if (!match) {
+      throw new Error(`Missing installed font-face for ${family}`);
+    }
+
+    const response = await fetch(match[1]);
+    return Array.from(new Uint8Array(await response.arrayBuffer()));
+  }, fontFamily);
+  const data = Uint8Array.from(bytes);
+  const font = opentype.parse(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
+  return font.charToGlyph(character).path.commands.map((command) => command.type);
+}
+
+type LogoHeadingMetrics = {
+  logoFontSize: string;
+  logoLineHeight: string;
+  faqFontSize: string;
+  faqLineHeight: string;
+};
+
+async function getLogoHeadingMetrics(page: Page): Promise<LogoHeadingMetrics> {
+  return page.evaluate(() => {
+    const logo = document.querySelector("#logo-title");
+    const faqHeading = document.querySelector("#faq-heading");
+    if (!logo || !faqHeading) {
+      throw new Error("Missing logo or FAQ heading");
+    }
+
+    const logoStyles = getComputedStyle(logo);
+    const faqStyles = getComputedStyle(faqHeading);
+    return {
+      logoFontSize: logoStyles.fontSize,
+      logoLineHeight: logoStyles.lineHeight,
+      faqFontSize: faqStyles.fontSize,
+      faqLineHeight: faqStyles.lineHeight,
+    };
+  });
 }
 
 type CanvasSignature = {

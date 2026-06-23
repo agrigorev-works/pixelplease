@@ -153,6 +153,10 @@ const FALLBACK_PREVIEW_FONT_SIZE = 42;
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
+let logoFontRunId = 0;
+let logoSourceFont: opentype.Font | undefined;
+let logoFontUrl: string | undefined;
+let renderedLogoPixelShape: PixelShape | undefined;
 // null = follow the responsive default; a number pins an explicit preview size.
 // Output size falls back to the source size, so the two controls start linked
 // and become fully independent once each is set. Reset returns both to null.
@@ -349,14 +353,47 @@ async function initializeLogoFont(): Promise<void> {
   }
 
   try {
-    const sourceFont = parseFont(await fetchFontBuffer(font.sourceUrl, font.family));
-    const generated = await pixelizeFont(sourceFont, getDefaultPixelizeOptions());
+    logoSourceFont = parseFont(await fetchFontBuffer(font.sourceUrl, font.family));
+    await updateLogoFontForCurrentShape();
+  } catch {
+    logoTitle.dataset.logoFont = "fallback";
+  }
+}
+
+async function updateLogoFontForCurrentShape(): Promise<void> {
+  const sourceFont = logoSourceFont;
+  const pixelShape = getPixelShape();
+  if (!sourceFont || renderedLogoPixelShape === pixelShape) {
+    return;
+  }
+
+  const runId = (logoFontRunId += 1);
+  logoTitle.dataset.logoFont = "loading";
+
+  try {
+    const generated = await pixelizeFont(sourceFont, {
+      ...getDefaultPixelizeOptions(),
+      pixelShape,
+    });
     const url = URL.createObjectURL(new Blob([generated.arrayBuffer], { type: "font/ttf" }));
+
+    if (runId !== logoFontRunId) {
+      revokeUrl(url);
+      return;
+    }
+
+    const previousUrl = logoFontUrl;
+    logoFontUrl = url;
+    renderedLogoPixelShape = pixelShape;
     installFontFace(LOGO_FONT_FAMILY, url);
     logoTitle.style.fontFamily = `"${LOGO_FONT_FAMILY}", "Merriweather", Georgia, serif`;
     logoTitle.dataset.logoFont = "ready";
+    logoTitle.dataset.logoPixelShape = pixelShape;
+    revokeUrl(previousUrl);
   } catch {
-    logoTitle.dataset.logoFont = "fallback";
+    if (runId === logoFontRunId) {
+      logoTitle.dataset.logoFont = "fallback";
+    }
   }
 }
 
@@ -699,6 +736,7 @@ function syncControlLabels(): void {
   shiftXValue.textContent = `${formatShiftValue(shiftX.value)} ${UI_COPY.controls.shiftUnit}`;
   shiftYValue.textContent = `${formatShiftValue(shiftY.value)} ${UI_COPY.controls.shiftUnit}`;
   syncResetButton();
+  void updateLogoFontForCurrentShape();
 
   if (!state.generated) {
     renderDemoPreview();
