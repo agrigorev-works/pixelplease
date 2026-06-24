@@ -41,6 +41,7 @@ test("serves favicon and app icon assets", async ({ page }) => {
     "/apple-touch-icon.png",
     "/icons/icon-192.png",
     "/icons/icon-512.png",
+    "/icons/icon-1024.png",
     "/site.webmanifest",
   ];
 
@@ -51,6 +52,7 @@ test("serves favicon and app icon assets", async ({ page }) => {
 
   await page.goto("/");
   await expect(page.locator('link[rel="icon"][href="/favicon.ico"]')).toHaveCount(1);
+  await expect(page.locator('link[rel="icon"][href="/icons/icon-1024.png"]')).toHaveAttribute("sizes", "1024x1024");
   await expect(page.locator('link[rel="apple-touch-icon"][href="/apple-touch-icon.png"]')).toHaveCount(1);
   await expect(page.locator('link[rel="manifest"][href="/site.webmanifest"]')).toHaveCount(1);
 
@@ -60,6 +62,7 @@ test("serves favicon and app icon assets", async ({ page }) => {
     expect.arrayContaining([
       expect.objectContaining({ src: "/icons/icon-192.png", sizes: "192x192" }),
       expect.objectContaining({ src: "/icons/icon-512.png", sizes: "512x512" }),
+      expect.objectContaining({ src: "/icons/icon-1024.png", sizes: "1024x1024" }),
     ]),
   );
 });
@@ -80,6 +83,7 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
 
   await page.goto("/");
   await expect(page).toHaveTitle(UI_COPY.documentTitle);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow, max-image-preview:large");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", UI_COPY.documentTitle);
@@ -112,6 +116,9 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(softwareApplication).toMatchObject({
     description: UI_COPY.intro.copy,
     url: "https://pixelplease.tools/",
+    image: "https://pixelplease.tools/icons/icon-1024.png",
+    thumbnailUrl: "https://pixelplease.tools/icons/icon-1024.png",
+    logo: "https://pixelplease.tools/icons/icon-1024.png",
   });
   expect(faqPage?.mainEntity).toEqual(
     expect.arrayContaining([
