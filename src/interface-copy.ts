@@ -30,6 +30,7 @@ export const UI_COPY = {
   },
   source: {
     googleFontSelect: "Google Font for demo preview",
+    googleWeightSelect: "Google Font weight for demo preview",
     fontOptionSeparator: " / ",
     replaceFont: "upload new font",
     sampleTextLabel: "sample text",
@@ -51,7 +52,7 @@ export const UI_COPY = {
     shiftUnit: "cell",
     resetDefaults: "reset defaults",
     downloadTtf: "Download font",
-    defaultDownloadName: "pixelplease-Font.zip",
+    defaultDownloadName: "PixelPlease-Generated-Font.zip",
     previewSizeReadout: (size: number) => `${size} px`,
     sizeDecreaseSymbol: "−",
     sizeIncreaseSymbol: "+",

@@ -167,16 +167,20 @@ describe("font pixelizer core", () => {
   });
 
   it("packages generated fonts with a notice file", () => {
-    const notice = buildNoticeText("pixelplease-Font", {
-      sourceName: "Fixture Sans",
-      sourceFileName: "fixture-source.ttf",
-      sourceLicense: "OFL",
-      sourceLicenseFileName: "fixture-OFL.txt",
-      sourceLicensePackagePath: "licenses/fixture-OFL.txt",
-      sourceUrl: "https://example.com/fixture-source.ttf",
-    });
+    const notice = buildNoticeText(
+      "PixelPlease FxtrSans 20-42-0 A7K4",
+      {
+        sourceName: "Fixture Sans",
+        sourceFileName: "fixture-source.ttf",
+        sourceLicense: "OFL",
+        sourceLicenseFileName: "fixture-OFL.txt",
+        sourceLicensePackagePath: "licenses/fixture-OFL.txt",
+        sourceUrl: "https://example.com/fixture-source.ttf",
+      },
+      "Regular",
+    );
     const zip = createStoredZip([
-      { name: "pixelplease-Font.ttf", data: Uint8Array.from([1, 2, 3]) },
+      { name: "PixelPlease-FxtrSans-20-42-0-A7K4-Regular.ttf", data: Uint8Array.from([1, 2, 3]) },
       { name: "NOTICE.txt", data: notice },
       { name: "licenses/fixture-OFL.txt", data: "Fixture license text" },
     ]);
@@ -184,10 +188,17 @@ describe("font pixelizer core", () => {
 
     expect(Object.keys(entries).sort()).toEqual([
       "NOTICE.txt",
+      "PixelPlease-FxtrSans-20-42-0-A7K4-Regular.ttf",
       "licenses/fixture-OFL.txt",
-      "pixelplease-Font.ttf",
-    ]);
-    expect(entries["pixelplease-Font.ttf"]).toEqual(Uint8Array.from([1, 2, 3]));
+    ].sort());
+    expect(entries["PixelPlease-FxtrSans-20-42-0-A7K4-Regular.ttf"]).toEqual(Uint8Array.from([1, 2, 3]));
+    expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("Generated font style: Regular");
+    expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain(
+      "Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.",
+    );
+    expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain(
+      "compact source codes instead of verbatim source family names",
+    );
     expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("Fixture Sans");
     expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("licenses/fixture-OFL.txt");
     expect(new TextDecoder().decode(entries["licenses/fixture-OFL.txt"])).toContain("Fixture license");

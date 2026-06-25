@@ -44,10 +44,10 @@ pixelplease should feel safe because the tool does not need user accounts or ser
 Current MVP export is intentionally narrow:
 
 - ZIP package with generated `.ttf`.
-- `NOTICE.txt` with source name, source file, license, upstream URL where relevant, and redistribution warning.
+- `NOTICE.txt` with generated family/style/file names, the PixelPlease naming scheme, source name, source file, license, upstream URL where relevant, and redistribution warning.
 - Bundled demo exports include the matching source OFL text under `licenses/`; user-upload exports do not invent license files.
 - Basic Latin glyph range.
-- Product-owned generated family naming (`pixelplease-Font`) to avoid reusing source Reserved Font Names.
+- Product-owned generated naming: `PixelPlease` + compact source code + pixel recipe + short hash + style. This keeps exported fonts installable side by side while avoiding verbatim source family names.
 
 Future exports can add WOFF2, CSS snippets, glyph sheets, and named presets, but those are not launch blockers.
 

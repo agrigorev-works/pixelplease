@@ -43,5 +43,5 @@ Keep only controls that change the current algorithm in obvious ways:
 - `npm run verify` passes.
 - Default demo loads without network calls to Google Fonts or GitHub raw.
 - Upload mode works with local TTF fixture.
-- Downloaded package contains generated TTF plus notice, and includes bundled source license material for demo-font exports.
+- Downloaded package contains a uniquely named generated TTF plus notice, and includes bundled source license material for demo-font exports.
 - Desktop and mobile smoke tests preserve layout and do not hide primary controls.

@@ -1,9 +1,12 @@
 import "./interface-styles.css";
 import { initializeAnalytics } from "./analytics";
 import {
+  getFontFamilyName,
   getFontLabel,
+  getFontStyleName,
   parseFont,
   pixelizeFont,
+  type PixelizeFontNames,
   type PixelizeResult,
   type PixelizeOptions,
   type PixelShape,
@@ -40,11 +43,21 @@ type DemoFontChoice = {
   licenseUrl: string;
   sourceUrl: string;
   sourceReferenceUrl: string;
+  styles: DemoFontStyleChoice[];
+};
+
+type DemoFontStyleChoice = {
+  label: string;
+  fontWeight: number;
+  sourceUrl: string;
+  sourceReferenceUrl: string;
+  sourceFileName: string;
 };
 
 type GoogleSource = {
   kind: "google";
   demoFont: DemoFontChoice;
+  demoStyle: DemoFontStyleChoice;
   sourceFont: opentype.Font;
   sourceUrl: string;
 };
@@ -81,6 +94,11 @@ type PointerBurstStart = {
 
 type CustomCursorShape = "arrow" | "pointer";
 
+type DemoFontWeightSpec = {
+  label: string;
+  fontWeight: number;
+};
+
 const OFL_LICENSE_URL = "https://openfontlicense.org";
 const SOURCE_LICENSE_PACKAGE_DIR = "licenses";
 
@@ -106,6 +124,60 @@ const CUSTOM_CURSOR_OFFSETS: Record<CustomCursorShape, { x: number; y: number }>
   pointer: { x: 19, y: 6 },
 };
 
+function demoFontStyle(
+  fontPath: string,
+  sourceReferenceUrl: string,
+  label: string,
+  fontWeight: number,
+): DemoFontStyleChoice {
+  return {
+    label,
+    fontWeight,
+    sourceUrl: fontPath,
+    sourceReferenceUrl,
+    sourceFileName: fileNameFromUrl(fontPath),
+  };
+}
+
+function demoFontWeightStyles(
+  fontDir: string,
+  filePrefix: string,
+  sourceReferenceUrl: string,
+  weights: DemoFontWeightSpec[],
+): DemoFontStyleChoice[] {
+  return weights.map(({ label, fontWeight }) =>
+    demoFontStyle(`/fonts/google/${fontDir}/${filePrefix}-${label}.ttf`, sourceReferenceUrl, label, fontWeight),
+  );
+}
+
+const WEIGHTS_100_TO_900: DemoFontWeightSpec[] = [
+  { label: "Thin", fontWeight: 100 },
+  { label: "ExtraLight", fontWeight: 200 },
+  { label: "Light", fontWeight: 300 },
+  { label: "Regular", fontWeight: 400 },
+  { label: "Medium", fontWeight: 500 },
+  { label: "SemiBold", fontWeight: 600 },
+  { label: "Bold", fontWeight: 700 },
+  { label: "ExtraBold", fontWeight: 800 },
+  { label: "Black", fontWeight: 900 },
+];
+
+const WEIGHTS_400_TO_700: DemoFontWeightSpec[] = [
+  { label: "Regular", fontWeight: 400 },
+  { label: "Medium", fontWeight: 500 },
+  { label: "SemiBold", fontWeight: 600 },
+  { label: "Bold", fontWeight: 700 },
+];
+
+const WEIGHTS_400_TO_900: DemoFontWeightSpec[] = [
+  { label: "Regular", fontWeight: 400 },
+  { label: "Medium", fontWeight: 500 },
+  { label: "SemiBold", fontWeight: 600 },
+  { label: "Bold", fontWeight: 700 },
+  { label: "ExtraBold", fontWeight: 800 },
+  { label: "Black", fontWeight: 900 },
+];
+
 const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
   {
     family: "IBM Plex Sans",
@@ -113,10 +185,53 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     license: "OFL",
     licenseFileName: "ibmplexsans-OFL.txt",
     licenseUrl: OFL_LICENSE_URL,
-    sourceUrl:
-      "/fonts/google/ibmplexsans/IBMPlexSans-var.ttf",
+    sourceUrl: "/fonts/google/ibmplexsans/IBMPlexSans-Regular.ttf",
     sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-Thin.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "Thin",
+        100,
+      ),
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-ExtraLight.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "ExtraLight",
+        200,
+      ),
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-Light.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "Light",
+        300,
+      ),
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "Regular",
+        400,
+      ),
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-Medium.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "Medium",
+        500,
+      ),
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-SemiBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "SemiBold",
+        600,
+      ),
+      demoFontStyle(
+        "/fonts/google/ibmplexsans/IBMPlexSans-Bold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf",
+        "Bold",
+        700,
+      ),
+    ],
   },
   {
     family: "Lato",
@@ -126,6 +241,62 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     licenseUrl: OFL_LICENSE_URL,
     sourceUrl: "/fonts/google/lato/Lato-Regular.ttf",
     sourceReferenceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/lato/Lato-Thin.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Thin.ttf",
+        "Thin",
+        100,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-ExtraLight.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-ExtraLight.ttf",
+        "ExtraLight",
+        200,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-Light.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Light.ttf",
+        "Light",
+        300,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf",
+        "Regular",
+        400,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-Medium.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Medium.ttf",
+        "Medium",
+        500,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-SemiBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-SemiBold.ttf",
+        "SemiBold",
+        600,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-Bold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Bold.ttf",
+        "Bold",
+        700,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-ExtraBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-ExtraBold.ttf",
+        "ExtraBold",
+        800,
+      ),
+      demoFontStyle(
+        "/fonts/google/lato/Lato-Black.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Black.ttf",
+        "Black",
+        900,
+      ),
+    ],
   },
   {
     family: "Libre Baskerville",
@@ -133,10 +304,35 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     license: "OFL",
     licenseFileName: "librebaskerville-OFL.txt",
     licenseUrl: OFL_LICENSE_URL,
-    sourceUrl:
-      "/fonts/google/librebaskerville/LibreBaskerville-var.ttf",
+    sourceUrl: "/fonts/google/librebaskerville/LibreBaskerville-Regular.ttf",
     sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/librebaskerville/LibreBaskerville-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+        "Regular",
+        400,
+      ),
+      demoFontStyle(
+        "/fonts/google/librebaskerville/LibreBaskerville-Medium.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+        "Medium",
+        500,
+      ),
+      demoFontStyle(
+        "/fonts/google/librebaskerville/LibreBaskerville-SemiBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+        "SemiBold",
+        600,
+      ),
+      demoFontStyle(
+        "/fonts/google/librebaskerville/LibreBaskerville-Bold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+        "Bold",
+        700,
+      ),
+    ],
   },
   {
     family: "Merriweather",
@@ -144,10 +340,53 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     license: "OFL",
     licenseFileName: "merriweather-OFL.txt",
     licenseUrl: OFL_LICENSE_URL,
-    sourceUrl:
-      "/fonts/google/merriweather/Merriweather-var.ttf",
+    sourceUrl: "/fonts/google/merriweather/Merriweather-Regular.ttf",
     sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-Light.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "Light",
+        300,
+      ),
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "Regular",
+        400,
+      ),
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-Medium.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "Medium",
+        500,
+      ),
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-SemiBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "SemiBold",
+        600,
+      ),
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-Bold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "Bold",
+        700,
+      ),
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-ExtraBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "ExtraBold",
+        800,
+      ),
+      demoFontStyle(
+        "/fonts/google/merriweather/Merriweather-Black.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf",
+        "Black",
+        900,
+      ),
+    ],
   },
   {
     family: "Roboto Mono",
@@ -155,9 +394,53 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     license: "OFL",
     licenseFileName: "robotomono-OFL.txt",
     licenseUrl: OFL_LICENSE_URL,
-    sourceUrl: "/fonts/google/robotomono/RobotoMono-var.ttf",
+    sourceUrl: "/fonts/google/robotomono/RobotoMono-Regular.ttf",
     sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-Thin.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "Thin",
+        100,
+      ),
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-ExtraLight.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "ExtraLight",
+        200,
+      ),
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-Light.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "Light",
+        300,
+      ),
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "Regular",
+        400,
+      ),
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-Medium.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "Medium",
+        500,
+      ),
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-SemiBold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "SemiBold",
+        600,
+      ),
+      demoFontStyle(
+        "/fonts/google/robotomono/RobotoMono-Bold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+        "Bold",
+        700,
+      ),
+    ],
   },
   {
     family: "Space Grotesk",
@@ -165,16 +448,154 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     license: "OFL",
     licenseFileName: "spacegrotesk-OFL.txt",
     licenseUrl: OFL_LICENSE_URL,
-    sourceUrl:
-      "/fonts/google/spacegrotesk/SpaceGrotesk-var.ttf",
+    sourceUrl: "/fonts/google/spacegrotesk/SpaceGrotesk-Regular.ttf",
     sourceReferenceUrl:
       "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/spacegrotesk/SpaceGrotesk-Light.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
+        "Light",
+        300,
+      ),
+      demoFontStyle(
+        "/fonts/google/spacegrotesk/SpaceGrotesk-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
+        "Regular",
+        400,
+      ),
+      demoFontStyle(
+        "/fonts/google/spacegrotesk/SpaceGrotesk-Medium.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
+        "Medium",
+        500,
+      ),
+      demoFontStyle(
+        "/fonts/google/spacegrotesk/SpaceGrotesk-Bold.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
+        "Bold",
+        700,
+      ),
+    ],
+  },
+  {
+    family: "Inter",
+    cssFamily: '"Inter", system-ui, sans-serif',
+    license: "OFL",
+    licenseFileName: "inter-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/inter/Inter-Regular.ttf",
+    sourceReferenceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "inter",
+      "Inter",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf",
+      WEIGHTS_100_TO_900,
+    ),
+  },
+  {
+    family: "Instrument Sans",
+    cssFamily: '"Instrument Sans", system-ui, sans-serif',
+    license: "OFL",
+    licenseFileName: "instrumentsans-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/instrumentsans/InstrumentSans-Regular.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/instrumentsans/InstrumentSans%5Bwdth%2Cwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "instrumentsans",
+      "InstrumentSans",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/instrumentsans/InstrumentSans%5Bwdth%2Cwght%5D.ttf",
+      WEIGHTS_400_TO_700,
+    ),
+  },
+  {
+    family: "Montserrat",
+    cssFamily: '"Montserrat", system-ui, sans-serif',
+    license: "OFL",
+    licenseFileName: "montserrat-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/montserrat/Montserrat-Regular.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "montserrat",
+      "Montserrat",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf",
+      WEIGHTS_100_TO_900,
+    ),
+  },
+  {
+    family: "Bebas Neue",
+    cssFamily: '"Bebas Neue", Impact, sans-serif',
+    license: "OFL",
+    licenseFileName: "bebasneue-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/bebasneue/BebasNeue-Regular.ttf",
+    sourceReferenceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf",
+    styles: [
+      demoFontStyle(
+        "/fonts/google/bebasneue/BebasNeue-Regular.ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf",
+        "Regular",
+        400,
+      ),
+    ],
+  },
+  {
+    family: "Fraunces",
+    cssFamily: '"Fraunces", Georgia, serif',
+    license: "OFL",
+    licenseFileName: "fraunces-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/fraunces/Fraunces-Regular.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT%2CWONK%2Copsz%2Cwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "fraunces",
+      "Fraunces",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT%2CWONK%2Copsz%2Cwght%5D.ttf",
+      WEIGHTS_100_TO_900,
+    ),
+  },
+  {
+    family: "Playfair Display",
+    cssFamily: '"Playfair Display", Georgia, serif',
+    license: "OFL",
+    licenseFileName: "playfairdisplay-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/playfairdisplay/PlayfairDisplay-Regular.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay%5Bwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "playfairdisplay",
+      "PlayfairDisplay",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay%5Bwght%5D.ttf",
+      WEIGHTS_400_TO_900,
+    ),
+  },
+  {
+    family: "Geist Mono",
+    cssFamily: '"Geist Mono", ui-monospace, monospace',
+    license: "OFL",
+    licenseFileName: "geistmono-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/geistmono/GeistMono-Regular.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/geistmono/GeistMono%5Bwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "geistmono",
+      "GeistMono",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/geistmono/GeistMono%5Bwght%5D.ttf",
+      WEIGHTS_100_TO_900,
+    ),
   },
 ];
 
 const AUTO_GENERATE_DELAY_MS = 280;
 const FONT_FETCH_TIMEOUT_MS = 15_000;
 const DEFAULT_DEMO_FONT_FAMILY = "Merriweather";
+const GENERATED_FONT_BRAND = "PixelPlease";
 const LOGO_FONT_FAMILY = "PixelpleaseLogoFont";
 const LOGO_SOURCE_FAMILY = DEFAULT_DEMO_FONT_FAMILY;
 const MIN_PREVIEW_FONT_SIZE = 16;
@@ -192,6 +613,17 @@ const TRAIL_PIXEL_MIN_INTERVAL_MS = 34;
 const TRAIL_PIXEL_LIFETIME_MS = 460;
 const TRAIL_PIXEL_MIN_DRIFT = 8;
 const TRAIL_PIXEL_MAX_DRIFT = 20;
+const SOURCE_CODE_OMITTED_TOKENS = new Set(["ibm"]);
+const SOURCE_CODE_PRESERVED_TOKENS = new Set([
+  "code",
+  "display",
+  "grotesk",
+  "mono",
+  "sans",
+  "serif",
+  "slab",
+  "text",
+]);
 let autoGenerateTimer: number | undefined;
 let generationRunId = 0;
 let sourceLoadRunId = 0;
@@ -211,6 +643,7 @@ const state: AppState = {
     selectedDemoFont: getDefaultDemoFont(),
   },
 };
+let selectedDemoStyle = getDefaultDemoFontStyle(state.source.selectedDemoFont);
 
 const uploadInput = getElement<HTMLInputElement>("font-upload");
 const uploadZone = getElement<HTMLElement>("upload-zone");
@@ -218,6 +651,8 @@ const sourceModeGoogle = getElement<HTMLInputElement>("source-mode-google");
 const sourceModeUpload = getElement<HTMLInputElement>("source-mode-upload");
 const googleFontField = getElement<HTMLElement>("google-font-field");
 const googleFontSelect = getElement<HTMLSelectElement>("google-font-select");
+const googleWeightField = getElement<HTMLElement>("google-weight-field");
+const googleWeightSelect = getElement<HTMLSelectElement>("google-weight-select");
 const replaceFontButton = getElement<HTMLButtonElement>("replace-font-button");
 const sourceEditorField = getElement<HTMLElement>("source-editor-field");
 const resetButton = getElement<HTMLButtonElement>("reset-button");
@@ -281,6 +716,7 @@ uploadZone.addEventListener("drop", handleDrop);
 sourceModeGoogle.addEventListener("change", handleSourceModeChange);
 sourceModeUpload.addEventListener("change", handleSourceModeChange);
 googleFontSelect.addEventListener("change", handleGoogleFontChange);
+googleWeightSelect.addEventListener("change", handleGoogleWeightChange);
 replaceFontButton.addEventListener("click", handleReplaceFontClick);
 resetButton.addEventListener("click", resetControlsToDefaults);
 sampleText.addEventListener("input", syncSampleText);
@@ -537,6 +973,7 @@ function applyInterfaceCopy(): void {
   setText(sourceModeLabels[0], UI_COPY.sourceModes.google, "google source mode label");
   setText(sourceModeLabels[1], UI_COPY.sourceModes.upload, "upload source mode label");
   googleFontSelect.setAttribute("aria-label", UI_COPY.source.googleFontSelect);
+  googleWeightSelect.setAttribute("aria-label", UI_COPY.source.googleWeightSelect);
   replaceFontButton.textContent = UI_COPY.source.replaceFont;
   sourceEditorLabel.textContent = UI_COPY.source.sampleTextLabel;
   sampleText.defaultValue = UI_COPY.source.sampleTextDefault;
@@ -591,8 +1028,10 @@ function initializeDemoFonts(): void {
   );
 
   const font = getDefaultDemoFont();
+  const style = getDefaultDemoFontStyle(font);
   googleFontSelect.value = font.family;
-  void applyDemoFont(font);
+  syncGoogleWeightOptions(font, style);
+  void applyDemoFont(font, style);
 }
 
 async function initializeLogoFont(): Promise<void> {
@@ -649,7 +1088,16 @@ async function updateLogoFontForCurrentShape(): Promise<void> {
 function handleGoogleFontChange(): void {
   const font = DEMO_GOOGLE_FONTS.find((item) => item.family === googleFontSelect.value);
   if (font) {
-    void applyDemoFont(font);
+    const style = getClosestDemoFontStyle(font, selectedDemoStyle.fontWeight);
+    void applyDemoFont(font, style);
+  }
+}
+
+function handleGoogleWeightChange(): void {
+  const font = DEMO_GOOGLE_FONTS.find((item) => item.family === googleFontSelect.value);
+  const style = font?.styles.find((item) => `${item.fontWeight}` === googleWeightSelect.value);
+  if (font && style) {
+    void applyDemoFont(font, style);
   }
 }
 
@@ -686,7 +1134,7 @@ function setSourceMode(mode: SourceMode): void {
       }
       setStatus(state.generated ? UI_COPY.status.generatedReady : UI_COPY.status.demoMode);
     } else {
-      void applyDemoFont(state.source.selectedDemoFont);
+      void applyDemoFont(state.source.selectedDemoFont, selectedDemoStyle);
       setStatus(UI_COPY.status.demoMode);
     }
   } else {
@@ -706,32 +1154,41 @@ function setSourceMode(mode: SourceMode): void {
   }
 }
 
-async function applyDemoFont(font: DemoFontChoice): Promise<void> {
+async function applyDemoFont(font: DemoFontChoice, style = getDefaultDemoFontStyle(font)): Promise<void> {
   state.source.selectedDemoFont = font;
+  selectedDemoStyle = style;
+  googleFontSelect.value = font.family;
+  syncGoogleWeightOptions(font, style);
 
   sampleText.style.fontFamily = font.cssFamily;
+  sampleText.style.fontWeight = `${style.fontWeight}`;
   renderDemoPreview();
-  void document.fonts.load(`400 44px ${font.cssFamily}`).then(renderDemoPreview);
+  void document.fonts.load(`${style.fontWeight} 44px ${font.cssFamily}`).then(renderDemoPreview);
 
   if (state.source.mode === "google") {
-    await loadDemoFontFile(font);
+    await loadDemoFontFile(font, style);
   }
 }
 
-async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
+async function loadDemoFontFile(font: DemoFontChoice, style: DemoFontStyleChoice): Promise<void> {
   const loadRun = startSourceLoadRun();
   window.clearTimeout(autoGenerateTimer);
   cancelGenerationRun();
   clearGoogleSource();
   document.getElementById("font-face-SourcePreviewFont")?.remove();
-  setStatus(UI_COPY.dynamicStatus.loadingFont(font.family));
+  setStatus(UI_COPY.dynamicStatus.loadingFont(`${font.family} ${style.label}`));
 
   try {
-    const buffer = await fetchFontBuffer(font.sourceUrl, font.family);
+    const buffer = await fetchFontBuffer(style.sourceUrl, `${font.family} ${style.label}`);
     const sourceFont = parseFont(buffer);
     const sourceUrl = URL.createObjectURL(new Blob([buffer], { type: "font/ttf" }));
 
-    if (!loadRun.isCurrent() || state.source.mode !== "google" || state.source.selectedDemoFont !== font) {
+    if (
+      !loadRun.isCurrent() ||
+      state.source.mode !== "google" ||
+      state.source.selectedDemoFont !== font ||
+      selectedDemoStyle !== style
+    ) {
       revokeUrl(sourceUrl);
       return;
     }
@@ -739,6 +1196,7 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
     state.source.googleSource = {
       kind: "google",
       demoFont: font,
+      demoStyle: style,
       sourceFont,
       sourceUrl,
     };
@@ -747,8 +1205,13 @@ async function loadDemoFontFile(font: DemoFontChoice): Promise<void> {
     focusSourceTextAtEndIfSafe();
     await generatePixelFont();
   } catch (error) {
-    if (loadRun.isCurrent() && state.source.mode === "google" && state.source.selectedDemoFont === font) {
-      renderError(error, UI_COPY.errors.couldNotLoadFont(font.family));
+    if (
+      loadRun.isCurrent() &&
+      state.source.mode === "google" &&
+      state.source.selectedDemoFont === font &&
+      selectedDemoStyle === style
+    ) {
+      renderError(error, UI_COPY.errors.couldNotLoadFont(`${font.family} ${style.label}`));
     }
   }
 }
@@ -822,15 +1285,16 @@ async function generatePixelFont(): Promise<void> {
   }
 
   try {
+    const pixelizeOptions = getPixelizeOptions();
     const generated = await pixelizeFont(
       generationSource.sourceFont,
-      getPixelizeOptions(),
+      pixelizeOptions,
       (done, total) => {
         if (run.isCurrent()) {
           setStatus(UI_COPY.dynamicStatus.generatingProgress(done, total));
         }
       },
-      getPixelizeMetadata(generationSource),
+      getPixelizeMetadata(generationSource, pixelizeOptions),
     );
 
     const blob = new Blob([generated.arrayBuffer], { type: "font/ttf" });
@@ -863,7 +1327,7 @@ async function generatePixelFont(): Promise<void> {
     demoPreviewFrame.classList.remove("is-hidden");
     demoPreviewCanvas.classList.remove("is-hidden");
     downloadLink.href = packageUrl;
-    downloadLink.download = makePackageFileName(generated.familyName);
+    downloadLink.download = makePackageFileName(generated.familyName, generated.styleName);
     downloadLink.classList.remove("is-disabled");
     syncSampleText();
     setStatus(UI_COPY.status.generatedReady);
@@ -885,6 +1349,7 @@ function syncSourceModeUI(): void {
   sourceModeGoogle.checked = isGoogleMode;
   sourceModeUpload.checked = state.source.mode === "upload";
   googleFontField.classList.toggle("is-hidden", !isGoogleMode);
+  googleWeightField.classList.toggle("is-hidden", !isGoogleMode);
   replaceFontButton.classList.toggle("is-hidden", !hasUploadedFont);
   sourceEditorField.classList.toggle("is-hidden", !shouldShowSourceEditor);
   uploadZone.classList.toggle("is-hidden", !shouldShowUploadZone);
@@ -1130,10 +1595,11 @@ function renderDemoPreview(): void {
   const previewPaddingBottom = previewPaddingTop;
   const previewFontFamily =
     previewStyles.fontFamily || '"JetBrains Mono", "SFMono-Regular", ui-monospace, monospace';
+  const previewFontWeight = previewStyles.fontWeight || "400";
   const cellSize = Math.max(1, Math.round(previewFontSize / options.pixelsPerEm));
   const shiftXPixels = options.shiftX ? options.shiftX * cellSize : 0;
   const shiftYPixels = options.shiftY ? options.shiftY * cellSize : 0;
-  sourceContext.font = `${previewFontSize}px ${previewFontFamily}`;
+  sourceContext.font = `${previewFontWeight} ${previewFontSize}px ${previewFontFamily}`;
   const lines = wrapText(sourceContext, sampleText.value || " ", width - previewPaddingLeft - previewPaddingRight);
   const contentHeight = Math.max(
     visibleHeight,
@@ -1147,6 +1613,7 @@ function renderDemoPreview(): void {
   demoPreviewCanvas.dataset.renderPaddingLeft = `${previewPaddingLeft}`;
   demoPreviewCanvas.dataset.renderPaddingTop = `${previewPaddingTop}`;
   demoPreviewCanvas.dataset.renderFontFamily = previewFontFamily;
+  demoPreviewCanvas.dataset.renderFontWeight = previewFontWeight;
   demoPreviewCanvas.width = Math.round(width * dpr);
   demoPreviewCanvas.height = Math.round(contentHeight * dpr);
   source.height = contentHeight;
@@ -1164,7 +1631,7 @@ function renderDemoPreview(): void {
   sourceContext.fillStyle = "#ffffff";
   sourceContext.fillRect(0, 0, width, contentHeight);
   sourceContext.fillStyle = "#111111";
-  sourceContext.font = `${previewFontSize}px ${previewFontFamily}`;
+  sourceContext.font = `${previewFontWeight} ${previewFontSize}px ${previewFontFamily}`;
   sourceContext.textBaseline = "top";
 
   lines.forEach((line, index) => {
@@ -1268,7 +1735,7 @@ function splitWordByWidth(context: CanvasRenderingContext2D, word: string, maxWi
   return chunks.length > 0 ? chunks : [word];
 }
 
-function installFontFace(fontFamily: string, url: string): void {
+function installFontFace(fontFamily: string, url: string, options: { fontWeight?: number | string } = {}): void {
   const styleId = `font-face-${fontFamily}`;
   document.getElementById(styleId)?.remove();
   const style = document.createElement("style");
@@ -1277,6 +1744,7 @@ function installFontFace(fontFamily: string, url: string): void {
     @font-face {
       font-family: "${fontFamily}";
       src: url("${url}") format("truetype");
+      font-weight: ${options.fontWeight ?? "400"};
       font-display: block;
     }
   `;
@@ -1309,16 +1777,98 @@ function formatShiftValue(value: string): string {
   return Number(value).toFixed(2);
 }
 
+function makeGeneratedFontNames(source: ActiveSource, options: PixelizeOptions): PixelizeFontNames {
+  const sourceFamily = getSourceFamilyName(source);
+  const sourceCode = makeSourceCode(sourceFamily);
+  const recipe = makeFontRecipe(options);
+  const hash = makeFontNameHash([
+    "v1",
+    source.kind,
+    sourceFamily,
+    sourceCode,
+    recipe,
+    options.pixelShape ?? "square",
+    formatHashNumber(options.shiftX ?? 0),
+    formatHashNumber(options.shiftY ?? 0),
+  ]);
+  const familyName = `${GENERATED_FONT_BRAND} ${sourceCode} ${recipe} ${hash}`;
+  const styleName = getSourceStyleName(source);
+  const fullName = `${familyName} ${styleName}`.trim();
+
+  return {
+    familyName,
+    styleName,
+    fullName,
+    postScriptName: makePostScriptName(fullName),
+  };
+}
+
+function getSourceFamilyName(source: ActiveSource): string {
+  return source.kind === "google" ? source.demoFont.family : getFontFamilyName(source.sourceFont);
+}
+
+function getSourceStyleName(source: ActiveSource): string {
+  return source.kind === "google" ? source.demoStyle.label : getFontStyleName(source.sourceFont);
+}
+
+function makeFontRecipe(options: PixelizeOptions): string {
+  return `${Math.round(options.pixelsPerEm)}-${Math.round(options.threshold * 100)}-${Math.round(options.expand)}`;
+}
+
+function makeSourceCode(sourceFamily: string): string {
+  const tokens = sourceFamily.match(/[a-zA-Z0-9]+/g) ?? [];
+  const compactTokens = tokens
+    .filter((token) => !SOURCE_CODE_OMITTED_TOKENS.has(token.toLowerCase()))
+    .map(compactSourceToken)
+    .filter(Boolean);
+
+  return compactTokens.join("") || "Font";
+}
+
+function compactSourceToken(token: string): string {
+  const normalizedToken = toTitleToken(token);
+
+  if (SOURCE_CODE_PRESERVED_TOKENS.has(token.toLowerCase())) {
+    return normalizedToken;
+  }
+
+  return normalizedToken.replace(/[aeiou]/gi, "") || normalizedToken.slice(0, 1);
+}
+
+function toTitleToken(token: string): string {
+  return `${token.slice(0, 1).toUpperCase()}${token.slice(1).toLowerCase()}`;
+}
+
+function makeFontNameHash(parts: string[]): string {
+  let hash = 2166136261;
+  const input = parts.join("|");
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(36).toUpperCase().padStart(7, "0").slice(-4);
+}
+
+function formatHashNumber(value: number): string {
+  return value.toFixed(2);
+}
+
+function makePostScriptName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "PixelPlease-Generated-Regular";
+}
+
 function getSourceNoticeInfo(source: ActiveSource): NoticeSourceInfo {
   if (source.kind === "google") {
     const licensePackagePath = getSourceLicensePackagePath(source.demoFont);
     return {
-      sourceName: source.demoFont.family,
-      sourceFileName: fileNameFromUrl(source.demoFont.sourceReferenceUrl),
+      sourceName: `${source.demoFont.family} ${source.demoStyle.label}`,
+      sourceFileName: source.demoStyle.sourceFileName,
       sourceLicense: source.demoFont.license,
       sourceLicenseFileName: source.demoFont.licenseFileName,
       sourceLicensePackagePath: licensePackagePath,
-      sourceUrl: source.demoFont.sourceReferenceUrl,
+      sourceUrl: source.demoStyle.sourceReferenceUrl,
     };
   }
 
@@ -1329,8 +1879,11 @@ function getSourceNoticeInfo(source: ActiveSource): NoticeSourceInfo {
   };
 }
 
-function getPixelizeMetadata(source: ActiveSource): { sourceLicenseUrl?: string } {
-  return source.kind === "google" ? { sourceLicenseUrl: source.demoFont.licenseUrl } : {};
+function getPixelizeMetadata(source: ActiveSource, options: PixelizeOptions): { sourceLicenseUrl?: string; fontNames: PixelizeFontNames } {
+  return {
+    ...(source.kind === "google" ? { sourceLicenseUrl: source.demoFont.licenseUrl } : {}),
+    fontNames: makeGeneratedFontNames(source, options),
+  };
 }
 
 async function buildDownloadPackageFiles(
@@ -1339,8 +1892,8 @@ async function buildDownloadPackageFiles(
 ): Promise<DownloadPackageFile[]> {
   const sourceNoticeInfo = getSourceNoticeInfo(source);
   const files: DownloadPackageFile[] = [
-    { name: makeTtfFileName(generated.familyName), data: generated.arrayBuffer },
-    { name: "NOTICE.txt", data: buildNoticeText(generated.familyName, sourceNoticeInfo) },
+    { name: makeTtfFileName(generated.familyName, generated.styleName), data: generated.arrayBuffer },
+    { name: "NOTICE.txt", data: buildNoticeText(generated.familyName, sourceNoticeInfo, generated.styleName) },
   ];
 
   if (source.kind === "google") {
@@ -1377,11 +1930,13 @@ function setSourceModeState(mode: SourceMode): void {
 }
 
 function installSourcePreviewFont(source: ActiveSource): void {
-  installFontFace("SourcePreviewFont", source.sourceUrl);
+  const fontWeight = source.kind === "google" ? source.demoStyle.fontWeight : 400;
+  installFontFace("SourcePreviewFont", source.sourceUrl, { fontWeight });
   sampleText.style.fontFamily =
     source.kind === "google"
       ? `"SourcePreviewFont", ${source.demoFont.cssFamily}`
       : '"SourcePreviewFont", system-ui, sans-serif';
+  sampleText.style.fontWeight = `${fontWeight}`;
 }
 
 function clearGoogleSource(): void {
@@ -1452,7 +2007,7 @@ function cancelSourceLoadRun(): void {
 }
 
 function fileNameFromUrl(url: string): string {
-  const path = new URL(url).pathname.split("/").pop() || "source-font.ttf";
+  const path = new URL(url, "https://pixelplease.local").pathname.split("/").pop() || "source-font.ttf";
   return decodeURIComponent(path);
 }
 
@@ -1462,6 +2017,30 @@ function getDefaultDemoFont(): DemoFontChoice {
     throw new Error(`Missing default demo font: ${DEFAULT_DEMO_FONT_FAMILY}`);
   }
   return font;
+}
+
+function getDefaultDemoFontStyle(font: DemoFontChoice): DemoFontStyleChoice {
+  return font.styles.find((style) => style.fontWeight === 400) ?? font.styles[0];
+}
+
+function getClosestDemoFontStyle(font: DemoFontChoice, fontWeight: number): DemoFontStyleChoice {
+  return font.styles.reduce((best, style) => {
+    const bestDistance = Math.abs(best.fontWeight - fontWeight);
+    const currentDistance = Math.abs(style.fontWeight - fontWeight);
+    return currentDistance < bestDistance ? style : best;
+  }, getDefaultDemoFontStyle(font));
+}
+
+function syncGoogleWeightOptions(font: DemoFontChoice, selectedStyle: DemoFontStyleChoice): void {
+  googleWeightSelect.replaceChildren(
+    ...font.styles.map((style) => {
+      const option = document.createElement("option");
+      option.value = `${style.fontWeight}`;
+      option.textContent = style.label;
+      return option;
+    }),
+  );
+  googleWeightSelect.value = `${selectedStyle.fontWeight}`;
 }
 
 function focusSourceTextAtEnd(): void {

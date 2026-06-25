@@ -477,8 +477,14 @@ h2 {
 
 .source-toolbar {
   display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(96px, 0.8fr);
+  gap: 8px;
   min-height: 34px;
   min-width: 0;
+}
+
+.source-toolbar:has(.replace-font-button:not(.is-hidden)) {
+  grid-template-columns: 1fr;
 }
 
 .font-select-field {

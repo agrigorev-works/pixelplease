@@ -5,7 +5,7 @@ pixelplease is an MVP prototype for turning a local or bundled demo font into a 
 This branch contains a minimal mono, three-column variation of the first proof of concept:
 
 - switch Source between `Google Font` and `Your Font` modes;
-- choose from a small permissive Google Fonts list;
+- choose from a curated permissive Google Fonts list and available weights/styles;
 - start each session with the deterministic Merriweather demo font;
 - upload a local `.ttf` / `.otf` through a same-size Source drop zone;
 - remind users to upload only fonts they have a license to edit;
@@ -18,7 +18,7 @@ This branch contains a minimal mono, three-column variation of the first proof o
 - compare Source and Pixel Output at matching preview size/line-height;
 - generate automatically after Google Font selection, local upload, and pixel control changes;
 - preview before/after sample text;
-- download a `.zip` package containing the generated `.ttf`, `NOTICE.txt`, and bundled source license material when applicable;
+- download a uniquely named `.zip` package containing the generated `.ttf`, `NOTICE.txt`, and bundled source license material when applicable;
 - verify the generated font can be parsed and loaded in the browser.
 
 The app is static and client-side: uploaded fonts are read in the browser and are not sent to a server. pixelplease does not require registration or login, and it does not store uploaded fonts, sample text, or generated TTF data.
@@ -79,7 +79,7 @@ The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.
 - Basic Latin export only.
 - No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup beyond basic release-safety names and notice packaging.
 - The algorithm is intentionally simple: rasterize glyphs to a grid, optionally offset the sampling grid, sample filled cells, optionally expand cells, convert horizontal filled runs into rectangular outlines, then build a derivative TTF.
-- Generated font family names use the product-owned `pixelplease-Font` name rather than preserving source family names, to avoid Reserved Font Name reuse.
+- Generated font names start with product-owned `PixelPlease`, then add a compact source code, pixel recipe, short hash, and style so multiple exports can install side by side without preserving source family names verbatim.
 - Download packages include `NOTICE.txt`; bundled demo packages also include the source OFL file under `licenses/`.
 - User-uploaded font licenses still need manual verification before redistribution.
 

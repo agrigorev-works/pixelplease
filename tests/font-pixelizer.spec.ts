@@ -67,6 +67,46 @@ test("serves favicon and app icon assets", async ({ page }) => {
   );
 });
 
+test("serves expanded bundled Google Font assets", async ({ page }) => {
+  const weights100To900 = [
+    "Thin",
+    "ExtraLight",
+    "Light",
+    "Regular",
+    "Medium",
+    "SemiBold",
+    "Bold",
+    "ExtraBold",
+    "Black",
+  ];
+  const weightedFonts = [
+    { dir: "inter", prefix: "Inter", weights: weights100To900 },
+    { dir: "instrumentsans", prefix: "InstrumentSans", weights: ["Regular", "Medium", "SemiBold", "Bold"] },
+    { dir: "montserrat", prefix: "Montserrat", weights: weights100To900 },
+    { dir: "fraunces", prefix: "Fraunces", weights: weights100To900 },
+    { dir: "playfairdisplay", prefix: "PlayfairDisplay", weights: ["Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { dir: "geistmono", prefix: "GeistMono", weights: weights100To900 },
+  ];
+  const assetPaths = [
+    ...weightedFonts.flatMap(({ dir, prefix, weights }) =>
+      weights.map((weight) => `/fonts/google/${dir}/${prefix}-${weight}.ttf`),
+    ),
+    "/fonts/google/bebasneue/BebasNeue-Regular.ttf",
+    "/fonts/google/licenses/inter-OFL.txt",
+    "/fonts/google/licenses/instrumentsans-OFL.txt",
+    "/fonts/google/licenses/montserrat-OFL.txt",
+    "/fonts/google/licenses/bebasneue-OFL.txt",
+    "/fonts/google/licenses/fraunces-OFL.txt",
+    "/fonts/google/licenses/playfairdisplay-OFL.txt",
+    "/fonts/google/licenses/geistmono-OFL.txt",
+  ];
+
+  for (const assetPath of assetPaths) {
+    const response = await page.request.get(assetPath);
+    expect(response.ok(), assetPath).toBe(true);
+  }
+});
+
 test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   const robotsResponse = await page.request.get("/robots.txt");
   expect(robotsResponse.ok()).toBe(true);
@@ -133,6 +173,7 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(JSON.stringify(faqPage)).toContain("no registration, login, or account is needed");
   expect(JSON.stringify(faqPage)).toContain("does not upload it, store it on a server");
   expect(JSON.stringify(faqPage)).toContain("generated TTF data to analytics");
+  expect(JSON.stringify(faqPage)).toContain("different exports can be installed side by side");
 });
 
 test("renders the SEO FAQ below the working app", async ({ page }) => {
@@ -228,6 +269,8 @@ test("renders the SEO FAQ below the working app", async ({ page }) => {
     .filter({ hasText: "How do I export and install the pixel font?" })
     .locator("summary")
     .click();
+  await expect(page.getByText("PixelPlease, a compact source code, pixel recipe")).toBeVisible();
+  await expect(page.getByText("installed side by side instead of overwriting each other")).toBeVisible();
   await expect(page.getByText("design tools, interface mockups, posters")).toBeVisible();
 
   const faqMetrics = await page.locator(".faq-section").evaluate((section) => {
@@ -801,11 +844,13 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await page.getByRole("radio", { name: UI_COPY.sourceModes.google }).check();
   await expect(page.locator("#source-mode-google")).toBeChecked();
   await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#google-weight-select")).toBeVisible();
   await expect(page.getByRole("button", { name: UI_COPY.source.replaceFont })).toBeHidden();
   await expect(page.locator("#upload-zone")).toBeHidden();
 
   await page.getByRole("radio", { name: UI_COPY.sourceModes.upload }).check();
   await expect(page.locator("#source-mode-upload")).toBeChecked();
+  await expect(page.locator("#google-weight-select")).toBeHidden();
   await expect(page.locator("#sample-text")).toBeVisible();
   await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.getByRole("button", { name: UI_COPY.source.replaceFont })).toBeVisible();
@@ -830,11 +875,41 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
   expect(caret.end).toBe(caret.length);
 
   await expect(page.locator("#google-font-select")).toBeVisible();
+  await expect(page.locator("#google-weight-select")).toBeVisible();
   const fontOptions = await page.locator("#google-font-select option").allTextContents();
+  const weightOptions = await page.locator("#google-weight-select option").allTextContents();
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
+  expect(fontOptions).toEqual(
+    expect.arrayContaining([
+      "Inter / OFL",
+      "Instrument Sans / OFL",
+      "Montserrat / OFL",
+      "Bebas Neue / OFL",
+      "Fraunces / OFL",
+      "Playfair Display / OFL",
+      "Geist Mono / OFL",
+    ]),
+  );
+  expect(weightOptions).toEqual(expect.arrayContaining(["Regular", "Bold"]));
   await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
+  await expect(page.locator("#google-weight-select")).toHaveValue("400");
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   const initialBlobUrl = await getGeneratedFontUrl(page);
+
+  await page.locator("#google-weight-select").selectOption("700");
+  await expect(page.locator("#sample-text")).toHaveCSS("font-weight", "700");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await expect
+    .poll(
+      async () => {
+        const url = await getGeneratedFontUrl(page);
+        return Boolean(url && url !== initialBlobUrl);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+  await expect(page.locator("#demo-preview-canvas")).toHaveAttribute("data-render-font-weight", "700");
+  const boldBlobUrl = await getGeneratedFontUrl(page);
 
   const currentFont = await page.locator("#google-font-select").inputValue();
   expect(currentFont).toBe("Merriweather");
@@ -851,16 +926,50 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
   );
 
   expect(sourceFontFamily).toContain(nextFont as string);
+  await expect(page.locator("#google-weight-select")).toHaveValue("700");
   expect(nextFont).not.toBe(currentFont);
   await expect
     .poll(
       async () => {
         const url = await getGeneratedFontUrl(page);
-        return Boolean(url && url !== initialBlobUrl);
+        return Boolean(url && url !== boldBlobUrl);
       },
       { timeout: 20_000 },
     )
     .toBe(true);
+});
+
+test("updates weight options for the expanded Google Font set", async ({ page }) => {
+  const expectedFonts = [
+    { family: "Inter", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { family: "Instrument Sans", weights: ["Regular", "Medium", "SemiBold", "Bold"] },
+    { family: "Montserrat", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { family: "Bebas Neue", weights: ["Regular"] },
+    { family: "Fraunces", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { family: "Playfair Display", weights: ["Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { family: "Geist Mono", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+  ];
+
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+
+  for (const expectedFont of expectedFonts) {
+    const previousUrl = await getGeneratedFontUrl(page);
+    await page.locator("#google-font-select").selectOption(expectedFont.family);
+
+    await expect
+      .poll(
+        async () => {
+          const url = await getGeneratedFontUrl(page);
+          return Boolean(url && url !== previousUrl);
+        },
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+
+    await expect(page.locator("#google-weight-select option")).toHaveText(expectedFont.weights);
+    await expect(page.locator("#google-weight-select")).toHaveValue("400");
+  }
 });
 
 test("renders a usable generated Google Font output before upload", async ({ page }) => {
@@ -896,25 +1005,32 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   const googlePackageBytes = await fs.readFile(googleGeneratedPackagePath);
   const googlePackageEntries = readStoredZip(googlePackageBytes);
   const googleNotice = new TextDecoder().decode(googlePackageEntries["NOTICE.txt"]);
-  const googleGenerated = googlePackageEntries["pixelplease-Font.ttf"];
+  const [googleGeneratedName, googleGenerated] = getSingleTtfEntry(googlePackageEntries);
   const googleParsed = opentype.parse(
     googleGenerated.buffer.slice(googleGenerated.byteOffset, googleGenerated.byteOffset + googleGenerated.byteLength),
   );
 
+  expect(googleGeneratedName).toMatch(/^PixelPlease-Mrrwthr-21-42-0-[A-Z0-9]{4}-Regular\.ttf$/);
   expect(Object.keys(googlePackageEntries).sort()).toEqual([
     "NOTICE.txt",
+    googleGeneratedName,
     "licenses/merriweather-OFL.txt",
-    "pixelplease-Font.ttf",
-  ]);
+  ].sort());
   expect(googleNotice).toContain("Merriweather");
   expect(googleNotice).toContain("Source license: OFL");
   expect(googleNotice).toContain("Source license file: merriweather-OFL.txt");
   expect(googleNotice).toContain("Bundled source license package path: licenses/merriweather-OFL.txt");
-  expect(googleNotice).toContain("Merriweather[opsz,wdth,wght].ttf");
+  expect(googleNotice).toContain("Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.");
+  expect(googleNotice).toContain("Pixel recipe format: pixels-threshold-expand.");
+  expect(googleNotice).toContain("Merriweather Regular");
+  expect(googleNotice).toContain("Merriweather-Regular.ttf");
   expect(new TextDecoder().decode(googlePackageEntries["licenses/merriweather-OFL.txt"])).toContain(
     "Reserved Font Name \"Merriweather\"",
   );
-  expect(googleParsed.names.fontFamily.en).toBe("pixelplease-Font");
+  expect(googleParsed.names.fontFamily.en).toMatch(/^PixelPlease Mrrwthr 21-42-0 [A-Z0-9]{4}$/);
+  expect(googleParsed.names.fontSubfamily.en).toBe("Regular");
+  expect(googleParsed.names.fullName.en).toBe(`${googleParsed.names.fontFamily.en} Regular`);
+  expect(googleParsed.names.postScriptName.en).toBe(googleParsed.names.fullName.en.replaceAll(" ", "-"));
   expect(googleParsed.names.fontFamily.en).not.toContain("Merriweather");
   expect(googleParsed.names.licenseURL.en).toBe("https://openfontlicense.org");
 
@@ -1240,19 +1356,25 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("pixelplease-Font.zip");
+  expect(download.suggestedFilename()).toMatch(/^PixelPlease-FxtrSans-18-36-0-[A-Z0-9]{4}-Regular\.zip$/);
   await download.saveAs(generatedPackagePath);
 
   const packageBytes = await fs.readFile(generatedPackagePath);
   const packageEntries = readStoredZip(packageBytes);
   const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
-  const generated = packageEntries["pixelplease-Font.ttf"];
+  const [generatedName, generated] = getSingleTtfEntry(packageEntries);
   const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
 
-  expect(Object.keys(packageEntries).sort()).toEqual(["NOTICE.txt", "pixelplease-Font.ttf"]);
+  expect(generatedName).toMatch(/^PixelPlease-FxtrSans-18-36-0-[A-Z0-9]{4}-Regular\.ttf$/);
+  expect(Object.keys(packageEntries).sort()).toEqual(["NOTICE.txt", generatedName].sort());
   expect(notice).toContain("Fixture Sans");
   expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
-  expect(parsed.names.fontFamily.en).toBe("pixelplease-Font");
+  expect(notice).toContain("Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.");
+  expect(notice).toContain("compact source codes instead of verbatim source family names");
+  expect(parsed.names.fontFamily.en).toMatch(/^PixelPlease FxtrSans 18-36-0 [A-Z0-9]{4}$/);
+  expect(parsed.names.fontSubfamily.en).toBe("Regular");
+  expect(parsed.names.fullName.en).toBe(`${parsed.names.fontFamily.en} Regular`);
+  expect(parsed.names.postScriptName.en).toBe(parsed.names.fullName.en.replaceAll(" ", "-"));
   expect(parsed.names.fontFamily.en).not.toContain("Fixture");
   expect(parsed.names.license.en).toContain("Generated derivative for testing");
   expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");
@@ -1277,19 +1399,24 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("pixelplease-Font.zip");
+  expect(download.suggestedFilename()).toMatch(/^PixelPlease-Lt-22-42-0-[A-Z0-9]{4}-Regular\.zip$/);
   await download.saveAs(latoGeneratedPackagePath);
 
   const packageBytes = await fs.readFile(latoGeneratedPackagePath);
   const packageEntries = readStoredZip(packageBytes);
   const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
-  const generated = packageEntries["pixelplease-Font.ttf"];
+  const [generatedName, generated] = getSingleTtfEntry(packageEntries);
   const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
 
+  expect(generatedName).toMatch(/^PixelPlease-Lt-22-42-0-[A-Z0-9]{4}-Regular\.ttf$/);
   expect(notice).toContain("Lato Regular");
   expect(notice).toContain("Lato-Regular.ttf");
   expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
-  expect(parsed.names.fontFamily.en).toBe("pixelplease-Font");
+  expect(notice).toContain("Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.");
+  expect(parsed.names.fontFamily.en).toMatch(/^PixelPlease Lt 22-42-0 [A-Z0-9]{4}$/);
+  expect(parsed.names.fontSubfamily.en).toBe("Regular");
+  expect(parsed.names.fullName.en).toBe(`${parsed.names.fontFamily.en} Regular`);
+  expect(parsed.names.postScriptName.en).toBe(parsed.names.fullName.en.replaceAll(" ", "-"));
   expect(parsed.names.fontFamily.en).not.toContain("Lato");
   expect(parsed.names.license.en).toContain("Source font license controls use");
   expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");
@@ -1298,6 +1425,12 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
 
 async function getGeneratedFontUrl(page: Page): Promise<string | null> {
   return page.locator("#download-link").getAttribute("data-generated-font-url");
+}
+
+function getSingleTtfEntry(entries: Record<string, Uint8Array>): [string, Uint8Array] {
+  const names = Object.keys(entries).filter((name) => name.endsWith(".ttf"));
+  expect(names).toHaveLength(1);
+  return [names[0], entries[names[0]]];
 }
 
 async function getInstalledFontGlyphCommandTypes(page: Page, fontFamily: string, character: string): Promise<string[]> {

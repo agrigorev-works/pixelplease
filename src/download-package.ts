@@ -74,12 +74,19 @@ export function createStoredZip(files: DownloadPackageFile[]): Uint8Array {
   return concatBytes([...localParts, ...centralParts, end]);
 }
 
-export function buildNoticeText(generatedFamilyName: string, source: NoticeSourceInfo): string {
+export function buildNoticeText(
+  generatedFamilyName: string,
+  source: NoticeSourceInfo,
+  generatedStyleName?: string,
+): string {
   const lines = [
     "pixelplease generated font package",
     "",
     `Generated font family: ${generatedFamilyName}`,
-    `Generated font file: ${makeTtfFileName(generatedFamilyName)}`,
+    generatedStyleName ? `Generated font style: ${generatedStyleName}` : undefined,
+    `Generated font file: ${makeTtfFileName(generatedFamilyName, generatedStyleName)}`,
+    "Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.",
+    "Pixel recipe format: pixels-threshold-expand. The short hash covers source, shape, shift, and generator version.",
     "",
     `Source font: ${source.sourceName}`,
     source.sourceFileName ? `Source file: ${source.sourceFileName}` : undefined,
@@ -91,7 +98,7 @@ export function buildNoticeText(generatedFamilyName: string, source: NoticeSourc
     source.sourceUrl ? `Source URL: ${source.sourceUrl}` : undefined,
     "",
     "This generated font is a derivative of the source font.",
-    "The generated font names intentionally do not reuse the source family name.",
+    "The generated font names intentionally use compact source codes instead of verbatim source family names.",
     "Before redistributing, keep the required source license, copyright, and notice material with this package.",
     "For user-uploaded fonts, pixelplease cannot verify rights; use only fonts you are allowed to modify and export.",
     "",
@@ -100,12 +107,16 @@ export function buildNoticeText(generatedFamilyName: string, source: NoticeSourc
   return lines.filter((line): line is string => line !== undefined).join("\n");
 }
 
-export function makePackageFileName(familyName: string): string {
-  return `${sanitizeFileName(familyName)}.zip`;
+export function makePackageFileName(familyName: string, styleName?: string): string {
+  return `${sanitizeFileName(joinNameParts(familyName, styleName))}.zip`;
 }
 
-export function makeTtfFileName(familyName: string): string {
-  return `${sanitizeFileName(familyName)}.ttf`;
+export function makeTtfFileName(familyName: string, styleName?: string): string {
+  return `${sanitizeFileName(joinNameParts(familyName, styleName))}.ttf`;
+}
+
+function joinNameParts(...parts: Array<string | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part?.trim())).join(" ");
 }
 
 function writeLocalHeader(view: DataView, entry: ZipEntry): void {
