@@ -85,6 +85,8 @@ button:not(:disabled),
 a:not(.is-disabled),
 label,
 select:not(:disabled),
+.custom-select-trigger:not(:disabled),
+.custom-select-option:not(:disabled),
 input:not(:disabled),
 summary,
 .upload-zone,
@@ -488,13 +490,15 @@ h2 {
 }
 
 .font-select-field {
+  position: relative;
   display: grid;
   align-items: center;
   min-height: 34px;
   min-width: 0;
 }
 
-select {
+select,
+.custom-select-trigger {
   min-width: 0;
   width: 100%;
   min-height: 34px;
@@ -510,6 +514,79 @@ select {
     border-color 140ms ease,
     background-color 140ms ease,
     outline-color 140ms ease;
+}
+
+.native-select-proxy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.custom-select-trigger {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 24px 5px 8px;
+  appearance: none;
+  text-align: left;
+}
+
+.custom-select-trigger::after {
+  position: absolute;
+  right: 9px;
+  width: 0;
+  height: 0;
+  border-top: 5px solid #111111;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  content: "";
+}
+
+.custom-select-trigger:disabled {
+  color: #777777;
+}
+
+.custom-select-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: grid;
+  max-height: min(260px, 48vh);
+  overflow: auto;
+  border: 1px solid #111111;
+  background: #ffffff;
+  box-shadow: 0 8px 0 rgba(17, 17, 17, 0.12);
+}
+
+.custom-select-option {
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  color: #111111;
+  font: inherit;
+  text-align: left;
+}
+
+.custom-select-option:hover,
+.custom-select-option:focus,
+.custom-select-option.is-selected {
+  background: #f5f5f5;
+  outline: none;
+}
+
+.custom-select-option.is-selected {
+  font-weight: 600;
 }
 
 .control-stack {
@@ -781,12 +858,15 @@ textarea:focus {
   }
 
   select:hover,
+  .custom-select-trigger:hover,
   textarea:hover:not(:focus) {
     border-color: #111111;
     background: #ffffff;
   }
 
-  select:hover {
+  select:hover,
+  .custom-select-trigger:hover,
+  .font-select-field.is-open .custom-select-trigger {
     outline-color: #111111;
   }
 
@@ -873,6 +953,8 @@ button:not(:disabled),
 a:not(.is-disabled),
 label,
 select:not(:disabled),
+.custom-select-trigger:not(:disabled),
+.custom-select-option:not(:disabled),
 input:not(:disabled),
 summary,
 .faq-item summary,

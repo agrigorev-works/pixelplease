@@ -345,11 +345,23 @@ test("adds light desktop hover feedback to interactive controls", async ({ page 
   await page.goto("/");
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
 
-  await page.locator("#google-font-select").hover();
-  await expect(page.locator("#google-font-select")).toHaveCSS("border-color", "rgb(17, 17, 17)");
-  await expect(page.locator("#google-font-select")).toHaveCSS("outline-color", "rgb(17, 17, 17)");
-  await expect(page.locator("#google-font-select")).toHaveCSS("cursor", /none/);
+  const fontSelectTrigger = page.locator("#google-font-field .custom-select-trigger");
+  await fontSelectTrigger.hover();
+  await expect(fontSelectTrigger).toHaveCSS("border-color", "rgb(17, 17, 17)");
+  await expect(fontSelectTrigger).toHaveCSS("outline-color", "rgb(17, 17, 17)");
+  await expect(fontSelectTrigger).toHaveCSS("cursor", /none/);
   await expect(page.locator(".custom-cursor")).toHaveAttribute("data-cursor-shape", "pointer");
+
+  await fontSelectTrigger.click();
+  await expect(fontSelectTrigger).toHaveAttribute("aria-expanded", "true");
+  const fontOption = page.locator("#google-font-field .custom-select-option").nth(1);
+  await fontOption.hover();
+  await expect(fontOption).toHaveCSS("cursor", /none/);
+  await expect(page.locator(".custom-cursor")).toHaveAttribute("data-cursor-shape", "pointer");
+  const selectedFontValue = await fontOption.getAttribute("data-value");
+  await fontOption.click();
+  await expect(page.locator("#google-font-select")).toHaveValue(selectedFontValue ?? "");
+  await expect(fontSelectTrigger).toHaveAttribute("aria-expanded", "false");
 
   await page.locator(".segment-option").nth(1).hover();
   await expect(page.locator(".segment-option").nth(1)).toHaveCSS("background-color", "rgb(245, 245, 245)");

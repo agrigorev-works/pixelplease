@@ -94,6 +94,15 @@ type PointerBurstStart = {
 
 type CustomCursorShape = "arrow" | "pointer";
 
+type CustomSelectController = {
+  trigger: HTMLButtonElement;
+  menu: HTMLElement;
+  syncOptions: () => void;
+  syncValue: () => void;
+  syncDisabled: () => void;
+  close: () => void;
+};
+
 type DemoFontWeightSpec = {
   label: string;
   fontWeight: number;
@@ -107,6 +116,8 @@ const INTERACTIVE_CURSOR_SELECTOR = [
   "a:not(.is-disabled)",
   "label",
   "select:not(:disabled)",
+  ".custom-select-trigger:not(:disabled)",
+  ".custom-select-option:not(:disabled)",
   "input:not(:disabled)",
   "summary",
   ".faq-item summary",
@@ -701,6 +712,7 @@ const sourceModeLabels = Array.from(document.querySelectorAll<HTMLElement>(".sou
 const controlLabels = Array.from(document.querySelectorAll<HTMLElement>(".control-stack > .field > span"));
 const clickPixelLayer = createClickPixelLayer();
 const customCursor = createCustomCursor();
+const customSelectControllers: CustomSelectController[] = [];
 let pendingClickPixelPointer: PointerBurstStart | null = null;
 let lastTrailPixelX: number | undefined;
 let lastTrailPixelY: number | undefined;
@@ -708,6 +720,8 @@ let lastTrailPixelAt = 0;
 let trailPixelIndex = 0;
 
 applyInterfaceCopy();
+const googleFontCustomSelect = createCustomSelect(googleFontSelect);
+const googleWeightCustomSelect = createCustomSelect(googleWeightSelect);
 uploadInput.addEventListener("change", handleUpload);
 uploadZone.addEventListener("dragenter", handleDragEnter);
 uploadZone.addEventListener("dragover", handleDragOver);
@@ -790,6 +804,202 @@ function createCustomCursor(): HTMLElement {
   document.body.classList.add("has-custom-cursor");
   document.body.append(cursor);
   return cursor;
+}
+
+function createCustomSelect(select: HTMLSelectElement): CustomSelectController {
+  const field = select.closest<HTMLElement>(".font-select-field");
+  if (!field) {
+    throw new Error(UI_COPY.errors.missingElement(`.${select.id}-field`));
+  }
+  const fieldElement = field;
+
+  select.classList.add("native-select-proxy");
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "custom-select-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  trigger.setAttribute("aria-controls", `${select.id}-custom-menu`);
+
+  const selectLabel = select.getAttribute("aria-label");
+  if (selectLabel) {
+    trigger.setAttribute("aria-label", selectLabel);
+  }
+
+  const menu = document.createElement("div");
+  menu.id = `${select.id}-custom-menu`;
+  menu.className = "custom-select-menu is-hidden";
+  menu.setAttribute("role", "listbox");
+  menu.setAttribute("aria-label", selectLabel ?? "");
+
+  const controller: CustomSelectController = {
+    trigger,
+    menu,
+    syncOptions,
+    syncValue,
+    syncDisabled,
+    close,
+  };
+
+  function syncOptions(): void {
+    menu.replaceChildren(
+      ...Array.from(select.options).map((option) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "custom-select-option";
+        item.setAttribute("role", "option");
+        item.dataset.value = option.value;
+        item.textContent = option.textContent;
+        item.addEventListener("click", () => chooseOption(option.value));
+        return item;
+      }),
+    );
+    syncValue();
+  }
+
+  function syncValue(): void {
+    const selectedOption = select.selectedOptions[0] ?? select.options[select.selectedIndex] ?? select.options[0];
+    trigger.textContent = selectedOption?.textContent ?? "";
+
+    for (const option of Array.from(menu.querySelectorAll<HTMLButtonElement>(".custom-select-option"))) {
+      const isSelected = option.dataset.value === select.value;
+      option.classList.toggle("is-selected", isSelected);
+      option.setAttribute("aria-selected", isSelected ? "true" : "false");
+    }
+
+    syncDisabled();
+  }
+
+  function syncDisabled(): void {
+    trigger.disabled = select.disabled;
+    fieldElement.classList.toggle("is-disabled", select.disabled);
+
+    if (select.disabled) {
+      close();
+    }
+  }
+
+  function open(): void {
+    if (select.disabled || !menu.classList.contains("is-hidden")) {
+      return;
+    }
+
+    for (const item of customSelectControllers) {
+      if (item !== controller) {
+        item.close();
+      }
+    }
+
+    syncOptions();
+    fieldElement.classList.add("is-open");
+    menu.classList.remove("is-hidden");
+    trigger.setAttribute("aria-expanded", "true");
+    const selectedItem = menu.querySelector<HTMLButtonElement>(".custom-select-option.is-selected");
+    selectedItem?.scrollIntoView({ block: "nearest" });
+  }
+
+  function close(): void {
+    fieldElement.classList.remove("is-open");
+    menu.classList.add("is-hidden");
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function chooseOption(value: string): void {
+    if (select.disabled) {
+      return;
+    }
+
+    if (select.value !== value) {
+      select.value = value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    } else {
+      syncValue();
+    }
+
+    close();
+    trigger.focus({ preventScroll: true });
+  }
+
+  function focusMenuOption(offset: number): void {
+    const options = Array.from(menu.querySelectorAll<HTMLButtonElement>(".custom-select-option"));
+    if (options.length === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, options.indexOf(document.activeElement as HTMLButtonElement));
+    const nextIndex = Math.min(options.length - 1, Math.max(0, currentIndex + offset));
+    options[nextIndex]?.focus({ preventScroll: true });
+  }
+
+  trigger.addEventListener("click", () => {
+    if (menu.classList.contains("is-hidden")) {
+      open();
+    } else {
+      close();
+    }
+  });
+
+  trigger.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+      return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      open();
+      const selectedItem = menu.querySelector<HTMLButtonElement>(".custom-select-option.is-selected");
+      selectedItem?.focus({ preventScroll: true });
+    }
+  });
+
+  menu.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+      trigger.focus({ preventScroll: true });
+      return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      focusMenuOption(event.key === "ArrowDown" ? 1 : -1);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      const option = document.activeElement;
+      if (option instanceof HTMLButtonElement && option.classList.contains("custom-select-option")) {
+        event.preventDefault();
+        chooseOption(option.dataset.value ?? "");
+      }
+    }
+  });
+
+  select.addEventListener("change", syncValue);
+
+  field.addEventListener("focusout", () => {
+    window.setTimeout(() => {
+      if (!fieldElement.contains(document.activeElement)) {
+        close();
+      }
+    }, 0);
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (event.target instanceof Node && !fieldElement.contains(event.target)) {
+      close();
+    }
+  });
+
+  fieldElement.append(trigger, menu);
+  customSelectControllers.push(controller);
+  syncOptions();
+  return controller;
 }
 
 function handleCustomCursorMove(event: PointerEvent): void {
@@ -1031,6 +1241,7 @@ function initializeDemoFonts(): void {
   const style = getDefaultDemoFontStyle(font);
   googleFontSelect.value = font.family;
   syncGoogleWeightOptions(font, style);
+  googleFontCustomSelect.syncOptions();
   void applyDemoFont(font, style);
 }
 
@@ -1090,6 +1301,8 @@ function handleGoogleFontChange(): void {
   if (font) {
     const style = getClosestDemoFontStyle(font, selectedDemoStyle.fontWeight);
     void applyDemoFont(font, style);
+  } else {
+    googleFontCustomSelect.syncValue();
   }
 }
 
@@ -1098,6 +1311,8 @@ function handleGoogleWeightChange(): void {
   const style = font?.styles.find((item) => `${item.fontWeight}` === googleWeightSelect.value);
   if (font && style) {
     void applyDemoFont(font, style);
+  } else {
+    googleWeightCustomSelect.syncValue();
   }
 }
 
@@ -1127,6 +1342,7 @@ function setSourceMode(mode: SourceMode): void {
 
   if (mode === "google") {
     googleFontSelect.disabled = false;
+    googleWeightSelect.disabled = false;
     if (state.source.googleSource) {
       installSourcePreviewFont(state.source.googleSource);
       if (!state.generated) {
@@ -1140,6 +1356,7 @@ function setSourceMode(mode: SourceMode): void {
   } else {
     uploadInput.value = "";
     googleFontSelect.disabled = true;
+    googleWeightSelect.disabled = true;
     if (state.source.uploadedSource) {
       activateUploadedFont();
     } else {
@@ -1159,6 +1376,7 @@ async function applyDemoFont(font: DemoFontChoice, style = getDefaultDemoFontSty
   selectedDemoStyle = style;
   googleFontSelect.value = font.family;
   syncGoogleWeightOptions(font, style);
+  googleFontCustomSelect.syncValue();
 
   sampleText.style.fontFamily = font.cssFamily;
   sampleText.style.fontWeight = `${style.fontWeight}`;
@@ -1348,8 +1566,12 @@ function syncSourceModeUI(): void {
 
   sourceModeGoogle.checked = isGoogleMode;
   sourceModeUpload.checked = state.source.mode === "upload";
+  googleFontSelect.disabled = !isGoogleMode;
+  googleWeightSelect.disabled = !isGoogleMode;
   googleFontField.classList.toggle("is-hidden", !isGoogleMode);
   googleWeightField.classList.toggle("is-hidden", !isGoogleMode);
+  googleFontCustomSelect.syncDisabled();
+  googleWeightCustomSelect.syncDisabled();
   replaceFontButton.classList.toggle("is-hidden", !hasUploadedFont);
   sourceEditorField.classList.toggle("is-hidden", !shouldShowSourceEditor);
   uploadZone.classList.toggle("is-hidden", !shouldShowUploadZone);
@@ -2041,6 +2263,7 @@ function syncGoogleWeightOptions(font: DemoFontChoice, selectedStyle: DemoFontSt
     }),
   );
   googleWeightSelect.value = `${selectedStyle.fontWeight}`;
+  googleWeightCustomSelect.syncOptions();
 }
 
 function focusSourceTextAtEnd(): void {
