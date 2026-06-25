@@ -10,27 +10,27 @@ Important interpretation notes:
 - Uploaded fonts are read locally in the browser and are not uploaded to a server.
 - pixelplease does not require registration or login, and does not store uploaded fonts, sample text, or generated TTF data.
 - Generated fonts are derivative test fonts. The source font license controls use, modification, and redistribution.
-- Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files.
+- Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files; available examples include Merriweather, IBM Plex Sans, Lato, Libre Baskerville, Roboto Mono, Space Grotesk, Inter, Instrument Sans, Montserrat, Bebas Neue, Fraunces, Playfair Display, and Geist Mono.
 - The current MVP exports Basic Latin only as a generated TTF inside a ZIP package.
-- The generated family name is `pixelplease-Font` so source Reserved Font Names are not reused.
+- Generated font family names start with product-owned `PixelPlease`, followed by a compact source code, visible pixel recipe, and short hash, so exports can install side by side without preserving source Reserved Font Names verbatim.
 - Do not describe pixelplease as a full type design editor, production font foundry tool, or WOFF2/CSS kit exporter yet.
 
 ## Product
 
 - [pixelplease app](https://pixelplease.tools/): The working browser tool for selecting or uploading a source font, tuning the pixel effect, previewing output, and downloading a test TTF package.
 - [GitHub repository](https://github.com/agrigorev-works/pixelplease): Source code, README, tests, and project docs.
-- [Product brief](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/product-brief.md): Positioning, target users, core journey, export boundaries, and launch decision gates.
-- [MVP workflow](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/mvp-workflow.md): UI structure, app states, controls, and release acceptance criteria.
+- [Product brief](https://github.com/agrigorev-works/pixelplease/blob/main/docs/product-brief.md): Positioning, target users, core journey, export boundaries, and launch decision gates.
+- [MVP workflow](https://github.com/agrigorev-works/pixelplease/blob/main/docs/mvp-workflow.md): UI structure, app states, controls, and release acceptance criteria.
 
 ## Technical Context
 
-- [README](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/README.md): Local setup, test commands, release notes, and MVP limits.
-- [SEO proposal](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/seo-proposal.md): Keyword clusters, page title, meta description, page structure, and technical SEO tasks.
-- [Release checklist](https://github.com/agrigorev-works/pixelplease/blob/variation-light-terminal-ui/docs/release-checklist.md): Current launch readiness checklist and remaining public URL tasks.
+- [README](https://github.com/agrigorev-works/pixelplease/blob/main/README.md): Local setup, test commands, release notes, and MVP limits.
+- [SEO proposal](https://github.com/agrigorev-works/pixelplease/blob/main/docs/seo-proposal.md): Keyword clusters, page title, meta description, page structure, and technical SEO tasks.
+- [Release checklist](https://github.com/agrigorev-works/pixelplease/blob/main/docs/release-checklist.md): Current launch readiness checklist and remaining public URL tasks.
 
 ## Licensing
 
-- [Bundled font licenses](https://github.com/agrigorev-works/pixelplease/tree/variation-light-terminal-ui/public/fonts/google/licenses): Per-family OFL files for bundled demo fonts.
+- [Bundled font licenses](https://github.com/agrigorev-works/pixelplease/tree/main/public/fonts/google/licenses): Per-family OFL files for bundled demo fonts.
 - [SIL Open Font License](https://openfontlicense.org): License used by the bundled permissive demo fonts.
 
 ## Optional

@@ -1,5 +1,5 @@
 export const UI_COPY = {
-  documentTitle: "pixelplease - fastest way to create a custom pixel font",
+  documentTitle: "Pixel Font Generator - Convert TTF/OTF to Pixel Fonts | pixelplease",
   status: {
     demoMode: "demo mode",
     generatedReady: "Generated TTF ready",
@@ -15,7 +15,7 @@ export const UI_COPY = {
     logoAriaLabel: "pixel please",
     logoParts: ["pixel", "please"],
     copy:
-      "Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf",
+      "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and export a ZIP.",
   },
   sections: {
     source: "Source font and text",

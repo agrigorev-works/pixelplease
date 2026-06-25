@@ -27,6 +27,10 @@ test("serves an LLM discovery file from the site root", async ({ page }) => {
   expect(body).toContain("# pixelplease");
   expect(body).toContain("browser-based pixel font generator");
   expect(body).toContain("Uploaded fonts are read locally in the browser");
+  expect(body).toContain("Generated font family names start with product-owned `PixelPlease`");
+  expect(body).toContain("blob/main/docs/product-brief.md");
+  expect(body).not.toContain("pixelplease-Font");
+  expect(body).not.toContain("variation-light-terminal-ui");
   expect(body).toContain("## Product");
   expect(body).toContain("## Licensing");
   expect(body).toContain("[llms.txt proposal](https://llmstxt.org/)");
@@ -119,7 +123,7 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(sitemapResponse.ok()).toBe(true);
   const sitemap = await sitemapResponse.text();
   expect(sitemap).toContain("<loc>https://pixelplease.tools/</loc>");
-  expect(sitemap).toContain("<lastmod>2026-06-22</lastmod>");
+  expect(sitemap).toContain("<lastmod>2026-06-25</lastmod>");
 
   await page.goto("/");
   await expect(page).toHaveTitle(UI_COPY.documentTitle);

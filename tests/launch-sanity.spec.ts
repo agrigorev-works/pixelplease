@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("loads, generates a demo font, and keeps launch metadata healthy", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page).toHaveTitle("pixelplease - fastest way to create a custom pixel font");
+  await expect(page).toHaveTitle("Pixel Font Generator - Convert TTF/OTF to Pixel Fonts | pixelplease");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
