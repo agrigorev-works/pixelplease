@@ -58,7 +58,19 @@ http://127.0.0.1:5173/
 npm run verify
 ```
 
-The smoke test copies the bundled permissive Google Fonts sample, `Lato-Regular.ttf`, into `samples/` and uses it only as a local test fixture.
+`npm run verify` checks the social preview asset size, runs Vitest, builds the app, prepares local font samples, and runs the main Playwright smoke suite.
+
+Before launch or after layout-sensitive changes, also run:
+
+```bash
+npm run test:launch
+```
+
+The launch sanity suite runs against Chromium, Firefox, WebKit, and a mobile Chromium viewport. It also includes a 375px viewport check that guards against horizontal overflow and keeps the source, output, controls, and download action reachable.
+
+GitHub Actions runs `npm run verify` and `npm run test:launch` on pushes to `main` and on pull requests. Playwright WebKit gives Safari-like browser coverage in CI; real iPhone Safari remains a manual spot-check unless a device/browser-cloud runner is added.
+
+The smoke and launch tests copy the bundled permissive Google Fonts sample, `Lato-Regular.ttf`, into `samples/` and use it only as a local test fixture.
 
 ## Release Notes
 

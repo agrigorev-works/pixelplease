@@ -27,3 +27,39 @@ test("loads, generates a demo font, and keeps launch metadata healthy", async ({
 
   await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
 });
+
+test("keeps the launch UI reachable without horizontal overflow at 375px", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText("Generated TTF ready", { timeout: 20_000 });
+
+  await expect(page.locator("#source-editor-field")).toBeVisible();
+  await expect(page.locator("#demo-preview-frame")).toBeVisible();
+  await expect(page.locator("#pixels-per-em")).toBeVisible();
+  await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
+
+  const overflow = await page.evaluate(
+    () => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
+  );
+  expect(overflow).toBeLessThan(1);
+
+  const horizontalBounds = await page.evaluate(() => {
+    const selectors = ["#source-editor-field", "#demo-preview-frame", "#pixels-per-em", "#download-link"];
+    return selectors.map((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) {
+        throw new Error(`Missing ${selector}`);
+      }
+      const box = element.getBoundingClientRect();
+      return { selector, left: box.left, right: box.right, width: window.innerWidth };
+    });
+  });
+
+  for (const bounds of horizontalBounds) {
+    expect(bounds.left, `${bounds.selector} left edge`).toBeGreaterThanOrEqual(-1);
+    expect(bounds.right, `${bounds.selector} right edge`).toBeLessThanOrEqual(bounds.width + 1);
+  }
+
+  await page.locator("#download-link").scrollIntoViewIfNeeded();
+  await expect(page.locator("#download-link")).toBeInViewport();
+});
