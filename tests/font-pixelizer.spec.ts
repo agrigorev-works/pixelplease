@@ -9,6 +9,7 @@ const artifactsDir = path.resolve("test-artifacts");
 const sourcePath = path.join(artifactsDir, "fixture-source.ttf");
 const generatedPackagePath = path.join(artifactsDir, "generated-pixel.zip");
 const googleGeneratedPackagePath = path.join(artifactsDir, "google-generated-pixel.zip");
+const googleItalicGeneratedPackagePath = path.join(artifactsDir, "google-italic-generated-pixel.zip");
 const latoSourcePath = path.resolve("samples/Lato-Regular.ttf");
 const latoGeneratedPackagePath = path.join(artifactsDir, "lato-generated-pixel.zip");
 
@@ -85,17 +86,26 @@ test("serves expanded bundled Google Font assets", async ({ page }) => {
     "ExtraBold",
     "Black",
   ];
-  const weightedFonts = [
-    { dir: "inter", prefix: "Inter", weights: weights100To900 },
-    { dir: "instrumentsans", prefix: "InstrumentSans", weights: ["Regular", "Medium", "SemiBold", "Bold"] },
-    { dir: "montserrat", prefix: "Montserrat", weights: weights100To900 },
-    { dir: "fraunces", prefix: "Fraunces", weights: weights100To900 },
-    { dir: "playfairdisplay", prefix: "PlayfairDisplay", weights: ["Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
-    { dir: "geistmono", prefix: "GeistMono", weights: weights100To900 },
+  const weightedFonts: Array<{ dir: string; prefix: string; weights: string[]; hasItalic: boolean }> = [
+    { dir: "ibmplexsans", prefix: "IBMPlexSans", weights: weights100To900.slice(0, 7), hasItalic: true },
+    { dir: "lato", prefix: "Lato", weights: weights100To900, hasItalic: true },
+    { dir: "librebaskerville", prefix: "LibreBaskerville", weights: ["Regular", "Medium", "SemiBold", "Bold"], hasItalic: true },
+    { dir: "merriweather", prefix: "Merriweather", weights: weights100To900.slice(2), hasItalic: true },
+    { dir: "robotomono", prefix: "RobotoMono", weights: weights100To900.slice(0, 7), hasItalic: true },
+    { dir: "spacegrotesk", prefix: "SpaceGrotesk", weights: ["Light", "Regular", "Medium", "Bold"], hasItalic: false },
+    { dir: "inter", prefix: "Inter", weights: weights100To900, hasItalic: true },
+    { dir: "instrumentsans", prefix: "InstrumentSans", weights: ["Regular", "Medium", "SemiBold", "Bold"], hasItalic: true },
+    { dir: "montserrat", prefix: "Montserrat", weights: weights100To900, hasItalic: true },
+    { dir: "fraunces", prefix: "Fraunces", weights: weights100To900, hasItalic: true },
+    { dir: "playfairdisplay", prefix: "PlayfairDisplay", weights: ["Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"], hasItalic: true },
+    { dir: "geistmono", prefix: "GeistMono", weights: weights100To900, hasItalic: true },
   ];
   const assetPaths = [
     ...weightedFonts.flatMap(({ dir, prefix, weights }) =>
       weights.map((weight) => `/fonts/google/${dir}/${prefix}-${weight}.ttf`),
+    ),
+    ...weightedFonts.flatMap(({ dir, prefix, weights, hasItalic }) =>
+      hasItalic ? weights.map((weight) => `/fonts/google/${dir}/${prefix}-${weight}Italic.ttf`) : [],
     ),
     "/fonts/google/bebasneue/BebasNeue-Regular.ttf",
     "/fonts/google/licenses/inter-OFL.txt",
@@ -910,7 +920,7 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
       "Geist Mono / OFL",
     ]),
   );
-  expect(weightOptions).toEqual(expect.arrayContaining(["Regular", "Bold"]));
+  expect(weightOptions).toEqual(expect.arrayContaining(["Regular", "Regular Italic", "Bold", "Bold Italic"]));
   await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
   await expect(page.locator("#google-weight-select")).toHaveValue("400");
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
@@ -918,6 +928,7 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
 
   await page.locator("#google-weight-select").selectOption("700");
   await expect(page.locator("#sample-text")).toHaveCSS("font-weight", "700");
+  await expect(page.locator("#sample-text")).toHaveCSS("font-style", "normal");
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect
     .poll(
@@ -960,14 +971,22 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
 });
 
 test("updates weight options for the expanded Google Font set", async ({ page }) => {
+  const withItalic = (weights: string[]) => weights.flatMap((weight) => [weight, `${weight} Italic`]);
+  const weights100To900 = ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"];
   const expectedFonts = [
-    { family: "Inter", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
-    { family: "Instrument Sans", weights: ["Regular", "Medium", "SemiBold", "Bold"] },
-    { family: "Montserrat", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { family: "IBM Plex Sans", weights: withItalic(weights100To900.slice(0, 7)) },
+    { family: "Lato", weights: withItalic(weights100To900) },
+    { family: "Libre Baskerville", weights: withItalic(["Regular", "Medium", "SemiBold", "Bold"]) },
+    { family: "Merriweather", weights: withItalic(weights100To900.slice(2)) },
+    { family: "Roboto Mono", weights: withItalic(weights100To900.slice(0, 7)) },
+    { family: "Space Grotesk", weights: ["Light", "Regular", "Medium", "Bold"] },
+    { family: "Inter", weights: withItalic(weights100To900) },
+    { family: "Instrument Sans", weights: withItalic(["Regular", "Medium", "SemiBold", "Bold"]) },
+    { family: "Montserrat", weights: withItalic(weights100To900) },
     { family: "Bebas Neue", weights: ["Regular"] },
-    { family: "Fraunces", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
-    { family: "Playfair Display", weights: ["Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
-    { family: "Geist Mono", weights: ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"] },
+    { family: "Fraunces", weights: withItalic(weights100To900) },
+    { family: "Playfair Display", weights: withItalic(["Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"]) },
+    { family: "Geist Mono", weights: withItalic(weights100To900) },
   ];
 
   await page.goto("/");
@@ -990,6 +1009,50 @@ test("updates weight options for the expanded Google Font set", async ({ page })
     await expect(page.locator("#google-weight-select option")).toHaveText(expectedFont.weights);
     await expect(page.locator("#google-weight-select")).toHaveValue("400");
   }
+});
+
+test("generates and packages a real italic Google Font style", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
+
+  const initialUrl = await getGeneratedFontUrl(page);
+  await page.locator("#google-weight-select").selectOption("400-italic");
+  await expect(page.locator("#google-weight-select")).toHaveValue("400-italic");
+  await expect(page.locator("#sample-text")).toHaveCSS("font-weight", "400");
+  await expect(page.locator("#sample-text")).toHaveCSS("font-style", "italic");
+  await expect
+    .poll(
+      async () => {
+        const url = await getGeneratedFontUrl(page);
+        return Boolean(url && url !== initialUrl);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+  await expect(page.locator("#demo-preview-canvas")).toHaveAttribute("data-render-font-weight", "400");
+  await expect(page.locator("#demo-preview-canvas")).toHaveAttribute("data-render-font-style", "italic");
+  await expect(page.locator("#download-link")).not.toHaveClass(/is-disabled/);
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: UI_COPY.controls.downloadTtf }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^PixelPlease-Mrrwthr-20-42-0-[A-Z0-9]{4}-Regular-Italic\.zip$/);
+  await download.saveAs(googleItalicGeneratedPackagePath);
+
+  const packageBytes = await fs.readFile(googleItalicGeneratedPackagePath);
+  const packageEntries = readStoredZip(packageBytes);
+  const notice = new TextDecoder().decode(packageEntries["NOTICE.txt"]);
+  const [generatedName, generated] = getSingleTtfEntry(packageEntries);
+  const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
+
+  expect(generatedName).toMatch(/^PixelPlease-Mrrwthr-20-42-0-[A-Z0-9]{4}-Regular-Italic\.ttf$/);
+  expect(notice).toContain("Generated font style: Regular Italic");
+  expect(notice).toContain("Source font: Merriweather Regular Italic");
+  expect(notice).toContain("Source file: Merriweather-RegularItalic.ttf");
+  expect(notice).toContain("Merriweather-Italic%5Bopsz%2Cwdth%2Cwght%5D.ttf");
+  expect(parsed.names.fontSubfamily.en).toBe("Regular Italic");
+  expect(parsed.names.fullName.en).toBe(`${parsed.names.fontFamily.en} Regular Italic`);
 });
 
 test("renders a usable generated Google Font output before upload", async ({ page }) => {
