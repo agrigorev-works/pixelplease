@@ -25,7 +25,7 @@ export const UI_COPY = {
     settings: "Settings",
   },
   sourceModes: {
-    google: "Google font",
+    google: "Select font",
     upload: "Upload font",
   },
   source: {
