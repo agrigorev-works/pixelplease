@@ -15,7 +15,7 @@ export const UI_COPY = {
     logoAriaLabel: "pixel please",
     logoParts: ["pixel", "please"],
     copy:
-      "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and export a ZIP.",
+      "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.",
   },
   sections: {
     source: "Source font and text",
