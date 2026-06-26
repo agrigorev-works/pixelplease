@@ -26,9 +26,11 @@ test("serves an LLM discovery file from the site root", async ({ page }) => {
   const body = await response.text();
   expect(body).toContain("# pixelplease");
   expect(body).toContain("browser-based pixel font generator");
+  expect(body).toContain("downloading a pixel font package");
   expect(body).toContain("Uploaded fonts are read locally in the browser");
   expect(body).toContain("Generated font family names start with product-owned `PixelPlease`");
   expect(body).toContain("blob/main/docs/product-brief.md");
+  expect(body).not.toContain("test TTF package");
   expect(body).not.toContain("pixelplease-Font");
   expect(body).not.toContain("variation-light-terminal-ui");
   expect(body).toContain("## Product");
@@ -168,7 +170,7 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
     expect.arrayContaining([
       expect.objectContaining({ name: "What is the fastest way to create a custom pixel font?" }),
       expect.objectContaining({ name: "Are my uploaded fonts and data private?" }),
-      expect.objectContaining({ name: "Can I use the exported pixel font commercially?" }),
+      expect.objectContaining({ name: "Can I use the generated pixel font commercially?" }),
     ]),
   );
   expect(faqPage?.mainEntity?.[1]).toMatchObject({ name: "Are my uploaded fonts and data private?" });
@@ -177,7 +179,9 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(JSON.stringify(faqPage)).toContain("no registration, login, or account is needed");
   expect(JSON.stringify(faqPage)).toContain("does not upload it, store it on a server");
   expect(JSON.stringify(faqPage)).toContain("generated TTF data to analytics");
-  expect(JSON.stringify(faqPage)).toContain("different exports can be installed side by side");
+  expect(JSON.stringify(faqPage)).toContain("download your pixel font package");
+  expect(JSON.stringify(faqPage)).toContain("different pixel fonts can be installed side by side");
+  expect(JSON.stringify(faqPage)).not.toContain("export a test .ttf package");
 });
 
 test("renders the SEO FAQ below the working app", async ({ page }) => {
@@ -270,7 +274,7 @@ test("renders the SEO FAQ below the working app", async ({ page }) => {
   await expect(privacyFaqItem.locator("p")).toContainText("generated TTF data to analytics");
   await page
     .locator(".faq-item")
-    .filter({ hasText: "How do I export and install the pixel font?" })
+    .filter({ hasText: "How do I download and install the pixel font?" })
     .locator("summary")
     .click();
   await expect(page.getByText("PixelPlease, a compact source code, pixel recipe")).toBeVisible();
