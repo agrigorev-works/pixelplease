@@ -254,7 +254,7 @@ h1 {
   text-align: left;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1200px) {
   .intro {
     grid-template-columns: 1fr;
     gap: 22px;
@@ -479,7 +479,7 @@ h2 {
 
 .source-toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(96px, 0.8fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   min-height: 34px;
   min-width: 0;
@@ -533,8 +533,19 @@ select,
   justify-content: space-between;
   gap: 8px;
   padding: 5px 24px 5px 8px;
+  overflow: hidden;
   appearance: none;
   text-align: left;
+  white-space: nowrap;
+}
+
+.custom-select-trigger-label,
+.custom-select-option-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .custom-select-trigger::after {
@@ -568,14 +579,17 @@ select,
 
 .custom-select-option {
   width: 100%;
+  min-width: 0;
   min-height: 32px;
   padding: 7px 8px;
+  overflow: hidden;
   border: 0;
   border-radius: 0;
   background: #ffffff;
   color: #111111;
   font: inherit;
   text-align: left;
+  white-space: nowrap;
 }
 
 .custom-select-option:hover,
@@ -968,7 +982,7 @@ summary,
   cursor: pointer;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1200px) {
   .app-shell {
     --panel-height: clamp(var(--panel-min-height), 54vh, 620px);
 

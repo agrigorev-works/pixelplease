@@ -800,11 +800,16 @@ function createCustomSelect(select: HTMLSelectElement): CustomSelectController {
     menu.replaceChildren(
       ...Array.from(select.options).map((option) => {
         const item = document.createElement("button");
+        const label = document.createElement("span");
+
         item.type = "button";
         item.className = "custom-select-option";
         item.setAttribute("role", "option");
         item.dataset.value = option.value;
-        item.textContent = option.textContent;
+        item.title = option.textContent ?? "";
+        label.className = "custom-select-option-label";
+        label.textContent = option.textContent;
+        item.append(label);
         item.addEventListener("click", () => chooseOption(option.value));
         return item;
       }),
@@ -814,7 +819,11 @@ function createCustomSelect(select: HTMLSelectElement): CustomSelectController {
 
   function syncValue(): void {
     const selectedOption = select.selectedOptions[0] ?? select.options[select.selectedIndex] ?? select.options[0];
-    trigger.textContent = selectedOption?.textContent ?? "";
+    const label = document.createElement("span");
+    label.className = "custom-select-trigger-label";
+    label.textContent = selectedOption?.textContent ?? "";
+    trigger.title = selectedOption?.textContent ?? "";
+    trigger.replaceChildren(label);
 
     for (const option of Array.from(menu.querySelectorAll<HTMLButtonElement>(".custom-select-option"))) {
       const isSelected = option.dataset.value === select.value;
@@ -1184,7 +1193,7 @@ function initializeDemoFonts(): void {
     ...DEMO_GOOGLE_FONTS.map((font) => {
       const option = document.createElement("option");
       option.value = font.family;
-      option.textContent = `${font.family}${UI_COPY.source.fontOptionSeparator}${font.license}`;
+      option.textContent = font.family;
       return option;
     }),
   );

@@ -640,7 +640,7 @@ test("renders a clean three-column source output settings layout", async ({ page
   await expect(page.locator(".source-panel #font-upload")).toBeAttached();
   await expect(page.locator("#source-mode-google")).toBeChecked();
   await expect(page.locator("#google-font-select")).toBeVisible();
-  await expect(page.locator("#google-font-field span")).toHaveCount(0);
+  await expect(page.locator("#google-font-field .custom-select-trigger-label")).toHaveCount(1);
   await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.locator("#coverage-label")).toHaveCount(0);
   await expect(page.locator("#glyph-grid")).toHaveCount(0);
@@ -692,8 +692,74 @@ test("renders a clean three-column source output settings layout", async ({ page
   expect(previewTypography.canvasWidthDelta).toBeLessThan(1);
 });
 
+test("keeps source font selects equal width with single-line truncated labels", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 820 });
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+
+  await page.locator("#google-font-select").selectOption("Playfair Display");
+  await page.locator("#google-weight-select").selectOption("800-italic");
+  await expect(page.locator("#google-font-field .custom-select-trigger-label")).toHaveText("Playfair Display");
+  await expect(page.locator("#google-weight-field .custom-select-trigger-label")).toHaveText("ExtraBold Italic");
+
+  const selectMetrics = await page.evaluate(() => {
+    const toolbar = document.querySelector(".source-toolbar");
+    const fontField = document.querySelector("#google-font-field");
+    const weightField = document.querySelector("#google-weight-field");
+    const fontTriggerLabel = document.querySelector("#google-font-field .custom-select-trigger-label");
+    const weightTriggerLabel = document.querySelector("#google-weight-field .custom-select-trigger-label");
+    const weightOptionLabel = document.querySelector("#google-weight-field .custom-select-option-label");
+
+    if (!toolbar || !fontField || !weightField || !fontTriggerLabel || !weightTriggerLabel || !weightOptionLabel) {
+      throw new Error("Missing source select elements");
+    }
+
+    const toolbarBox = toolbar.getBoundingClientRect();
+    const fontBox = fontField.getBoundingClientRect();
+    const weightBox = weightField.getBoundingClientRect();
+    const fontLabelStyles = getComputedStyle(fontTriggerLabel);
+    const weightLabelStyles = getComputedStyle(weightTriggerLabel);
+    const weightOptionStyles = getComputedStyle(weightOptionLabel);
+    const weightLabelRange = document.createRange();
+    weightLabelRange.selectNodeContents(weightTriggerLabel);
+    const weightLabelLineCount = new Set(
+      Array.from(weightLabelRange.getClientRects()).map((rect) => Math.round(rect.top)),
+    ).size;
+    weightLabelRange.detach();
+
+    return {
+      toolbarWidth: toolbarBox.width,
+      fontWidth: fontBox.width,
+      weightWidth: weightBox.width,
+      gap: weightBox.left - fontBox.right,
+      fontLabelOverflow: fontLabelStyles.overflow,
+      fontLabelTextOverflow: fontLabelStyles.textOverflow,
+      fontLabelWhiteSpace: fontLabelStyles.whiteSpace,
+      weightLabelOverflow: weightLabelStyles.overflow,
+      weightLabelTextOverflow: weightLabelStyles.textOverflow,
+      weightLabelWhiteSpace: weightLabelStyles.whiteSpace,
+      weightOptionTextOverflow: weightOptionStyles.textOverflow,
+      weightOptionWhiteSpace: weightOptionStyles.whiteSpace,
+      weightLabelLineCount,
+    };
+  });
+
+  expect(Math.abs(selectMetrics.fontWidth - selectMetrics.weightWidth)).toBeLessThan(1);
+  expect(Math.abs(selectMetrics.fontWidth + selectMetrics.weightWidth + selectMetrics.gap - selectMetrics.toolbarWidth)).toBeLessThan(1);
+  expect(selectMetrics.gap).toBeCloseTo(8, 0);
+  expect(selectMetrics.fontLabelOverflow).toBe("hidden");
+  expect(selectMetrics.fontLabelTextOverflow).toBe("ellipsis");
+  expect(selectMetrics.fontLabelWhiteSpace).toBe("nowrap");
+  expect(selectMetrics.weightLabelOverflow).toBe("hidden");
+  expect(selectMetrics.weightLabelTextOverflow).toBe("ellipsis");
+  expect(selectMetrics.weightLabelWhiteSpace).toBe("nowrap");
+  expect(selectMetrics.weightOptionTextOverflow).toBe("ellipsis");
+  expect(selectMetrics.weightOptionWhiteSpace).toBe("nowrap");
+  expect(selectMetrics.weightLabelLineCount).toBe(1);
+});
+
 test("stacks the intro when the header no longer fits horizontally", async ({ page }) => {
-  await page.setViewportSize({ width: 1000, height: 760 });
+  await page.setViewportSize({ width: 1200, height: 760 });
   await page.goto("/");
 
   const metrics = await page.evaluate(() => {
@@ -741,8 +807,8 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
   expect(metrics.copyLineCount).toBeLessThanOrEqual(3);
   expect(metrics.titleTextAlign).toBe("center");
   expect(metrics.copyTextAlign).toBe("center");
-  expect(metrics.controlsWidth).toBeLessThanOrEqual(230);
-  expect(metrics.gridColumns).toBe(3);
+  expect(metrics.controlsWidth).toBeGreaterThan(700);
+  expect(metrics.gridColumns).toBe(1);
   expect(metrics.overflow).toBe(0);
 });
 
@@ -769,7 +835,7 @@ test("switches Source between Google Font editing and same-size upload drop zone
   await page.locator("#google-font-select").focus();
   await expect(page.locator("#sample-text")).toHaveCSS("background-color", "rgb(245, 245, 245)");
   await expect(page.locator("#google-font-select")).toBeVisible();
-  await expect(page.locator("#google-font-field span")).toHaveCount(0);
+  await expect(page.locator("#google-font-field .custom-select-trigger-label")).toHaveCount(1);
   await expect(page.locator("#upload-zone")).toBeHidden();
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect(page.locator("#after-preview")).toBeHidden();
@@ -911,15 +977,16 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
   expect(fontOptions).toEqual(
     expect.arrayContaining([
-      "Inter / OFL",
-      "Instrument Sans / OFL",
-      "Montserrat / OFL",
-      "Bebas Neue / OFL",
-      "Fraunces / OFL",
-      "Playfair Display / OFL",
-      "Geist Mono / OFL",
+      "Inter",
+      "Instrument Sans",
+      "Montserrat",
+      "Bebas Neue",
+      "Fraunces",
+      "Playfair Display",
+      "Geist Mono",
     ]),
   );
+  expect(fontOptions.every((option) => !option.includes(" / "))).toBe(true);
   expect(weightOptions).toEqual(expect.arrayContaining(["Regular", "Regular Italic", "Bold", "Bold Italic"]));
   await expect(page.locator("#google-font-select")).toHaveValue("Merriweather");
   await expect(page.locator("#google-weight-select")).toHaveValue("400");
@@ -1218,7 +1285,7 @@ test("keeps generated output canvas-backed at phone width", async ({ page }) => 
 });
 
 test("wraps generated canvas output instead of squeezing it in narrow columns", async ({ page }) => {
-  await page.setViewportSize({ width: 900, height: 760 });
+  await page.setViewportSize({ width: 1200, height: 760 });
   await page.goto("/");
 
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
@@ -1226,10 +1293,7 @@ test("wraps generated canvas output instead of squeezing it in narrow columns", 
     .locator("#sample-text")
     .fill(
       [
-        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
-        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
-        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
-        "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck",
+        ...Array.from({ length: 12 }, () => "PixelpleaseSupercalifragilisticexpialidociousPixelOutputWrapCheck"),
       ].join(" "),
     );
 
@@ -1238,7 +1302,7 @@ test("wraps generated canvas output instead of squeezing it in narrow columns", 
       async () => {
         const metrics = await getPixelCanvasLayoutMetrics(page);
         return (
-          metrics.cssWidth < 320 &&
+          metrics.cssWidth > 700 &&
           Math.abs(metrics.backingCssWidth - metrics.cssWidth) < 1 &&
           metrics.frameScrollHeight > metrics.frameClientHeight + 40 &&
           metrics.canvasCssHeight > metrics.frameClientHeight + 40 &&
@@ -1257,9 +1321,9 @@ test("keeps generated canvas typography synced with source across resizes", asyn
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   const desktopMetrics = await expectCanvasTypographySynced(page);
 
-  await page.setViewportSize({ width: 900, height: 760 });
-  const narrowMetrics = await expectCanvasTypographySynced(page);
-  expect(narrowMetrics.frameWidth).toBeLessThan(desktopMetrics.frameWidth);
+  await page.setViewportSize({ width: 1200, height: 760 });
+  const stackedMetrics = await expectCanvasTypographySynced(page);
+  expect(stackedMetrics.frameWidth).toBeGreaterThan(desktopMetrics.frameWidth);
 
   await page.setViewportSize({ width: 390, height: 844 });
   const phoneMetrics = await expectCanvasTypographySynced(page);

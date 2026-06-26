@@ -31,7 +31,6 @@ export const UI_COPY = {
   source: {
     googleFontSelect: "Google Font for demo preview",
     googleWeightSelect: "Font style for demo preview",
-    fontOptionSeparator: " / ",
     replaceFont: "upload new font",
     sampleTextLabel: "sample text",
     sampleTextDefault:
