@@ -287,7 +287,7 @@ test("renders the SEO FAQ below the working app", async ({ page }) => {
     .filter({ hasText: "How do I download and install the pixel font?" })
     .locator("summary")
     .click();
-  await expect(page.getByText("PixelPlease, a compact source code, pixel recipe")).toBeVisible();
+  await expect(page.getByText("PixelPlease, a compact source code, effect recipe")).toBeVisible();
   await expect(page.getByText("installed side by side instead of overwriting each other")).toBeVisible();
   await expect(page.getByText("design tools, interface mockups, posters")).toBeVisible();
 
@@ -1170,8 +1170,8 @@ test("renders a usable generated Google Font output before upload", async ({ pag
   expect(googleNotice).toContain("Source license: OFL");
   expect(googleNotice).toContain("Source license file: merriweather-OFL.txt");
   expect(googleNotice).toContain("Bundled source license package path: licenses/merriweather-OFL.txt");
-  expect(googleNotice).toContain("Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.");
-  expect(googleNotice).toContain("Pixel recipe format: pixels-threshold-expand.");
+  expect(googleNotice).toContain("Generated font naming: PixelPlease + compact source code + effect recipe + short hash + style.");
+  expect(googleNotice).toContain("Effect recipe format: cells-per-em-threshold-expand.");
   expect(googleNotice).toContain("Merriweather Regular");
   expect(googleNotice).toContain("Merriweather-Regular.ttf");
   expect(new TextDecoder().decode(googlePackageEntries["licenses/merriweather-OFL.txt"])).toContain(
@@ -1208,14 +1208,56 @@ test("renders a usable generated Google Font output before upload", async ({ pag
     .toBe(true);
 });
 
-test("switches between square and round pixel shapes for preview and generated font", async ({ page }) => {
+test("switches between pixel effects for preview and generated font", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
   await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });
   await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", "square");
-  await expect(page.getByRole("radio", { name: UI_COPY.controls.squarePixels })).toBeChecked();
-  await expect(page.locator("#pixel-shape-control")).toBeVisible();
+  const effectSelect = page.locator("#pixel-effect-select");
+  const pixelsPerEmLabel = page.locator(".control-stack > .field > span").first();
+  await expect(effectSelect).toHaveValue("square");
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.pixelsPerEm);
+  await expect(effectSelect.locator("option")).toHaveText([
+    UI_COPY.controls.squarePixels,
+    UI_COPY.controls.roundPixels,
+    UI_COPY.controls.verticalLines,
+    UI_COPY.controls.horizontalLines,
+  ]);
+  const effectSelectTrigger = page.locator("#pixel-effect-field .custom-select-trigger");
+  await expect(effectSelectTrigger).toBeVisible();
+  await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.squarePixels);
+  await effectSelectTrigger.hover();
+  await expect(effectSelectTrigger).toHaveCSS("cursor", /none/);
+  await expect(page.locator(".custom-cursor")).toHaveAttribute("data-cursor-shape", "pointer");
+  await effectSelectTrigger.click();
+  await expect(effectSelectTrigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#pixel-effect-field .custom-select-menu")).toHaveCSS("box-shadow", /0px -8px 0px/);
+  const horizontalLinesOption = page.locator("#pixel-effect-field .custom-select-option").filter({
+    hasText: UI_COPY.controls.horizontalLines,
+  });
+  await horizontalLinesOption.hover();
+  await expect(horizontalLinesOption).toHaveCSS("cursor", /none/);
+  await expect(page.locator(".custom-cursor")).toHaveAttribute("data-cursor-shape", "pointer");
+  await horizontalLinesOption.click();
+  await expect(effectSelect).toHaveValue("horizontal-lines");
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.linesPerEm);
+  await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.horizontalLines);
+  await effectSelect.selectOption("square");
+  await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.squarePixels);
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.pixelsPerEm);
+  await effectSelectTrigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(effectSelectTrigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#pixel-effect-field .custom-select-option.is-selected")).toHaveText(UI_COPY.controls.squarePixels);
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(effectSelect).toHaveValue("round");
+  await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.roundPixels);
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.dotsPerEm);
+  await effectSelect.selectOption("square");
+  await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.squarePixels);
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.pixelsPerEm);
 
   const squareSignature = await getPixelCanvasSignature(page);
   const squareGeneratedUrl = await getGeneratedFontUrl(page);
@@ -1224,8 +1266,9 @@ test("switches between square and round pixel shapes for preview and generated f
   expect(squareLogoCommands).toContain("L");
   expect(squareLogoCommands).not.toContain("C");
 
-  await page.getByRole("radio", { name: UI_COPY.controls.roundPixels }).check();
-  await expect(page.getByRole("radio", { name: UI_COPY.controls.roundPixels })).toBeChecked();
+  await effectSelect.selectOption("round");
+  await expect(effectSelect).toHaveValue("round");
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.dotsPerEm);
   await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-font", "ready", { timeout: 20_000 });
   await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", "round");
   await expect(page.getByRole("button", { name: UI_COPY.controls.resetDefaults })).toBeEnabled();
@@ -1238,16 +1281,6 @@ test("switches between square and round pixel shapes for preview and generated f
   await expect
     .poll(
       async () => {
-        const signature = await getPixelCanvasSignature(page);
-        return signature.hash !== squareSignature.hash && signature.darkSamples > 12;
-      },
-      { timeout: 5_000 },
-    )
-    .toBe(true);
-
-  await expect
-    .poll(
-      async () => {
         const url = await getGeneratedFontUrl(page);
         return Boolean(url && url !== squareGeneratedUrl);
       },
@@ -1255,8 +1288,51 @@ test("switches between square and round pixel shapes for preview and generated f
     )
     .toBe(true);
 
+  await expect
+    .poll(
+      async () => {
+        const signature = await getPixelCanvasSignature(page);
+        return signature.hash !== squareSignature.hash && signature.darkSamples > 12;
+      },
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+
+  let previousSignature = await getPixelCanvasSignature(page);
+
+  for (const effect of ["vertical-lines", "horizontal-lines"] as const) {
+    const previousGeneratedUrl = await getGeneratedFontUrl(page);
+    await effectSelect.selectOption(effect);
+    await expect(effectSelect).toHaveValue(effect);
+    await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.linesPerEm);
+    await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", effect, { timeout: 20_000 });
+
+    await expect
+      .poll(
+        async () => {
+          const url = await getGeneratedFontUrl(page);
+          return Boolean(url && url !== previousGeneratedUrl);
+        },
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+
+    await expect
+      .poll(
+        async () => {
+          const signature = await getPixelCanvasSignature(page);
+          return signature.hash !== previousSignature.hash && signature.darkSamples > 12;
+        },
+        { timeout: 5_000 },
+      )
+      .toBe(true);
+
+    previousSignature = await getPixelCanvasSignature(page);
+  }
+
   await page.getByRole("button", { name: UI_COPY.controls.resetDefaults }).click();
-  await expect(page.getByRole("radio", { name: UI_COPY.controls.squarePixels })).toBeChecked();
+  await expect(effectSelect).toHaveValue("square");
+  await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.pixelsPerEm);
   await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape", "square");
 });
 
@@ -1516,7 +1592,8 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   expect(Object.keys(packageEntries).sort()).toEqual(["NOTICE.txt", generatedName].sort());
   expect(notice).toContain("Fixture Sans");
   expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
-  expect(notice).toContain("Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.");
+  expect(notice).toContain("Generated font naming: PixelPlease + compact source code + effect recipe + short hash + style.");
+  expect(notice).toContain("Effect recipe format: cells-per-em-threshold-expand.");
   expect(notice).toContain("compact source codes instead of verbatim source family names");
   expect(parsed.names.fontFamily.en).toMatch(/^PixelPlease FxtrSans 18-36-0 [A-Z0-9]{4}$/);
   expect(parsed.names.fontSubfamily.en).toBe("Regular");
@@ -1559,7 +1636,8 @@ test("handles a real permissive Google Fonts TTF sample", async ({ page }) => {
   expect(notice).toContain("Lato Regular");
   expect(notice).toContain("Lato-Regular.ttf");
   expect(notice).toContain("Source license: User-provided; rights not verified by pixelplease.");
-  expect(notice).toContain("Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.");
+  expect(notice).toContain("Generated font naming: PixelPlease + compact source code + effect recipe + short hash + style.");
+  expect(notice).toContain("Effect recipe format: cells-per-em-threshold-expand.");
   expect(parsed.names.fontFamily.en).toMatch(/^PixelPlease Lt 22-42-0 [A-Z0-9]{4}$/);
   expect(parsed.names.fontSubfamily.en).toBe("Regular");
   expect(parsed.names.fullName.en).toBe(`${parsed.names.fontFamily.en} Regular`);
@@ -1648,7 +1726,7 @@ async function getPixelCanvasSignature(page: Page): Promise<CanvasSignature> {
     const { data, width, height } = context.getImageData(0, 0, element.width, element.height);
     let darkSamples = 0;
     let hash = 2166136261;
-    const stride = 97 * 4;
+    const stride = 4;
 
     for (let index = 0; index < data.length; index += stride) {
       const red = data[index] ?? 255;

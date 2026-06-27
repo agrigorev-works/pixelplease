@@ -91,7 +91,7 @@ The smoke and launch tests copy the bundled permissive Google Fonts sample, `Lat
 - Basic Latin export only.
 - No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup beyond basic release-safety names and notice packaging.
 - The algorithm is intentionally simple: rasterize glyphs to a grid, optionally offset the sampling grid, sample filled cells, optionally expand cells, convert horizontal filled runs into rectangular outlines, then build a derivative TTF.
-- Generated font names start with product-owned `PixelPlease`, then add a compact source code, pixel recipe, short hash, and style so multiple exports can install side by side without preserving source family names verbatim.
+- Generated font names start with product-owned `PixelPlease`, then add a compact source code, effect recipe, short hash, and style so multiple exports can install side by side without preserving source family names verbatim.
 - Download packages include `NOTICE.txt`; bundled demo packages also include the source OFL file under `licenses/`.
 - User-uploaded font licenses still need manual verification before redistribution.
 

@@ -105,7 +105,7 @@
             "name": "How do I download and install the pixel font?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "When the effect looks right, download the ZIP package. It contains the generated TTF and NOTICE.txt; bundled demo-font downloads also include source license files. Each generated TTF is named with PixelPlease, a compact source code, pixel recipe, short hash, and style, so different pixel fonts can be installed side by side instead of overwriting each other. Install the .ttf like any other font and use it in design tools, interface mockups, posters, or anywhere TTF fonts are accepted. The downloaded font is meant for testing and practical use, not full professional type production."
+              "text": "When the effect looks right, download the ZIP package. It contains the generated TTF and NOTICE.txt; bundled demo-font downloads also include source license files. Each generated TTF is named with PixelPlease, a compact source code, effect recipe, short hash, and style, so different pixel fonts can be installed side by side instead of overwriting each other. Install the .ttf like any other font and use it in design tools, interface mockups, posters, or anywhere TTF fonts are accepted. The downloaded font is meant for testing and practical use, not full professional type production."
             }
           },
           {
@@ -204,17 +204,14 @@
               <button id="output-size-decrease" class="size-step" type="button" aria-label=""></button>
               <output id="output-size-readout" class="size-readout"></output>
               <button id="output-size-increase" class="size-step" type="button" aria-label=""></button>
-              <fieldset id="pixel-shape-control" class="preview-shape-control">
-                <legend class="sr-only"></legend>
-                <label class="segment-option">
-                  <input id="pixel-shape-square" type="radio" name="pixel-shape" value="square" checked />
-                  <span></span>
-                </label>
-                <label class="segment-option">
-                  <input id="pixel-shape-round" type="radio" name="pixel-shape" value="round" />
-                  <span></span>
-                </label>
-              </fieldset>
+              <div id="pixel-effect-field" class="font-select-field preview-effect-field">
+                <select id="pixel-effect-select" class="preview-effect-select" aria-label="">
+                  <option value="square" selected></option>
+                  <option value="round"></option>
+                  <option value="vertical-lines"></option>
+                  <option value="horizontal-lines"></option>
+                </select>
+              </div>
             </div>
           </div>
           <p id="after-preview" class="preview-text generated-preview is-hidden"></p>
@@ -337,7 +334,7 @@
               <p>
                 When the effect looks right, download the ZIP package. It contains the generated TTF and NOTICE.txt;
                 bundled demo-font downloads also include source license files. Each generated TTF is named with
-                PixelPlease, a compact source code, pixel recipe, short hash, and style, so different pixel fonts can
+                PixelPlease, a compact source code, effect recipe, short hash, and style, so different pixel fonts can
                 be installed side by side instead of overwriting each other. Install the .ttf like any other font and
                 use it in design tools, interface mockups, posters, or anywhere TTF fonts are accepted. The downloaded
                 font is meant for testing and practical use, not full professional type production.

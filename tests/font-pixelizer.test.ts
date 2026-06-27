@@ -91,6 +91,52 @@ describe("font pixelizer core", () => {
     expect(lineCommands).toHaveLength(0);
   });
 
+  it("can draw filled cells as vertical line paths", () => {
+    const mask: CellMask = {
+      cols: 1,
+      rows: 1,
+      cells: Uint8Array.from([1]),
+    };
+
+    const path = cellsToPath(mask, metrics, {
+      pixelsPerEm: 10,
+      threshold: 0.5,
+      expand: 0,
+      pixelShape: "vertical-lines",
+    });
+
+    expect(path.commands).toEqual([
+      { type: "M", x: 28, y: 700 },
+      { type: "L", x: 72, y: 700 },
+      { type: "L", x: 72, y: 800 },
+      { type: "L", x: 28, y: 800 },
+      { type: "Z" },
+    ]);
+  });
+
+  it("can draw filled cells as horizontal line paths", () => {
+    const mask: CellMask = {
+      cols: 1,
+      rows: 1,
+      cells: Uint8Array.from([1]),
+    };
+
+    const path = cellsToPath(mask, metrics, {
+      pixelsPerEm: 10,
+      threshold: 0.5,
+      expand: 0,
+      pixelShape: "horizontal-lines",
+    });
+
+    expect(path.commands).toEqual([
+      { type: "M", x: 0, y: 728 },
+      { type: "L", x: 100, y: 728 },
+      { type: "L", x: 100, y: 772 },
+      { type: "L", x: 0, y: 772 },
+      { type: "Z" },
+    ]);
+  });
+
   it("expands filled cells by the requested radius", () => {
     const mask: CellMask = {
       cols: 3,
@@ -194,7 +240,10 @@ describe("font pixelizer core", () => {
     expect(entries["PixelPlease-FxtrSans-20-42-0-A7K4-Regular.ttf"]).toEqual(Uint8Array.from([1, 2, 3]));
     expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("Generated font style: Regular");
     expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain(
-      "Generated font naming: PixelPlease + compact source code + pixel recipe + short hash + style.",
+      "Generated font naming: PixelPlease + compact source code + effect recipe + short hash + style.",
+    );
+    expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain(
+      "Effect recipe format: cells-per-em-threshold-expand.",
     );
     expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain(
       "compact source codes instead of verbatim source family names",

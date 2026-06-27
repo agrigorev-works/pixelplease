@@ -641,8 +641,7 @@ const licenseReminder = getSelector<HTMLElement>(".license-reminder");
 const pixelsPerEm = getElement<HTMLInputElement>("pixels-per-em");
 const threshold = getElement<HTMLInputElement>("threshold");
 const expand = getElement<HTMLInputElement>("expand");
-const pixelShapeSquare = getElement<HTMLInputElement>("pixel-shape-square");
-const pixelShapeRound = getElement<HTMLInputElement>("pixel-shape-round");
+const pixelEffectSelect = getElement<HTMLSelectElement>("pixel-effect-select");
 const shiftX = getElement<HTMLInputElement>("shift-x");
 const shiftY = getElement<HTMLInputElement>("shift-y");
 const sourceSizeBar = getElement<HTMLElement>("source-size-bar");
@@ -653,7 +652,6 @@ const outputSizeBar = getElement<HTMLElement>("output-size-bar");
 const outputSizeDecrease = getElement<HTMLButtonElement>("output-size-decrease");
 const outputSizeIncrease = getElement<HTMLButtonElement>("output-size-increase");
 const outputSizeReadout = getElement<HTMLOutputElement>("output-size-readout");
-const pixelShapeLegend = getSelector<HTMLElement>("#pixel-shape-control legend");
 const pixelsPerEmValue = getElement<HTMLOutputElement>("pixels-per-em-value");
 const thresholdValue = getElement<HTMLOutputElement>("threshold-value");
 const expandValue = getElement<HTMLOutputElement>("expand-value");
@@ -674,6 +672,7 @@ let trailPixelIndex = 0;
 applyInterfaceCopy();
 const googleFontCustomSelect = createCustomSelect(googleFontSelect);
 const googleWeightCustomSelect = createCustomSelect(googleWeightSelect);
+const pixelEffectCustomSelect = createCustomSelect(pixelEffectSelect);
 uploadInput.addEventListener("change", handleUpload);
 uploadZone.addEventListener("dragenter", handleDragEnter);
 uploadZone.addEventListener("dragover", handleDragOver);
@@ -689,8 +688,7 @@ sampleText.addEventListener("input", syncSampleText);
 pixelsPerEm.addEventListener("input", handleControlInput);
 threshold.addEventListener("input", handleControlInput);
 expand.addEventListener("input", handleControlInput);
-pixelShapeSquare.addEventListener("change", handleControlInput);
-pixelShapeRound.addEventListener("change", handleControlInput);
+pixelEffectSelect.addEventListener("change", handleControlInput);
 shiftX.addEventListener("input", handleControlInput);
 shiftY.addEventListener("input", handleControlInput);
 sourceSizeDecrease.addEventListener("click", () => adjustSourcePreviewSize(-PREVIEW_FONT_SIZE_STEP));
@@ -1161,17 +1159,11 @@ function applyInterfaceCopy(): void {
   setText(controlLabels[2], UI_COPY.controls.expand, "expand control label");
   setText(controlLabels[3], UI_COPY.controls.shiftX, "shift-x control label");
   setText(controlLabels[4], UI_COPY.controls.shiftY, "shift-y control label");
-  setText(pixelShapeLegend, UI_COPY.controls.pixelShape, "pixel shape control label");
-  setText(
-    (pixelShapeSquare.nextElementSibling as HTMLElement | null) ?? undefined,
-    UI_COPY.controls.squarePixels,
-    "square pixel shape label",
-  );
-  setText(
-    (pixelShapeRound.nextElementSibling as HTMLElement | null) ?? undefined,
-    UI_COPY.controls.roundPixels,
-    "round pixel shape label",
-  );
+  pixelEffectSelect.setAttribute("aria-label", UI_COPY.controls.pixelEffect);
+  setPixelEffectOptionCopy("square", UI_COPY.controls.squarePixels);
+  setPixelEffectOptionCopy("round", UI_COPY.controls.roundPixels);
+  setPixelEffectOptionCopy("vertical-lines", UI_COPY.controls.verticalLines);
+  setPixelEffectOptionCopy("horizontal-lines", UI_COPY.controls.horizontalLines);
   resetButton.textContent = UI_COPY.controls.resetDefaults;
   downloadLink.textContent = UI_COPY.controls.downloadTtf;
   downloadLink.download = UI_COPY.controls.defaultDownloadName;
@@ -1568,8 +1560,8 @@ function resetControlsToDefaults(): void {
   [pixelsPerEm, threshold, expand, shiftX, shiftY].forEach((input) => {
     input.value = input.defaultValue;
   });
-  pixelShapeSquare.checked = true;
-  pixelShapeRound.checked = false;
+  pixelEffectSelect.value = "square";
+  pixelEffectCustomSelect.syncValue();
 
   sourcePreviewFontSize = null;
   outputPreviewFontSize = null;
@@ -1632,6 +1624,7 @@ function syncPreviewSizes(): void {
 }
 
 function syncControlLabels(): void {
+  setText(controlLabels[0], getPixelsPerEmLabel(), "pixels-per-em control label");
   pixelsPerEmValue.textContent = pixelsPerEm.value;
   thresholdValue.textContent = `${threshold.value}${UI_COPY.controls.thresholdUnit}`;
   expandValue.textContent = expand.value;
@@ -1685,7 +1678,31 @@ function getDefaultPixelizeOptions(): PixelizeOptions {
 }
 
 function getPixelShape(): PixelShape {
-  return pixelShapeRound.checked ? "round" : "square";
+  const value = pixelEffectSelect.value;
+  return isPixelShape(value) ? value : "square";
+}
+
+function getPixelsPerEmLabel(): string {
+  const pixelShape = getPixelShape();
+
+  if (pixelShape === "round") {
+    return UI_COPY.controls.dotsPerEm;
+  }
+
+  if (pixelShape === "vertical-lines" || pixelShape === "horizontal-lines") {
+    return UI_COPY.controls.linesPerEm;
+  }
+
+  return UI_COPY.controls.pixelsPerEm;
+}
+
+function isPixelShape(value: string): value is PixelShape {
+  return value === "square" || value === "round" || value === "vertical-lines" || value === "horizontal-lines";
+}
+
+function setPixelEffectOptionCopy(value: PixelShape, label: string): void {
+  const option = pixelEffectSelect.querySelector<HTMLOptionElement>(`option[value="${value}"]`);
+  setText(option ?? undefined, label, `${value} pixel effect option`);
 }
 
 function clearGeneratedFont(): void {
@@ -1867,6 +1884,20 @@ function drawPreviewPixelCell(
     context.beginPath();
     context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
     context.fill();
+    return;
+  }
+
+  if (pixelShape === "vertical-lines") {
+    const strokeSize = Math.max(1, Math.round(size * 0.44));
+    const offset = Math.round((size - strokeSize) / 2);
+    context.fillRect(x + offset, y, strokeSize, size);
+    return;
+  }
+
+  if (pixelShape === "horizontal-lines") {
+    const strokeSize = Math.max(1, Math.round(size * 0.44));
+    const offset = Math.round((size - strokeSize) / 2);
+    context.fillRect(x, y + offset, size, strokeSize);
     return;
   }
 

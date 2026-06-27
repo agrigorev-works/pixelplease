@@ -12,7 +12,7 @@ Important interpretation notes:
 - Generated fonts are derivative test fonts. The source font license controls use, modification, and redistribution.
 - Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files; available examples include Merriweather, IBM Plex Sans, Lato, Libre Baskerville, Roboto Mono, Space Grotesk, Inter, Instrument Sans, Montserrat, Bebas Neue, Fraunces, Playfair Display, and Geist Mono.
 - The current MVP produces Basic Latin only as a generated TTF inside a ZIP package.
-- Generated font family names start with product-owned `PixelPlease`, followed by a compact source code, visible pixel recipe, and short hash, so generated pixel fonts can install side by side without preserving source Reserved Font Names verbatim.
+- Generated font family names start with product-owned `PixelPlease`, followed by a compact source code, visible effect recipe, and short hash, so generated pixel fonts can install side by side without preserving source Reserved Font Names verbatim.
 - Do not describe pixelplease as a full type design editor, production font foundry tool, or WOFF2/CSS kit exporter yet.
 
 ## Product
