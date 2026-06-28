@@ -127,6 +127,7 @@ Analytics note:
 - what pixelplease is;
 - what it exports today;
 - local-only upload/privacy behavior, including no account requirement and no font-storage step;
+- MIT code license, separate from bundled font licenses;
 - licensing caveats for generated derivative fonts;
 - links to the app, repo, product brief, workflow guide, SEO proposal, release checklist, and bundled source license files.
 

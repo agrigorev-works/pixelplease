@@ -87,4 +87,10 @@ The smoke and launch tests copy the bundled permissive Google Fonts sample, `Lat
 - Download packages include `NOTICE.txt`; bundled demo packages also include the source OFL file under `licenses/`.
 - User-uploaded font licenses still need manual verification before redistribution.
 
+## License
+
+pixelplease source code is released under the MIT License. See `LICENSE`.
+
+Bundled Google Fonts are distributed under their own SIL Open Font License files in `public/fonts/google/licenses/`. Generated pixel fonts are derivative fonts, so the source font license still controls use, modification, and redistribution of each generated output.
+
 Only upload fonts you have the right to modify.

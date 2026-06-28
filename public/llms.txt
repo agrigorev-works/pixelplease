@@ -30,8 +30,11 @@ Important interpretation notes:
 
 ## Licensing
 
+- [Code license](https://github.com/agrigorev-works/pixelplease/blob/main/LICENSE): pixelplease source code is released under the MIT License.
 - [Bundled font licenses](https://github.com/agrigorev-works/pixelplease/tree/main/public/fonts/google/licenses): Per-family OFL files for bundled demo fonts.
 - [SIL Open Font License](https://openfontlicense.org): License used by the bundled permissive demo fonts.
+
+The code license and bundled font licenses are separate. Generated pixel fonts are derivative fonts; the source font license controls use, modification, and redistribution of each generated output.
 
 ## Optional
 

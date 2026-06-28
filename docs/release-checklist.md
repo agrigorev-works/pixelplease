@@ -6,6 +6,7 @@
 - Side-by-side Source and Pixel Output workflow.
 - Live controls for pixel density, threshold, expand, and X/Y shift.
 - License-aware generated package notice.
+- MIT license for pixelplease source code.
 - Per-family OFL files for bundled demo fonts.
 - RFN-safe generated font naming.
 - Bundled demo fonts for runtime independence from GitHub raw.
@@ -23,6 +24,7 @@
 - Cross-browser launch sanity coverage.
 - Mobile/coarse-pointer first run does not autofocus the Source textarea, and local-only upload privacy copy is visible.
 - Generated ZIP package license spot-check: demo exports include bundled OFL text; user uploads do not invent a license URL.
+- Code-license consistency across `LICENSE`, `package.json`, README, and `/llms.txt`; code licensing stays separate from bundled font and generated-output licensing.
 - Product brief, workflow guide, and SEO proposal.
 
 ## Before Public Repository
