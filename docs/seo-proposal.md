@@ -57,13 +57,13 @@ pixel font generator for TTF exports - pixelplease
 Current implementation:
 
 ```text
-Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf
+Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.
 ```
 
 Shorter alternate:
 
 ```text
-Turn a font into a usable pixel-style typeface in your browser. Upload a font, tune the effect, preview, and export an installable TTF package.
+Turn a font into a usable pixel-style typeface in your browser. Upload a font, tune the effect, preview, and download an installable TTF package.
 ```
 
 ## First Page Structure
@@ -84,10 +84,10 @@ Implemented FAQ topics:
 - How do I turn a regular font into a pixel font?
 - Can I start from a Google font?
 - Can I upload my own TTF or OTF font?
-- How do I export and install the pixel font?
+- How do I download and install the pixel font?
 - What do the grid, threshold, expand, and shift controls do?
 - Does pixelplease work with any font?
-- Can I use the exported pixel font commercially?
+- Can I use the generated pixel font commercially?
 - What does the OFL / SIL Open Font License mean here?
 
 ## Technical SEO Tasks
@@ -106,7 +106,7 @@ Done now:
 - SoftwareApplication structured data.
 - Below-app FAQ section with matching `FAQPage` structured data.
 - Root `/llms.txt` file for LLM-friendly product context.
-- GA4 measurement `G-717BB12JJ8`, loaded only on `pixelplease.tools` and `www.pixelplease.tools`, with pageview analytics allowed and ad signals denied.
+- GA4 measurement `G-717BB12JJ8`, loaded only on the production root domain and defensively allowed on `www.pixelplease.tools`, with pageview analytics allowed and ad signals denied.
 
 Add after final domain:
 
@@ -144,8 +144,11 @@ Current implementation:
   "name": "pixelplease",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
-  "description": "Create a pixel-style font from a regular typeface. Upload your own font or start with a Google font, tune the effect, and export as a .ttf",
-  "url": "https://pixelplease.tools/"
+  "description": "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.",
+  "url": "https://pixelplease.tools/",
+  "image": "https://pixelplease.tools/icons/icon-1024.png",
+  "thumbnailUrl": "https://pixelplease.tools/icons/icon-1024.png",
+  "logo": "https://pixelplease.tools/icons/icon-1024.png"
 }
 </script>
 ```

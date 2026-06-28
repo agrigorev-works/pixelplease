@@ -12,7 +12,7 @@
 - Basic SEO head tags in `index.html`.
 - Favicon and app icon assets.
 - Final domain canonical URL and `og:url`.
-- Root domain launch target is `https://pixelplease.tools/`; `www` alias is intentionally not used.
+- Root domain launch target is `https://pixelplease.tools/`; `www` is not promoted, though the production analytics gate allows it defensively.
 - Social preview image and `og:image` / Twitter image metadata.
 - `robots.txt` and `sitemap.xml`.
 - Root `/llms.txt` AI-discovery context file.
