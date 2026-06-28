@@ -31,7 +31,7 @@ test("serves an LLM discovery file from the site root", async ({ page }) => {
   expect(body).toContain("Uploaded fonts are read locally in the browser");
   expect(body).toContain("Generated font family names start with product-owned `PixelPlease`");
   expect(body).toContain("blob/main/docs/product-brief.md");
-  expect(body).not.toContain("test TTF package");
+  expect(body).toContain("Generated fonts are derivative pixel-style fonts");
   expect(body).not.toContain("pixelplease-Font");
   expect(body).not.toContain("variation-light-terminal-ui");
   expect(body).toContain("## Product");
@@ -191,7 +191,7 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(JSON.stringify(faqPage)).toContain("generated TTF data to analytics");
   expect(JSON.stringify(faqPage)).toContain("download your pixel font package");
   expect(JSON.stringify(faqPage)).toContain("different pixel fonts can be installed side by side");
-  expect(JSON.stringify(faqPage)).not.toContain("export a test .ttf package");
+  expect(JSON.stringify(faqPage)).toContain("practical creative use");
 });
 
 test("renders the SEO FAQ below the working app", async ({ page }) => {
@@ -1600,7 +1600,7 @@ test("uploads a TTF through the Source drop zone, pixelizes Basic Latin, downloa
   expect(parsed.names.fullName.en).toBe(`${parsed.names.fontFamily.en} Regular`);
   expect(parsed.names.postScriptName.en).toBe(parsed.names.fullName.en.replaceAll(" ", "-"));
   expect(parsed.names.fontFamily.en).not.toContain("Fixture");
-  expect(parsed.names.license.en).toContain("Generated derivative for testing");
+  expect(parsed.names.license.en).toContain("Generated derivative. Source font license controls use");
   expect(parsed.names.licenseURL?.en?.trim() ?? "").toBe("");
   expect(parsed.glyphs.length).toBeGreaterThan(10);
   expect(parsed.charToGlyph("A").advanceWidth).toBeGreaterThan(0);

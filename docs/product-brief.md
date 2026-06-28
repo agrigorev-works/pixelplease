@@ -2,11 +2,11 @@
 
 ## Positioning
 
-pixelplease is a browser-based pixel font generator for graphic designers, interface designers, and type experimenters. It takes a source font, applies a pixel-grid transformation, lets the user preview and tune the result, and exports a usable test TTF rather than a static image effect.
+pixelplease is a browser-based pixel font generator for graphic designers, interface designers, and type experimenters. It takes a source font, applies a pixel-grid transformation, lets the user preview and tune the result, and exports a usable pixel-style TTF rather than a static image effect.
 
 The sharp product promise:
 
-> Turn a normal font into a usable pixel-style test TTF in the browser.
+> Turn a normal font into a usable pixel-style TTF in the browser.
 
 SEO headline direction:
 
@@ -26,7 +26,7 @@ SEO headline direction:
 3. Tune pixel density, threshold, expand, and grid shift.
 4. Compare source and pixel output side by side.
 5. Download a ZIP with generated TTF and `NOTICE.txt`.
-6. Install the generated `.ttf` and test it in design tools, interface mockups, posters, or any app that accepts TTF fonts.
+6. Install the generated `.ttf` and use it in design tools, interface mockups, posters, or any app that accepts TTF fonts.
 
 ## Privacy Boundary
 
