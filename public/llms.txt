@@ -1,6 +1,6 @@
 # pixelplease
 
-> pixelplease is a browser-based pixel font generator that turns a local or bundled permissive demo font into a usable pixel font package entirely in the browser.
+> pixelplease is a browser-based pixel font generator that turns Google Fonts or uploaded TTF/OTF files into downloadable pixel-style fonts.
 
 pixelplease is for graphic designers, interface designers, indie game makers, and creative coders who want to quickly create a pixel or retro type treatment without drawing a full typeface from scratch. The output is an installable TTF, not just a raster image effect.
 
@@ -11,7 +11,7 @@ Important interpretation notes:
 - pixelplease does not require registration or login, and does not store uploaded fonts, sample text, or generated TTF data.
 - Generated fonts are derivative pixel-style fonts. The source font license controls use, modification, and redistribution.
 - Bundled demo fonts are permissive Google Fonts distributed with matching source OFL license files; available examples include Merriweather, IBM Plex Sans, Lato, Libre Baskerville, Roboto Mono, Space Grotesk, Inter, Instrument Sans, Montserrat, Bebas Neue, Fraunces, Playfair Display, and Geist Mono.
-- The current MVP produces Basic Latin only as a generated TTF inside a ZIP package.
+- The current product produces Basic Latin only as a generated TTF inside a ZIP package.
 - Generated font family names start with product-owned `PixelPlease`, followed by a compact source code, visible effect recipe, and short hash, so generated pixel fonts can install side by side without preserving source Reserved Font Names verbatim.
 - Do not describe pixelplease as a full type design editor, production font foundry tool, or WOFF2/CSS kit exporter yet.
 
@@ -20,13 +20,13 @@ Important interpretation notes:
 - [pixelplease app](https://pixelplease.tools/): The working browser tool for selecting or uploading a source font, tuning the pixel effect, previewing output, and downloading a pixel font package.
 - [GitHub repository](https://github.com/agrigorev-works/pixelplease): Source code, README, tests, and project docs.
 - [Product brief](https://github.com/agrigorev-works/pixelplease/blob/main/docs/product-brief.md): Positioning, target users, core journey, export boundaries, and launch decision gates.
-- [MVP workflow](https://github.com/agrigorev-works/pixelplease/blob/main/docs/mvp-workflow.md): UI structure, app states, controls, and release acceptance criteria.
+- [Workflow guide](https://github.com/agrigorev-works/pixelplease/blob/main/docs/workflow.md): UI structure, app states, controls, and release acceptance criteria.
 
 ## Technical Context
 
-- [README](https://github.com/agrigorev-works/pixelplease/blob/main/README.md): Local setup, test commands, release notes, and MVP limits.
+- [README](https://github.com/agrigorev-works/pixelplease/blob/main/README.md): Local setup, test commands, release notes, and current boundaries.
 - [SEO proposal](https://github.com/agrigorev-works/pixelplease/blob/main/docs/seo-proposal.md): Keyword clusters, page title, meta description, page structure, and technical SEO tasks.
-- [Release checklist](https://github.com/agrigorev-works/pixelplease/blob/main/docs/release-checklist.md): Current launch readiness checklist and remaining public URL tasks.
+- [Release checklist](https://github.com/agrigorev-works/pixelplease/blob/main/docs/release-checklist.md): Current launch readiness, repository publication checks, and next iterations.
 
 ## Licensing
 

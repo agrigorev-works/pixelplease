@@ -128,7 +128,7 @@ Analytics note:
 - what it exports today;
 - local-only upload/privacy behavior, including no account requirement and no font-storage step;
 - licensing caveats for generated derivative fonts;
-- links to the app, repo, product brief, workflow, SEO proposal, release checklist, and bundled source license files.
+- links to the app, repo, product brief, workflow guide, SEO proposal, release checklist, and bundled source license files.
 
 This complements `robots.txt` and `sitemap.xml`; it does not replace crawler access control.
 

@@ -1,4 +1,4 @@
-# pixelplease MVP workflow and controls
+# pixelplease workflow and controls
 
 ## First Screen
 
@@ -6,7 +6,7 @@ The app should open directly into the working tool, not a marketing landing page
 
 Current first-screen structure:
 
-- Source panel: Google Font / Upload Font segmented control, demo selector, editable sample text, or upload drop zone.
+- Source panel: Select font / Upload font segmented control, bundled Google Font selector, editable sample text, or upload drop zone.
 - Pixel Output panel: generated preview canvas and fallback/status text.
 - Settings panel: pixel controls, reset, and download.
 
@@ -23,14 +23,15 @@ Current first-screen structure:
 
 Keep only controls that change the current algorithm in obvious ways:
 
-- `pixels-per-em`: pixel grid density.
+- `effect`: pixels, dots, vertical lines, or horizontal lines.
+- `pixels-per-em`, `dots-per-em`, or `lines-per-em`: grid density for the selected effect.
 - `threshold`: fill cutoff.
 - `expand`: grow filled cells for heavier output.
 - `shift-x`: horizontal sampling grid offset.
 - `shift-y`: vertical sampling grid offset.
 - `reset defaults`: return to the known-good baseline.
 
-## Explicitly Out Of Scope For v0
+## Current Boundaries
 
 - Full glyph coverage beyond Basic Latin.
 - Kerning, ligatures, hinting, variable-font preservation, and production-grade font metadata.

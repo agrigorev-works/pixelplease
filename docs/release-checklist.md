@@ -19,16 +19,17 @@
 - Below-app FAQ section with `FAQPage` structured data.
 - Dedicated FAQ privacy item near the top: no registration/login, no uploaded font storage, and no font/sample/output analytics.
 - GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts, with ad signals denied in consent defaults.
+- GitHub Actions CI runs `npm run verify` and `npm run test:launch` on pushes to `main` and pull requests.
 - Cross-browser launch sanity coverage.
 - Mobile/coarse-pointer first run does not autofocus the Source textarea, and local-only upload privacy copy is visible.
 - Generated ZIP package license spot-check: demo exports include bundled OFL text; user uploads do not invent a license URL.
-- Product brief, MVP workflow, and SEO proposal.
+- Product brief, workflow guide, and SEO proposal.
 
-## Before Public URL
+## Before Public Repository
 
-- Add Search Console after DNS is live.
-- Add GitHub Actions CI after GitHub credentials allow pushing workflow files.
-- Optional final real-device spot check in Safari/iPhone after DNS finishes propagating.
+- Add or verify Search Console for `https://pixelplease.tools/`.
+- Decide whether historical experiment branches should stay visible after the repository becomes public.
+- Optional final real-device spot check in Safari/iPhone before switching repository visibility.
 
 ## Nice Next Iterations
 

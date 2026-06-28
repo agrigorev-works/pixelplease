@@ -1,43 +1,35 @@
 # pixelplease
 
-pixelplease is an MVP prototype for turning a local or bundled demo font into a pixelized, downloadable TTF.
+pixelplease is a browser-based pixel font generator that turns Google Fonts or uploaded TTF/OTF files into downloadable pixel-style fonts.
 
-This branch contains a minimal mono, three-column variation of the first proof of concept:
+The app is static and client-side: uploaded fonts are read in the browser and are not sent to a server. pixelplease does not require registration or login, and it does not store uploaded fonts, sample text, or generated TTF data.
 
-- switch Source between `Google Font` and `Your Font` modes;
-- choose from a curated permissive Google Fonts list and available weights/styles;
-- start each session with the deterministic Merriweather demo font;
+## Current App
+
+The working product:
+
+- switch Source between `Select font` and `Upload font` modes;
+- choose from a curated permissive Google Fonts list with available weights and styles;
+- start each session with a deterministic bundled Merriweather font;
 - upload a local `.ttf` / `.otf` through a same-size Source drop zone;
 - remind users to upload only fonts they have a license to edit;
 - state that uploaded fonts stay in the browser and do not require registration, login, or server storage;
 - parse glyphs with `opentype.js`;
-- apply a simple pixelization effect;
-- tune pixels-per-em, threshold, expand, and X/Y grid shift;
+- choose pixel effects: pixels, dots, vertical lines, and horizontal lines;
+- tune density, threshold, expand, and X/Y grid shift;
 - reset pixel controls to defaults;
 - edit the source text directly in the Source preview;
 - compare Source and Pixel Output at matching preview size/line-height;
-- generate automatically after Google Font selection, local upload, and pixel control changes;
+- generate automatically after Google Font selection, local upload, effect selection, and control changes;
 - preview before/after sample text;
 - download a uniquely named `.zip` package containing the generated `.ttf`, `NOTICE.txt`, and bundled source license material when applicable;
 - verify the generated font can be parsed and loaded in the browser.
 
-The app is static and client-side: uploaded fonts are read in the browser and are not sent to a server. pixelplease does not require registration or login, and it does not store uploaded fonts, sample text, or generated TTF data.
-
 ## Branch
 
-Current variation branch:
+`main` is the default branch and the source of truth for the website and repository docs.
 
-```text
-variation-light-terminal-ui
-```
-
-Base MVP branch:
-
-```text
-mvp-local-font-pixelizer
-```
-
-Future visual or algorithmic variations can continue to live in separate branches.
+Historical visual and algorithm branches may remain in the repository, but public-facing copy and releases should be based on `main`.
 
 ## Run
 
@@ -84,9 +76,9 @@ The smoke and launch tests copy the bundled permissive Google Fonts sample, `Lat
 - GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics. Production consent defaults allow pageview analytics and deny ad signals.
 - `npm run test:launch` runs a small launch sanity suite across Chromium, Firefox, WebKit, and a mobile Chromium viewport.
 - Mobile/coarse-pointer first run avoids auto-focusing the Source textarea so the keyboard does not immediately cover the app.
-- SEO and launch planning live in `docs/seo-proposal.md`, `docs/product-brief.md`, `docs/mvp-workflow.md`, and `docs/release-checklist.md`.
+- SEO and launch planning live in `docs/seo-proposal.md`, `docs/product-brief.md`, `docs/workflow.md`, and `docs/release-checklist.md`.
 
-## MVP Limits
+## Current Boundaries
 
 - Basic Latin export only.
 - No kerning, ligatures, hinting, WOFF2, variable-font support, or production metadata cleanup beyond basic release-safety names and notice packaging.

@@ -39,9 +39,9 @@ pixelplease should feel safe because the tool does not need user accounts or ser
 - Readability at preview sizes.
 - A visible pixel-grid treatment that feels intentional, not just degraded.
 
-## MVP Export
+## Current Export
 
-Current MVP export is intentionally narrow:
+The current export is intentionally focused:
 
 - ZIP package with generated `.ttf`.
 - `NOTICE.txt` with generated family/style/file names, the PixelPlease naming scheme, source name, source file, license, upstream URL where relevant, and redistribution warning.
@@ -49,11 +49,11 @@ Current MVP export is intentionally narrow:
 - Basic Latin glyph range.
 - Product-owned generated naming: `PixelPlease` + compact source code + effect recipe + short hash + style. This keeps exported fonts installable side by side while avoiding verbatim source family names.
 
-Future exports can add WOFF2, CSS snippets, glyph sheets, and named presets, but those are not launch blockers.
+Future exports can add WOFF2, CSS snippets, glyph sheets, and named presets, but those are product expansions rather than launch blockers.
 
-## Decision Gate
+## Public Readiness Gate
 
-Go for public MVP if:
+The repository is ready to be public if:
 
 - A user can understand the app within one screen and get a TTF in under one minute.
 - Generated fonts parse, load, and type in browser tests.
