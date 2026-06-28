@@ -15,12 +15,14 @@ Core message:
 Primary:
 
 - pixel font generator
+- create pixel font
 - pixel font maker
 - pixelated font generator
 - font pixelizer
 
 Secondary:
 
+- download pixel font
 - convert font to pixel font
 - TTF pixel font generator
 - browser font generator
@@ -30,6 +32,7 @@ Secondary:
 
 Long-tail:
 
+- how to create pixel font
 - upload font and make pixel font
 - turn Google Font into pixel font
 - generate pixel TTF from font

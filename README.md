@@ -1,8 +1,22 @@
 # pixelplease
 
-pixelplease is a browser-based pixel font generator that turns Google Fonts or uploaded TTF/OTF files into downloadable pixel-style fonts.
+pixelplease is a browser-based pixel font generator that turns Google Fonts or uploaded TTF/OTF files into downloadable pixel-style fonts. Use it to create pixel font variations from existing sources, preview the result, and download pixel font packages for design tools and other apps that accept TTF fonts.
 
 The app is static and client-side: uploaded fonts are read in the browser and are not sent to a server. pixelplease does not require registration or login, and it does not store uploaded fonts, sample text, or generated TTF data.
+
+## Common Questions
+
+### Is pixelplease a pixel font generator?
+
+Yes. pixelplease is a browser-based pixel font generator for turning a regular source font into a pixel-style TTF.
+
+### How to create pixel font output with pixelplease?
+
+Pick a bundled Google Font or upload a licensed TTF/OTF, tune the grid and effect controls, preview the result, and export the generated package.
+
+### Can I download pixel font files?
+
+Yes. pixelplease lets you download pixel font output as a ZIP package containing the generated TTF, a notice file, and bundled source license material when applicable.
 
 ## Current App
 
