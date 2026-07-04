@@ -373,6 +373,58 @@ h2 {
   white-space: pre-line;
 }
 
+.seo-content-section {
+  display: grid;
+  gap: clamp(38px, calc(3vw + 16px), 50px);
+  margin: clamp(80px, calc(6vw + 32px), 110px) auto 0;
+  padding-inline: 16px;
+}
+
+.seo-content-inner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(34px, calc(3vw + 16px), 52px);
+}
+
+.seo-content-block {
+  display: grid;
+  grid-template-rows: calc(14px * 1.35) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+  text-align: center;
+}
+
+.seo-content-heading {
+  justify-self: center;
+  font-family: "PixelpleaseLogoFont", "Merriweather", Georgia, serif;
+  font-size: clamp(26px, 4vw, 48px);
+  line-height: 1;
+  font-weight: 600;
+  text-align: center;
+}
+
+.seo-content-block h3 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(14px * 1.35);
+  color: #111111;
+  font-size: 14px;
+  line-height: 1.35;
+  letter-spacing: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.seo-content-block p {
+  color: #555555;
+  font-size: 13px;
+  line-height: 1.58;
+  letter-spacing: 0;
+}
+
 .faq-section {
   margin: clamp(64px, 8vw, 112px) auto 0;
 }
@@ -1022,6 +1074,11 @@ summary,
   .source-editor,
   .upload-zone {
     font-size: 34px;
+  }
+
+  .seo-content-inner {
+    grid-template-columns: 1fr;
+    gap: 46px;
   }
 }
 

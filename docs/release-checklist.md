@@ -15,9 +15,12 @@
 - Final domain canonical URL and `og:url`.
 - Root domain launch target is `https://pixelplease.tools/`; `www` is not promoted, though the production analytics gate allows it defensively.
 - Social preview image and `og:image` / Twitter image metadata.
-- `robots.txt` and `sitemap.xml`.
-- Root `/llms.txt` AI-discovery context file.
+- `robots.txt` and generated `sitemap.xml`.
+- Root `/llms.txt` and `/llms-full.txt` AI-discovery context files.
+- Static homepage H1 and intro copy for non-JS and LLM crawlers.
+- Compact below-app `Make a usable pixel font` section covering workflow, tuning, and TTF export.
 - Below-app FAQ section with `FAQPage` structured data.
+- Static long-tail SEO pages for how-to, TTF/OTF conversion, and two bundled-font examples.
 - Dedicated FAQ privacy item near the top: no registration/login, no uploaded font storage, and no font/sample/output analytics.
 - GA4 pageview analytics for `pixelplease.tools`, disabled on local and temporary hosts, with ad signals denied in consent defaults.
 - GitHub Actions CI runs `npm run verify` and `npm run test:launch` on pushes to `main` and pull requests.
@@ -30,6 +33,8 @@
 ## Before Public Repository
 
 - Add or verify Search Console for `https://pixelplease.tools/`.
+- Add or verify Bing Webmaster Tools for `https://pixelplease.tools/`.
+- Confirm hosting/CDN rules do not block Googlebot, Bingbot, GPTBot, ClaudeBot, PerplexityBot, or CCBot.
 - Decide whether historical experiment branches should stay visible after the repository becomes public.
 - Optional final real-device spot check in Safari/iPhone before switching repository visibility.
 

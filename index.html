@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pixel Font Generator - Convert TTF/OTF to Pixel Fonts | pixelplease</title>
+    <title>Free Pixel Font Generator - Convert a Basic Font to a Pixel TTF | pixelplease</title>
     <meta
       name="description"
-      content="Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font."
+      content="Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font."
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="application-name" content="pixelplease" />
@@ -20,9 +20,16 @@
     <link rel="icon" type="image/png" sizes="1024x1024" href="/icons/icon-1024.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link
+      rel="preload"
+      href="/fonts/google/merriweather/Merriweather-var.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="pixelplease" />
-    <meta property="og:title" content="Pixel Font Generator - Convert TTF/OTF to Pixel Fonts | pixelplease" />
+    <meta property="og:title" content="Free Pixel Font Generator - Convert a Basic Font to a Pixel TTF | pixelplease" />
     <meta property="og:url" content="https://pixelplease.tools/" />
     <meta property="og:image" content="https://pixelplease.tools/og-image-20260623.png" />
     <meta property="og:image:width" content="1200" />
@@ -31,15 +38,15 @@
     <meta property="og:image:alt" content="pixelplease custom pixel font preview" />
     <meta
       property="og:description"
-      content="Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font."
+      content="Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font."
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Pixel Font Generator - Convert TTF/OTF to Pixel Fonts | pixelplease" />
+    <meta name="twitter:title" content="Free Pixel Font Generator - Convert a Basic Font to a Pixel TTF | pixelplease" />
     <meta name="twitter:image" content="https://pixelplease.tools/og-image-20260623.png" />
     <meta name="twitter:image:alt" content="pixelplease custom pixel font preview" />
     <meta
       name="twitter:description"
-      content="Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font."
+      content="Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font."
     />
     <script type="application/ld+json">
       {
@@ -48,11 +55,24 @@
         "name": "pixelplease",
         "applicationCategory": "DesignApplication",
         "operatingSystem": "Web",
-        "description": "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.",
+        "description": "Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font.",
         "url": "https://pixelplease.tools/",
         "image": "https://pixelplease.tools/icons/icon-1024.png",
         "thumbnailUrl": "https://pixelplease.tools/icons/icon-1024.png",
-        "logo": "https://pixelplease.tools/icons/icon-1024.png"
+        "logo": "https://pixelplease.tools/icons/icon-1024.png",
+        "screenshot": "https://pixelplease.tools/og-image-20260623.png",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Convert a basic TTF, OTF, or bundled Google Font into a generated pixel-style TTF package",
+          "Tune pixel grid, threshold, weight expansion, shift, and effects for pixels, dots, and lines",
+          "Preview generated pixel font output in the browser",
+          "Download a ZIP package with a generated TTF and notice files",
+          "Process uploaded fonts locally in the browser without server upload"
+        ]
       }
     </script>
     <script type="application/ld+json">
@@ -65,7 +85,7 @@
             "name": "What is the fastest way to create a custom pixel font?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "pixelplease is a browser-based pixel font generator for graphic designers, interface designers, and type experimenters. It turns a regular typeface into a usable pixel-style TTF, not just a raster image effect. Start from a bundled Google font or upload your own TTF/OTF font, tune the effect, and download your pixel font package."
+              "text": "pixelplease is a browser-based pixel font generator for graphic designers, interface designers, and type experimenters. It turns a regular typeface into a usable pixel-style TTF, not just a raster image effect. Start from a bundled Google font or upload your own TTF/OTF font, tune effects, and download your pixel font package."
             }
           },
           {
@@ -118,7 +138,7 @@
           },
           {
             "@type": "Question",
-            "name": "Does pixelplease work with any font?",
+            "name": "What source fonts work best?",
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "pixelplease works with most standard TTF and OTF fonts, and clean geometric typefaces usually pixelize best. Very thin, decorative, or script fonts can lose detail on a low-resolution grid. It is a pixel font maker, not a complete font-production tool, and it does not guarantee every glyph or language."
@@ -149,8 +169,11 @@
       <p id="app-status" aria-live="polite" hidden></p>
 
       <header class="intro">
-        <h1 id="logo-title" aria-label=""><span></span><span></span></h1>
-        <p class="intro-copy"></p>
+        <h1 id="logo-title" aria-label="pixel please"><span>pixel</span><span>please</span></h1>
+        <p class="intro-copy">
+          Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style
+          TTF in your browser. No signup, no server upload, tune effects and download your pixel font.
+        </p>
       </header>
 
       <div class="workspace">
@@ -258,6 +281,35 @@
         </aside>
       </div>
 
+      <section class="seo-content-section" aria-labelledby="usable-font-heading">
+        <h2 id="usable-font-heading" class="seo-content-heading">Make a usable pixel font</h2>
+        <div class="seo-content-inner">
+          <div class="seo-content-block">
+            <h3>Start from a basic font</h3>
+            <p>
+              Choose a bundled Google Font or upload a licensed TTF/OTF file. pixelplease turns the source
+              typeface into a custom pixel-style font.
+            </p>
+          </div>
+
+          <div class="seo-content-block">
+            <h3>Tune pixels, dots, and lines</h3>
+            <p>
+              Adjust grid size, threshold, expand, shift, and choose square pixels, dots, vertical lines, or
+              horizontal lines while previewing the result.
+            </p>
+          </div>
+
+          <div class="seo-content-block">
+            <h3>Download an installable TTF</h3>
+            <p>
+              Export a ZIP package with the generated TTF and notice files, not just a bitmap text effect.
+              User-uploaded fonts keep their original license.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section class="faq-section" aria-labelledby="faq-heading">
         <div class="faq-inner">
           <h2 id="faq-heading">FAQ</h2>
@@ -273,7 +325,7 @@
               <p>
                 pixelplease is a browser-based pixel font generator for graphic designers, interface designers, and
                 type experimenters. It turns a regular typeface into a usable pixel-style TTF, not just a raster
-                image effect. Start from a bundled Google font or upload your own TTF/OTF font, tune the effect, and
+                image effect. Start from a bundled Google font or upload your own TTF/OTF font, tune effects, and
                 download your pixel font package.
               </p>
             </details>
@@ -354,7 +406,7 @@
 
             <details class="faq-item">
               <summary>
-                <h3>Does pixelplease work with any font?</h3>
+                <h3>What source fonts work best?</h3>
                 <span class="faq-toggle" aria-hidden="true"></span>
               </summary>
               <p>

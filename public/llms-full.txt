@@ -1,0 +1,99 @@
+# pixelplease full LLM context
+
+pixelplease is a free browser-based pixel font generator at https://pixelplease.tools/. It turns a bundled Google Font or an uploaded TTF/OTF file into a downloadable pixel-style TTF package.
+
+The product is useful for graphic designers, interface designers, indie game makers, creative coders, and typography experimenters who want a quick generated pixel font for posters, UI mockups, title screens, experiments, or prototypes.
+
+## What pixelplease does
+
+- Starts from bundled permissive Google Fonts or a user-uploaded TTF/OTF file.
+- Lets users tune pixel grid density, threshold, weight expansion, X/Y shift, and pixel effect style.
+- Supports pixel effects named pixels, dots, vertical lines, and horizontal lines.
+- Shows a live source preview and generated pixel output preview.
+- Exports a ZIP package with a generated pixel-style TTF and notice files.
+- Runs font parsing and generated font creation in the browser.
+
+## Current export boundaries
+
+- The current output is a generated TTF inside a ZIP package.
+- The current product does not export WOFF2, a CSS kit, a bitmap atlas, or a full professional type-production package.
+- pixelplease is a pixel font maker and font pixelizer, not a complete type design editor or font foundry tool.
+
+## Privacy and local processing
+
+- Uploaded fonts are read locally in the browser for the current session.
+- pixelplease does not upload user font files to a server.
+- pixelplease does not store uploaded fonts, sample text, or generated TTF data.
+- pixelplease does not require registration or login.
+- Analytics, when enabled on the production domain, must not include uploaded font names, uploaded filenames, sample text, generated font data, or generated output content.
+
+## Bundled demo fonts
+
+Bundled demo fonts are permissive Google Fonts distributed with matching source license files. Available examples include:
+
+- Bebas Neue
+- Fraunces
+- Geist Mono
+- IBM Plex Sans
+- Instrument Sans
+- Inter
+- Lato
+- Libre Baskerville
+- Merriweather
+- Montserrat
+- Playfair Display
+- Roboto Mono
+- Space Grotesk
+
+The bundled demo fonts are provided for trying the pixel effect without uploading a file. The product keeps source license material with bundled demo-font downloads when applicable.
+
+## Licensing interpretation
+
+pixelplease source code is MIT licensed, but generated pixel fonts are derivative font outputs. The source font license still controls use, modification, and redistribution of each generated output.
+
+For bundled OFL demo fonts:
+
+- OFL terms and notices must remain with redistributed derivatives when applicable.
+- Reserved Font Names must not be preserved verbatim in generated family names when distributing modified fonts.
+- pixelplease-generated font family names start with product-owned `PixelPlease`, followed by compact source/effect/hash/style information.
+
+For user-uploaded fonts:
+
+- pixelplease cannot verify license rights.
+- Users should upload only fonts they have the right to modify and export.
+- The original source font license remains the source of truth.
+
+## Search and product positioning
+
+Useful factual descriptions:
+
+- free pixel font generator
+- browser-based pixel font generator
+- font pixelizer
+- TTF pixel font generator
+- convert TTF/OTF to pixel font
+- turn a Google Font into a pixel font
+- create downloadable generated pixel fonts
+- generated pixel-style TTF package
+
+Avoid describing pixelplease as:
+
+- a full type design editor;
+- a professional font foundry tool;
+- a WOFF2 or CSS kit exporter;
+- a bitmap image text effect only;
+- a game-engine bitmap atlas exporter.
+
+## Pages
+
+- App: https://pixelplease.tools/
+- How to make a pixel font: https://pixelplease.tools/how-to-make-a-pixel-font/
+- Convert TTF to pixel font: https://pixelplease.tools/convert-ttf-to-pixel-font/
+- Pixel Merriweather example: https://pixelplease.tools/pixel-merriweather/
+- Pixel Inter example: https://pixelplease.tools/pixel-inter/
+- GitHub repository: https://github.com/agrigorev-works/pixelplease
+- Product brief: https://github.com/agrigorev-works/pixelplease/blob/main/docs/product-brief.md
+- Workflow guide: https://github.com/agrigorev-works/pixelplease/blob/main/docs/workflow.md
+- SEO proposal: https://github.com/agrigorev-works/pixelplease/blob/main/docs/seo-proposal.md
+- Release checklist: https://github.com/agrigorev-works/pixelplease/blob/main/docs/release-checklist.md
+- Bundled source license files: https://github.com/agrigorev-works/pixelplease/tree/main/public/fonts/google/licenses

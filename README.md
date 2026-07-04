@@ -86,7 +86,9 @@ The smoke and launch tests copy the bundled permissive Google Fonts sample, `Lat
 - Favicon and app icon assets are served from `public/`.
 - Social preview metadata points to `https://pixelplease.tools/og-image-20260623.png`.
 - `npm run verify` checks that social preview images stay at the required 1200x630 size.
-- LLM-friendly product context is available at `/llms.txt` in deployed builds.
+- LLM-friendly product context is available at `/llms.txt` and `/llms-full.txt` in deployed builds.
+- `npm run build` syncs `sitemap.xml` with current `lastmod` values and static SEO pages.
+- Static SEO pages are served for `how-to-make-a-pixel-font`, `convert-ttf-to-pixel-font`, `pixel-merriweather`, and `pixel-inter`.
 - GA4 is gated to `pixelplease.tools` and `www.pixelplease.tools`; local previews and temporary deployment hosts do not load analytics. Production consent defaults allow pageview analytics and deny ad signals.
 - `npm run test:launch` runs a small launch sanity suite across Chromium, Firefox, WebKit, and a mobile Chromium viewport.
 - Mobile/coarse-pointer first run avoids auto-focusing the Source textarea so the keyboard does not immediately cover the app.

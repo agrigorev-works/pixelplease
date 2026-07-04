@@ -1,12 +1,12 @@
 export const UI_COPY = {
-  documentTitle: "Pixel Font Generator - Convert TTF/OTF to Pixel Fonts | pixelplease",
+  documentTitle: "Free Pixel Font Generator - Convert a Basic Font to a Pixel TTF | pixelplease",
   status: {
     demoMode: "demo mode",
     generatedReady: "Generated TTF ready",
     uploadFont: "Upload a font",
     parsingFont: "Parsing font...",
     generating: "Generating...",
-    pixelizingBasicLatin: "Pixelizing Basic Latin glyphs...",
+    pixelizingBasicLatin: "Pixelizing glyphs...",
     updatingPreview: "Updating preview...",
     autoGenerating: "Auto-generating...",
     error: "Error",
@@ -15,7 +15,7 @@ export const UI_COPY = {
     logoAriaLabel: "pixel please",
     logoParts: ["pixel", "please"],
     copy:
-      "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.",
+      "Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font.",
   },
   sections: {
     source: "Source font and text",

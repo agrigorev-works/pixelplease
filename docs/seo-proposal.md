@@ -44,7 +44,7 @@ Long-tail:
 Best default:
 
 ```text
-pixelplease - fastest way to create a custom pixel font
+Free Pixel Font Generator - Convert a Basic Font to a Pixel TTF | pixelplease
 ```
 
 Alternates:
@@ -53,6 +53,8 @@ Alternates:
 pixelplease - pixel font generator
 pixelplease - make pixel fonts in your browser
 pixel font generator for TTF exports - pixelplease
+How to Make a Pixel Font in Your Browser | pixelplease
+Convert TTF or OTF to a Pixel Font | pixelplease
 ```
 
 ## Meta Description
@@ -60,13 +62,13 @@ pixel font generator for TTF exports - pixelplease
 Current implementation:
 
 ```text
-Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.
+Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font.
 ```
 
 Shorter alternate:
 
 ```text
-Turn a font into a usable pixel-style typeface in your browser. Upload a font, tune the effect, preview, and download an installable TTF package.
+Turn a basic font into a usable pixel-style typeface in your browser. Upload a font, tune effects, preview, and download an installable generated TTF package.
 ```
 
 ## First Page Structure
@@ -76,9 +78,8 @@ Keep the tool as the first screen. Add lightweight SEO content below the working
 1. H1: `pixelplease`
 2. One-sentence product copy.
 3. The app.
-4. Below-app section: "How it works"
-5. Below-app section: "What you can export"
-6. Below-app FAQ
+4. Compact below-app section: "Make a usable pixel font"
+5. Below-app FAQ
 
 Implemented FAQ topics:
 
@@ -89,7 +90,7 @@ Implemented FAQ topics:
 - Can I upload my own TTF or OTF font?
 - How do I download and install the pixel font?
 - What do the grid, threshold, expand, and shift controls do?
-- Does pixelplease work with any font?
+- What source fonts work best?
 - Can I use the generated pixel font commercially?
 - What does the OFL / SIL Open Font License mean here?
 
@@ -99,6 +100,7 @@ Done now:
 
 - Descriptive static `<title>`.
 - Meta description.
+- Static H1 and intro copy in `index.html` for non-JS and LLM crawlers.
 - `robots` directive.
 - Open Graph and Twitter card tags.
 - Client-side privacy is reflected in visible copy: no registration/login, no uploaded font storage, no font/sample/output analytics.
@@ -107,8 +109,13 @@ Done now:
 - Canonical URL and `og:url` for `https://pixelplease.tools/`.
 - `robots.txt` and `sitemap.xml`.
 - SoftwareApplication structured data.
+- SoftwareApplication `offers`, `featureList`, and screenshot fields.
+- Compact below-app `Make a usable pixel font` section covering workflow, tuning, and TTF export.
 - Below-app FAQ section with matching `FAQPage` structured data.
 - Root `/llms.txt` file for LLM-friendly product context.
+- Root `/llms-full.txt` file for expanded LLM-friendly product context.
+- Sitemap generation script with current `lastmod` values and long-tail static pages.
+- Static long-tail pages for `how to make a pixel font`, `convert TTF to pixel font`, `Pixel Merriweather`, and `Pixel Inter`.
 - GA4 measurement `G-717BB12JJ8`, loaded only on the production root domain and defensively allowed on `www.pixelplease.tools`, with pageview analytics allowed and ad signals denied.
 
 Add after final domain:
@@ -148,16 +155,29 @@ Current implementation:
   "name": "pixelplease",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
-  "description": "Turn a TTF, OTF, or Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune the effect and download your pixel font.",
+  "description": "Free pixel font generator for turning a basic TTF, OTF, or bundled Google Font into a downloadable pixel-style TTF in your browser. No signup, no server upload, tune effects and download your pixel font.",
   "url": "https://pixelplease.tools/",
   "image": "https://pixelplease.tools/icons/icon-1024.png",
   "thumbnailUrl": "https://pixelplease.tools/icons/icon-1024.png",
-  "logo": "https://pixelplease.tools/icons/icon-1024.png"
+  "logo": "https://pixelplease.tools/icons/icon-1024.png",
+  "screenshot": "https://pixelplease.tools/og-image-20260623.png",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "Convert a basic TTF, OTF, or bundled Google Font into a generated pixel-style TTF package",
+    "Tune pixel grid, threshold, weight expansion, shift, and effects for pixels, dots, and lines",
+    "Preview generated pixel font output in the browser",
+    "Download a ZIP package with a generated TTF and notice files",
+    "Process uploaded fonts locally in the browser without server upload"
+  ]
 }
 </script>
 ```
 
-Do not add ratings, prices, or claims that are not visible on the page.
+Do not add ratings or claims that are not visible on the page. Price `0` is allowed only while the visible page also says pixelplease is free.
 
 ## Domain Recommendation
 

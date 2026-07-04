@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Make a Pixel Font in Your Browser | pixelplease</title>
+    <meta
+      name="description"
+      content="Learn how to make a generated pixel-style TTF from a bundled Google Font or uploaded TTF/OTF file with pixelplease."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://pixelplease.tools/how-to-make-a-pixel-font/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="pixelplease" />
+    <meta property="og:title" content="How to Make a Pixel Font in Your Browser | pixelplease" />
+    <meta property="og:url" content="https://pixelplease.tools/how-to-make-a-pixel-font/" />
+    <meta property="og:image" content="https://pixelplease.tools/og-image-20260623.png" />
+    <meta
+      property="og:description"
+      content="A practical guide to creating a generated pixel-style TTF from an existing source font in the browser."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "SFMono-Regular", "Menlo", "Monaco", "Consolas", ui-monospace, monospace;
+        color: #111111;
+        background: #ffffff;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+
+      main {
+        display: grid;
+        gap: clamp(32px, 6vw, 72px);
+        max-width: 880px;
+        margin: 0 auto;
+        padding: clamp(28px, 6vw, 72px);
+      }
+
+      a {
+        color: inherit;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
+      }
+
+      h1,
+      h2,
+      p,
+      ol,
+      ul {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 12ch;
+        font-size: clamp(42px, 9vw, 92px);
+        line-height: 0.96;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 16px;
+        line-height: 1.3;
+      }
+
+      p,
+      li {
+        color: #555555;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      ol,
+      ul {
+        display: grid;
+        gap: 10px;
+        padding-left: 22px;
+      }
+
+      section {
+        display: grid;
+        gap: 16px;
+      }
+
+      .intro {
+        max-width: 62ch;
+        color: #111111;
+        font-size: 17px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section>
+        <a href="/">pixelplease</a>
+        <h1>How to make a pixel font</h1>
+        <p class="intro">
+          pixelplease turns an existing source font into a downloadable generated pixel-style TTF directly in your
+          browser. Start from a bundled Google Font or upload a licensed TTF/OTF, tune the pixel effect, and export a
+          package you can install like a regular font.
+        </p>
+      </section>
+
+      <section>
+        <h2>1. Choose a source font</h2>
+        <p>
+          Start with a bundled permissive Google Font or upload a local TTF/OTF file that you have the right to modify.
+          Uploaded fonts stay in your browser for the current session and are not sent to a server.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Tune the pixel effect</h2>
+        <ol>
+          <li>Adjust grid density to control how coarse the generated pixel style feels.</li>
+          <li>Use threshold and expand to balance weight and readability.</li>
+          <li>Shift the sampling grid when strokes need a cleaner alignment.</li>
+          <li>Switch between pixels, dots, vertical lines, and horizontal lines.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>3. Export the generated TTF</h2>
+        <p>
+          When the preview works, download the ZIP package. It includes a generated TTF plus notice files. Bundled
+          demo-font exports also include source license files.
+        </p>
+      </section>
+
+      <section>
+        <h2>Try it</h2>
+        <p><a href="/">Open the free pixel font generator</a>.</p>
+      </section>
+    </main>
+  </body>
+</html>

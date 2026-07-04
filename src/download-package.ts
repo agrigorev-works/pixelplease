@@ -99,7 +99,7 @@ export function buildNoticeText(
     "",
     "This generated font is a derivative of the source font.",
     "The generated font names intentionally use compact source codes instead of verbatim source family names.",
-    "Before redistributing, keep the required source license, copyright, and notice material with this package.",
+    "Before redistributing, keep the required source license, copyright, and notice files with this package.",
     "For user-uploaded fonts, pixelplease cannot verify rights; use only fonts you are allowed to modify and export.",
     "",
   ];

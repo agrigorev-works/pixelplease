@@ -26,17 +26,78 @@ test("serves an LLM discovery file from the site root", async ({ page }) => {
 
   const body = await response.text();
   expect(body).toContain("# pixelplease");
+  expect(body).toContain("free pixel font generator");
   expect(body).toContain("browser-based pixel font generator");
-  expect(body).toContain("downloading a pixel font package");
+  expect(body).toContain("downloadable pixel-style TTF packages");
   expect(body).toContain("Uploaded fonts are read locally in the browser");
   expect(body).toContain("Generated font family names start with product-owned `PixelPlease`");
+  expect(body).toContain("[Full LLM context](https://pixelplease.tools/llms-full.txt)");
+  expect(body).toContain("https://pixelplease.tools/how-to-make-a-pixel-font/");
   expect(body).toContain("blob/main/docs/product-brief.md");
   expect(body).toContain("Generated fonts are derivative pixel-style fonts");
   expect(body).not.toContain("pixelplease-Font");
   expect(body).not.toContain("variation-light-terminal-ui");
   expect(body).toContain("## Product");
+  expect(body).toContain("## Reference");
   expect(body).toContain("## Licensing");
   expect(body).toContain("[llms.txt proposal](https://llmstxt.org/)");
+  expect(body).not.toContain("Bebas Neue");
+});
+
+test("serves expanded LLM context", async ({ page }) => {
+  const response = await page.request.get("/llms-full.txt");
+
+  expect(response.ok()).toBe(true);
+
+  const body = await response.text();
+  expect(body).toContain("# pixelplease full LLM context");
+  expect(body).toContain("notice files");
+  expect(body).toContain("Uploaded fonts are read locally in the browser");
+  expect(body).toContain("Bebas Neue");
+  expect(body).toContain("Inter");
+  expect(body).toContain("Merriweather");
+  expect(body).toContain("Space Grotesk");
+  expect(body).toContain("Avoid describing pixelplease as");
+  expect(body).toContain("https://pixelplease.tools/pixel-inter/");
+});
+
+test("serves static SEO landing pages", async ({ page }) => {
+  const pages = [
+    {
+      path: "/how-to-make-a-pixel-font/",
+      title: "How to Make a Pixel Font in Your Browser | pixelplease",
+      heading: "How to make a pixel font",
+      body: "download the ZIP package",
+    },
+    {
+      path: "/convert-ttf-to-pixel-font/",
+      title: "Convert TTF or OTF to a Pixel Font | pixelplease",
+      heading: "Convert TTF to pixel font",
+      body: "Font parsing and generated font creation happen in the browser.",
+    },
+    {
+      path: "/pixel-merriweather/",
+      title: "Pixel Merriweather Font Example | pixelplease",
+      heading: "Pixel Merriweather",
+      body: "Merriweather is the default bundled demo font in pixelplease.",
+    },
+    {
+      path: "/pixel-inter/",
+      title: "Pixel Inter Font Example | pixelplease",
+      heading: "Pixel Inter",
+      body: "Inter is a clean sans-serif source for generated pixel-style TTF experiments.",
+    },
+  ];
+
+  for (const staticPage of pages) {
+    const response = await page.request.get(staticPage.path);
+    expect(response.ok(), staticPage.path).toBe(true);
+    const body = await response.text();
+    expect(body).toContain(`<title>${staticPage.title}</title>`);
+    expect(body).toContain(staticPage.heading);
+    expect(body).toContain(staticPage.body);
+    expect(body).toContain('<a href="/">pixelplease</a>');
+  }
 });
 
 test("serves favicon and app icon assets", async ({ page }) => {
@@ -135,12 +196,26 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
   expect(sitemapResponse.ok()).toBe(true);
   const sitemap = await sitemapResponse.text();
   expect(sitemap).toContain("<loc>https://pixelplease.tools/</loc>");
-  expect(sitemap).toContain("<lastmod>2026-06-25</lastmod>");
+  expect(sitemap).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+  expect(sitemap).toContain("<loc>https://pixelplease.tools/how-to-make-a-pixel-font/</loc>");
+  expect(sitemap).toContain("<loc>https://pixelplease.tools/convert-ttf-to-pixel-font/</loc>");
+  expect(sitemap).toContain("<loc>https://pixelplease.tools/pixel-merriweather/</loc>");
+  expect(sitemap).toContain("<loc>https://pixelplease.tools/pixel-inter/</loc>");
+
+  const rootHtml = await (await page.request.get("/")).text();
+  expect(rootHtml).toContain('<h1 id="logo-title" aria-label="pixel please"><span>pixel</span><span>please</span></h1>');
+  expect(rootHtml).toContain("Free pixel font generator");
+  expect(rootHtml).toContain("Make a usable pixel font");
+  expect(rootHtml).toContain("Download an installable TTF");
 
   await page.goto("/");
   await expect(page).toHaveTitle(UI_COPY.documentTitle);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow, max-image-preview:large");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://pixelplease.tools/");
+  await expect(page.locator('link[rel="preload"][href="/fonts/google/merriweather/Merriweather-var.ttf"]')).toHaveAttribute(
+    "as",
+    "font",
+  );
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://pixelplease.tools/");
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", UI_COPY.documentTitle);
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute("content", UI_COPY.documentTitle);
@@ -175,7 +250,19 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
     image: "https://pixelplease.tools/icons/icon-1024.png",
     thumbnailUrl: "https://pixelplease.tools/icons/icon-1024.png",
     logo: "https://pixelplease.tools/icons/icon-1024.png",
+    screenshot: "https://pixelplease.tools/og-image-20260623.png",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
   });
+  expect(softwareApplication?.featureList).toEqual(
+    expect.arrayContaining([
+      expect.stringContaining("Convert a basic TTF, OTF, or bundled Google Font"),
+      expect.stringContaining("Process uploaded fonts locally in the browser"),
+    ]),
+  );
   expect(faqPage?.mainEntity).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ name: "What is the fastest way to create a custom pixel font?" }),
@@ -196,6 +283,14 @@ test("serves final-domain SEO metadata and crawler files", async ({ page }) => {
 
 test("renders the SEO FAQ below the working app", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Make a usable pixel font" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Start from a basic font" })).toBeVisible();
+  await expect(page.getByText("custom pixel-style font")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tune pixels, dots, and lines" })).toBeVisible();
+  await expect(page.getByText("square pixels, dots, vertical lines")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Download an installable TTF" })).toBeVisible();
+  await expect(page.getByText("not just a bitmap text effect")).toBeVisible();
+
   await page.locator(".faq-section").scrollIntoViewIfNeeded();
 
   await expect(page.getByRole("heading", { name: "FAQ" })).toBeVisible();
@@ -804,7 +899,7 @@ test("stacks the intro when the header no longer fits horizontally", async ({ pa
   expect(metrics.copyBelowTitle).toBe(true);
   expect(metrics.titleCopyGap).toBeCloseTo(22, 0);
   expect(metrics.copyLineCount).toBeGreaterThanOrEqual(2);
-  expect(metrics.copyLineCount).toBeLessThanOrEqual(3);
+  expect(metrics.copyLineCount).toBeLessThanOrEqual(4);
   expect(metrics.titleTextAlign).toBe("center");
   expect(metrics.copyTextAlign).toBe("center");
   expect(metrics.controlsWidth).toBeGreaterThan(700);
