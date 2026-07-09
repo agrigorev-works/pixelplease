@@ -44,6 +44,7 @@ Bundled demo fonts are permissive Google Fonts distributed with matching source 
 - Playfair Display
 - Roboto Mono
 - Space Grotesk
+- Stack Sans Text
 
 The bundled demo fonts are provided for trying the pixel effect without uploading a file. The product keeps source license material with bundled demo-font downloads when applicable.
 

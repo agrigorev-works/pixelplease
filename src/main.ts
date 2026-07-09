@@ -229,6 +229,7 @@ const WEIGHTS_100_TO_900: DemoFontWeightSpec[] = [
 ];
 
 const WEIGHTS_100_TO_700 = WEIGHTS_100_TO_900.slice(0, 7);
+const WEIGHTS_200_TO_700 = WEIGHTS_100_TO_900.slice(1, 7);
 const WEIGHTS_300_TO_900 = WEIGHTS_100_TO_900.slice(2);
 
 const WEIGHTS_400_TO_700: DemoFontWeightSpec[] = [
@@ -392,6 +393,21 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
         700,
       ),
     ],
+  },
+  {
+    family: "Stack Sans Text",
+    cssFamily: '"Stack Sans Text", system-ui, sans-serif',
+    license: "OFL",
+    licenseFileName: "stacksanstext-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/stacksanstext/StackSansText-Regular.ttf",
+    sourceReferenceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/stacksanstext/StackSansText%5Bwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "stacksanstext",
+      "StackSansText",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/stacksanstext/StackSansText%5Bwght%5D.ttf",
+      WEIGHTS_200_TO_700,
+    ),
   },
   {
     family: "Inter",
