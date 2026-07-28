@@ -31,6 +31,7 @@ The product is useful for graphic designers, interface designers, indie game mak
 
 Bundled demo fonts are permissive Google Fonts distributed with matching source license files. Available examples include:
 
+- Alan Sans
 - Bebas Neue
 - Fraunces
 - Geist Mono

@@ -481,6 +481,22 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     ],
   },
   {
+    family: "Alan Sans",
+    cssFamily: '"Alan Sans", system-ui, sans-serif',
+    license: "OFL",
+    licenseFileName: "alansans-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/alansans/AlanSans-Regular.ttf",
+    sourceReferenceUrl:
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/alansans/AlanSans%5Bwght%5D.ttf",
+    styles: demoFontWeightStyles(
+      "alansans",
+      "AlanSans",
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/alansans/AlanSans%5Bwght%5D.ttf",
+      WEIGHTS_300_TO_900,
+    ),
+  },
+  {
     family: "Bebas Neue",
     cssFamily: '"Bebas Neue", Impact, sans-serif',
     license: "OFL",

@@ -53,6 +53,7 @@ test("serves expanded LLM context", async ({ page }) => {
   expect(body).toContain("# pixelplease full LLM context");
   expect(body).toContain("notice files");
   expect(body).toContain("Uploaded fonts are read locally in the browser");
+  expect(body).toContain("Alan Sans");
   expect(body).toContain("Bebas Neue");
   expect(body).toContain("Inter");
   expect(body).toContain("Merriweather");
@@ -148,6 +149,7 @@ test("serves expanded bundled Google Font assets", async ({ page }) => {
     "Black",
   ];
   const weightedFonts: Array<{ dir: string; prefix: string; weights: string[]; hasItalic: boolean }> = [
+    { dir: "alansans", prefix: "AlanSans", weights: weights100To900.slice(2), hasItalic: false },
     { dir: "ibmplexsans", prefix: "IBMPlexSans", weights: weights100To900.slice(0, 7), hasItalic: true },
     { dir: "lato", prefix: "Lato", weights: weights100To900, hasItalic: true },
     { dir: "librebaskerville", prefix: "LibreBaskerville", weights: ["Regular", "Medium", "SemiBold", "Bold"], hasItalic: true },
@@ -169,6 +171,7 @@ test("serves expanded bundled Google Font assets", async ({ page }) => {
       hasItalic ? weights.map((weight) => `/fonts/google/${dir}/${prefix}-${weight}Italic.ttf`) : [],
     ),
     "/fonts/google/bebasneue/BebasNeue-Regular.ttf",
+    "/fonts/google/licenses/alansans-OFL.txt",
     "/fonts/google/licenses/inter-OFL.txt",
     "/fonts/google/licenses/instrumentsans-OFL.txt",
     "/fonts/google/licenses/montserrat-OFL.txt",
@@ -1072,6 +1075,7 @@ test("focuses source text at the end and starts with Merriweather Google demo fo
   expect(fontOptions.length).toBeGreaterThanOrEqual(5);
   expect(fontOptions).toEqual(
     expect.arrayContaining([
+      "Alan Sans",
       "Inter",
       "Instrument Sans",
       "Montserrat",
@@ -1136,6 +1140,7 @@ test("updates weight options for the expanded Google Font set", async ({ page })
   const withItalic = (weights: string[]) => weights.flatMap((weight) => [weight, `${weight} Italic`]);
   const weights100To900 = ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"];
   const expectedFonts = [
+    { family: "Alan Sans", weights: weights100To900.slice(2) },
     { family: "IBM Plex Sans", weights: withItalic(weights100To900.slice(0, 7)) },
     { family: "Lato", weights: withItalic(weights100To900) },
     { family: "Libre Baskerville", weights: withItalic(["Regular", "Medium", "SemiBold", "Bold"]) },
@@ -1170,6 +1175,58 @@ test("updates weight options for the expanded Google Font set", async ({ page })
 
     await expect(page.locator("#google-weight-select option")).toHaveText(expectedFont.weights);
     await expect(page.locator("#google-weight-select")).toHaveValue("400");
+  }
+});
+
+test("generates Alan Sans using only same-origin font and license assets", async ({ page }) => {
+  const fontAndLicenseRequests: string[] = [];
+  page.on("request", (request) => {
+    const requestUrl = new URL(request.url());
+    if (
+      requestUrl.pathname.startsWith("/fonts/") ||
+      /\.(?:otf|ttf|woff2?)$/i.test(requestUrl.pathname) ||
+      requestUrl.pathname.endsWith("OFL.txt")
+    ) {
+      fontAndLicenseRequests.push(request.url());
+    }
+  });
+
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  const initialUrl = await getGeneratedFontUrl(page);
+
+  await page.locator("#google-font-select").selectOption("Alan Sans");
+  await expect(page.locator("#google-weight-select option")).toHaveText([
+    "Light",
+    "Regular",
+    "Medium",
+    "SemiBold",
+    "Bold",
+    "ExtraBold",
+    "Black",
+  ]);
+  await expect(page.locator("#google-weight-select")).toHaveValue("400");
+  await expect
+    .poll(
+      async () => {
+        const url = await getGeneratedFontUrl(page);
+        return Boolean(url && url !== initialUrl);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+
+  const pageOrigin = new URL(page.url()).origin;
+  expect(fontAndLicenseRequests).toEqual(
+    expect.arrayContaining([
+      `${pageOrigin}/fonts/google/alansans/AlanSans-Regular.ttf`,
+      `${pageOrigin}/fonts/google/licenses/alansans-OFL.txt`,
+    ]),
+  );
+  for (const requestUrl of fontAndLicenseRequests) {
+    const parsedUrl = new URL(requestUrl);
+    expect(parsedUrl.origin, requestUrl).toBe(pageOrigin);
+    expect(parsedUrl.pathname, requestUrl).toMatch(/^\/fonts\/google\//);
   }
 });
 
