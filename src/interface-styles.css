@@ -364,13 +364,37 @@ h2 {
   text-align: center;
 }
 
-.footer-copy {
+.footer-copy,
+.creator-link {
   max-width: 68ch;
   color: #555555;
   font-size: 13px;
   line-height: 1.58;
   letter-spacing: 0;
   white-space: pre-line;
+}
+
+.creator-footer {
+  display: grid;
+  place-items: center;
+  padding: clamp(48px, 6vw, 80px) clamp(24px, 4vw, 58px) clamp(28px, 4vw, 48px);
+  text-align: center;
+}
+
+.creator-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 140ms ease;
+}
+
+.creator-link:hover {
+  color: #111111;
+}
+
+.creator-link:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 4px;
 }
 
 .seo-content-section {

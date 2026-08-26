@@ -74,6 +74,11 @@ export const UI_COPY = {
       "Keep required copyright, license, and notice files when sharing.",
     ],
   },
+  credit: {
+    ariaLabel: "Creator",
+    label: "by agrigorev",
+    href: "https://agrigorev.com",
+  },
   errors: {
     missingElement: (id: string) => `Missing element #${id}`,
     couldNotLoadFont: (family: string) => `Could not load ${family}.`,

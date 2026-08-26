@@ -19,6 +19,41 @@ test.beforeAll(async () => {
   await fs.writeFile(sourcePath, Buffer.from(fixture.toArrayBuffer()));
 });
 
+test("shows a centered creator credit using the FAQ subtitle typography", async ({ page }) => {
+  await page.goto("/");
+
+  const link = page.locator(".creator-link");
+  await expect(link).toHaveText(UI_COPY.credit.label);
+  await expect(link).toHaveAttribute("href", UI_COPY.credit.href);
+
+  const metrics = await page.evaluate(() => {
+    const link = document.querySelector(".creator-link");
+    const faqSubtitle = document.querySelector(".footer-copy");
+    if (!link || !faqSubtitle) {
+      throw new Error("Missing creator credit or FAQ subtitle");
+    }
+    const linkBox = link.getBoundingClientRect();
+    const linkStyles = getComputedStyle(link);
+    const subtitleStyles = getComputedStyle(faqSubtitle);
+    return {
+      centerDelta: Math.abs(linkBox.left + linkBox.width / 2 - window.innerWidth / 2),
+      fontSize: linkStyles.fontSize,
+      lineHeight: linkStyles.lineHeight,
+      color: linkStyles.color,
+      subtitleFontSize: subtitleStyles.fontSize,
+      subtitleLineHeight: subtitleStyles.lineHeight,
+      subtitleColor: subtitleStyles.color,
+      textDecorationLine: linkStyles.textDecorationLine,
+    };
+  });
+
+  expect(metrics.centerDelta).toBeLessThan(1);
+  expect(metrics.fontSize).toBe(metrics.subtitleFontSize);
+  expect(metrics.lineHeight).toBe(metrics.subtitleLineHeight);
+  expect(metrics.color).toBe(metrics.subtitleColor);
+  expect(metrics.textDecorationLine).toContain("underline");
+});
+
 test("serves an LLM discovery file from the site root", async ({ page }) => {
   const response = await page.request.get("/llms.txt");
 

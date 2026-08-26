@@ -656,6 +656,8 @@ const logoTitle = getElement<HTMLHeadingElement>("logo-title");
 const introCopy = getSelector<HTMLElement>(".intro-copy");
 const siteFooter = getSelector<HTMLElement>(".site-footer");
 const footerCopy = getSelector<HTMLElement>(".footer-copy");
+const creatorFooter = getSelector<HTMLElement>(".creator-footer");
+const creatorLink = getSelector<HTMLAnchorElement>(".creator-link");
 const sourcePanel = getSelector<HTMLElement>(".source-panel");
 const sourceModeControl = getSelector<HTMLFieldSetElement>(".source-mode-control");
 const sourceModeLegend = getSelector<HTMLElement>(".source-mode-control legend");
@@ -1167,6 +1169,9 @@ function applyInterfaceCopy(): void {
   introCopy.textContent = UI_COPY.intro.copy;
   siteFooter.setAttribute("aria-label", UI_COPY.footer.ariaLabel);
   footerCopy.textContent = UI_COPY.footer.lines.join("\n");
+  creatorFooter.setAttribute("aria-label", UI_COPY.credit.ariaLabel);
+  creatorLink.textContent = UI_COPY.credit.label;
+  creatorLink.href = UI_COPY.credit.href;
 
   sourcePanel.setAttribute("aria-label", UI_COPY.sections.source);
   sourceModeControl.setAttribute("aria-label", UI_COPY.sections.sourceMode);
