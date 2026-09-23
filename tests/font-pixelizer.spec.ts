@@ -19,6 +19,37 @@ test.beforeAll(async () => {
   await fs.writeFile(sourcePath, Buffer.from(fixture.toArrayBuffer()));
 });
 
+test("Bangers generates locally and exports its source license", async ({ page }) => {
+  const externalRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/fonts\.googleapis|fonts\.gstatic|raw\.githubusercontent/.test(request.url())) {
+      externalRequests.push(request.url());
+    }
+  });
+  await page.goto("/");
+  await expect(page.locator("#google-font-select option[value='Bangers']")).toHaveCount(1);
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady);
+  const previous = await getGeneratedFontUrl(page);
+  await page.locator("#google-font-select").selectOption("Bangers");
+  await expect(page.locator("#google-weight-select option")).toHaveText(["Regular"]);
+  await expect.poll(async () => {
+    const current = await getGeneratedFontUrl(page);
+    return Boolean(current && current !== previous);
+  }).toBe(true);
+  await expectPixelCanvasHasInk(page);
+  const downloadPromise = page.waitForEvent("download");
+  await page.locator("#download-link").click();
+  const download = await downloadPromise;
+  const downloadPath = await download.path();
+  const entries = readStoredZip(await fs.readFile(downloadPath!));
+  expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("Bangers Regular");
+  expect(new TextDecoder().decode(entries["licenses/bangers-OFL.txt"])).toContain("SIL OPEN FONT LICENSE");
+  const [, generated] = getSingleTtfEntry(entries);
+  const parsed = opentype.parse(generated.buffer.slice(generated.byteOffset, generated.byteOffset + generated.byteLength));
+  expect(parsed.charToGlyph("A").path.commands.length).toBeGreaterThan(0);
+  expect(externalRequests).toEqual([]);
+});
+
 test("shows a centered creator credit using the FAQ subtitle typography", async ({ page }) => {
   await page.goto("/");
 

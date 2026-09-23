@@ -497,6 +497,16 @@ const DEMO_GOOGLE_FONTS: DemoFontChoice[] = [
     ),
   },
   {
+    family: "Bangers",
+    cssFamily: '"Bangers", Impact, sans-serif',
+    license: "OFL",
+    licenseFileName: "bangers-OFL.txt",
+    licenseUrl: OFL_LICENSE_URL,
+    sourceUrl: "/fonts/google/bangers/Bangers-Regular.ttf",
+    sourceReferenceUrl: "https://raw.githubusercontent.com/google/fonts/main/ofl/bangers/Bangers-Regular.ttf",
+    styles: demoStaticFontWeightStyles("bangers", "Bangers", [{ label: "Regular", fontWeight: 400 }]),
+  },
+  {
     family: "Bebas Neue",
     cssFamily: '"Bebas Neue", Impact, sans-serif',
     license: "OFL",
