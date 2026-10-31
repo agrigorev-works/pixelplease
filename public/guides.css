@@ -1,0 +1,37 @@
+/* Public guide typography follows the existing pixelplease interface and SEO pages. */
+.pixel-guide-page { color-scheme:light; font-family:"JetBrains Mono","SFMono-Regular","Menlo","Monaco","Consolas",ui-monospace,monospace; color:#111; background:#fff; margin:0; min-width:320px; }
+.pixel-guide-page *,.guide-footer,.guide-footer * { box-sizing:border-box; }
+.pixel-guide-page ::selection,.guide-footer ::selection { background:#d6ff00; color:#111; }
+.pixel-guide-page a { color:inherit; text-underline-offset:4px; text-decoration-thickness:1px; }
+.pixel-guide-page a:focus-visible,.guide-footer a:focus-visible { outline:2px solid #111; outline-offset:4px; }
+.pixel-guide { max-width:1000px; margin:auto; padding:clamp(28px,6vw,72px); overflow-wrap:break-word; }
+.pixel-guide h1 { font-size:clamp(36px,6vw,72px); line-height:1.06; font-weight:700; max-width:18ch; margin:32px 0 24px; letter-spacing:-.035em; }
+.pixel-guide h2 { font-size:20px; line-height:1.4; margin:0 0 18px; }
+.pixel-guide p,.pixel-guide li { font-size:15px; line-height:1.7; color:#555; }
+.pixel-guide p { margin:14px 0; }
+.pixel-guide .guide-lead { color:#111; font-size:17px; }
+.pixel-guide .guide-meta,.pixel-guide .guide-breadcrumb,.pixel-guide .guide-note { font-size:12px; line-height:1.7; color:#555; }
+.pixel-guide .guide-breadcrumb { display:flex; flex-wrap:wrap; gap:8px; }
+.pixel-guide section,.pixel-guide .guide-sources,.pixel-guide .guide-related { margin-top:48px; scroll-margin-top:24px; }
+.pixel-guide ul,.pixel-guide ol { padding-left:24px; margin:16px 0; }
+.pixel-guide li { margin:12px 0; }
+.pixel-guide strong { color:#111; font-weight:600; }
+.pixel-guide .guide-toc { margin:32px 0; padding:24px 0; border-block:1px solid #e1e1dc; }
+.pixel-guide .guide-toc h2 { font-size:14px; }
+.pixel-guide .guide-toc ul { list-style:none; padding:0; margin:0; }
+.pixel-guide .guide-toc li { margin:8px 0; font-size:13px; }
+.pixel-guide .guide-cta { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:12px 24px; margin:16px 0; border:1px solid #111; border-radius:999px; background:#111; color:#fff; font-size:13px; line-height:1.5; text-align:center; text-decoration:none; }
+.pixel-guide pre { max-width:100%; overflow-x:auto; padding:24px; background:#f5f5f2; border:1px solid #e1e1dc; font:13px/1.7 "SFMono-Regular","Menlo",monospace; }
+.pixel-guide code { font-family:inherit; }
+.guide-footer { max-width:1280px; margin:64px auto 0; padding:32px clamp(24px,4vw,58px); color:#111; font-family:"JetBrains Mono","SFMono-Regular","Menlo","Monaco","Consolas",ui-monospace,monospace; }
+.guide-footer nav { border-top:1px solid #e1e1dc; padding-top:32px; }
+.guide-footer h2 { font-size:16px; font-weight:600; line-height:1.4; margin:0 0 20px; }
+.guide-footer ul { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px 32px; padding:0; margin:0; list-style:none; }
+.guide-footer li { min-width:0; margin:0; }
+.guide-footer a { display:inline-block; padding:8px 0; color:#555; font-size:13px; line-height:1.6; text-decoration:none; overflow-wrap:break-word; }
+@media(hover:hover) { .guide-footer a:hover { color:#111; text-decoration:underline; text-underline-offset:4px; } .pixel-guide .guide-cta:hover { outline:2px solid #d6ff00; outline-offset:2px; } }
+@media(width < 900px) { .guide-footer ul { grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 24px; } }
+@media(width < 600px) { .guide-footer ul { grid-template-columns:1fr; } .pixel-guide { padding:28px 24px; } .pixel-guide h1 { letter-spacing:-.025em; } }
+
+/* Existing Merriweather example: keep its long family name inside 320px. */
+@media(width < 360px) { .pixel-example h1 { font-size:36px; } }

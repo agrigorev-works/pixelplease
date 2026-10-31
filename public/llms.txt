@@ -32,3 +32,18 @@
 ## Licensing
 
 pixelplease source code is MIT licensed. Bundled demo fonts use their own OFL files. Generated pixel fonts are derivative outputs, so the source font license controls use, modification, and redistribution.
+
+## Pixel font guides
+
+Practical, source-backed answers. These guides describe the current Basic Latin TTF workflow, not a bitmap atlas or WOFF2 exporter.
+
+- [How do I make a pixel font?](https://pixelplease.tools/how-to-make-a-pixel-font/): Make a custom pixel font from a Google Font or licensed TTF/OTF. Learn the grid controls, test readable letters, and export an installable font package.
+- [How do I convert a TTF or OTF to a pixel font?](https://pixelplease.tools/convert-ttf-to-pixel-font/): Turn an existing TTF or OTF into a pixel-style font locally in your browser. Check supported files, export limits, missing characters and license requirements.
+- [What is a pixel font, and is it the same as a bitmap font?](https://pixelplease.tools/what-is-a-pixel-font/): Understand pixel fonts, bitmap atlases and outline TTF files. Choose the right output for editable text, game engines, websites and pixel-style artwork.
+- [Can I turn a Google Font into a pixel font?](https://pixelplease.tools/google-fonts-to-pixel-font/): Create a pixel-style font from bundled Google Fonts. Compare source shapes, choose a weight, tune the grid, and keep the original font license with exports.
+- [Why does my pixel font look blurry?](https://pixelplease.tools/fix-blurry-pixel-font/): Diagnose blurry pixel fonts by separating glyph design from rendering. Check scale, antialiasing, grid settings and the destination app before re-exporting.
+- [How do I download and install a pixel font?](https://pixelplease.tools/install-pixel-font/): Unzip a pixelplease export, install the generated TTF on Mac or Windows, find its PixelPlease family name, and troubleshoot missing fonts in design apps.
+- [How do I use a custom pixel font in Figma?](https://pixelplease.tools/use-pixel-font-in-figma/): Use a generated pixel font as editable Figma text. Install the TTF, enable local fonts in the browser, find its family name and avoid missing-font handoffs.
+- [Can I use a generated pixel font commercially?](https://pixelplease.tools/pixel-font-commercial-use/): Check commercial use, modification and redistribution rights for generated pixel fonts. Understand OFL notices, Reserved Font Names and client handoffs.
+- [How do I add a pixel font to a website with CSS?](https://pixelplease.tools/use-pixel-font-on-website/): Load a generated pixel font with @font-face, set a fallback, and check licensing, character coverage and rendering. Includes a minimal TTF CSS example.
+- [How do I choose and use a pixel font for a game?](https://pixelplease.tools/pixel-font-for-games/): Choose a pixel font for game UI, test small labels and numbers, and distinguish installable TTF files from bitmap atlases. Includes Godot rendering checks.

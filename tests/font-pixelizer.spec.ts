@@ -133,14 +133,14 @@ test("serves static SEO landing pages", async ({ page }) => {
     {
       path: "/how-to-make-a-pixel-font/",
       title: "How to Make a Pixel Font in Your Browser | pixelplease",
-      heading: "How to make a pixel font",
-      body: "download the ZIP package",
+      heading: "How do I make a pixel font?",
+      body: "Choose Download font.",
     },
     {
       path: "/convert-ttf-to-pixel-font/",
       title: "Convert TTF or OTF to a Pixel Font | pixelplease",
-      heading: "Convert TTF to pixel font",
-      body: "Font parsing and generated font creation happen in the browser.",
+      heading: "How do I convert a TTF or OTF to a pixel font?",
+      body: "The app processes the upload in your browser and does not send your font to a server.",
     },
     {
       path: "/pixel-merriweather/",

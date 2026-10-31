@@ -110,3 +110,11 @@ pixelplease source code is released under the MIT License. See `LICENSE`.
 Bundled Google Fonts are distributed under their own SIL Open Font License files in `public/fonts/google/licenses/`. Generated pixel fonts are derivative fonts, so the source font license still controls use, modification, and redistribution of each generated output.
 
 Only upload fonts you have the right to modify.
+
+## Pixel font guides
+
+Ten English question-led guides are defined in `scripts/data/pixel-guides.mjs`; `npm run build:guides` renders their static HTML and refreshes the shared footer on the app and the two font-family examples. The guide stylesheet is `public/guides.css`. Edit the source data instead of generated guide HTML. Existing general-guide URLs are retained.
+
+The regular build runs the guide renderer and sitemap sync. Content modification dates are explicit (`guideDate`), not automatically advanced on every build; unchanged family-example dates are preserved. Both LLM reference files list all ten guides. Research and query evidence live in `docs/research/pixel-font-guides-2026-10-31.md`.
+
+`tests/guides.test.ts` checks static content/discovery and `tests/guides.spec.ts` checks no-JavaScript rendering, mobile overflow, links and the live generator CTA. These run in `npm run verify`. Run `npx playwright test tests/guides.spec.ts --browser=webkit` after building for additional guide-specific WebKit coverage.
