@@ -28,7 +28,7 @@
 .guide-footer h2 { font-size:16px; font-weight:600; line-height:1.4; margin:0 0 20px; }
 .guide-footer ul { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px 32px; padding:0; margin:0; list-style:none; }
 .guide-footer li { min-width:0; margin:0; }
-.guide-footer a { display:inline-block; padding:8px 0; color:#555; font-size:13px; line-height:1.6; text-decoration:none; overflow-wrap:break-word; }
+.guide-footer a { display:inline-block; padding:8px 0; color:#555; font-size:13px; line-height:1.6; text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; overflow-wrap:break-word; }
 @media(hover:hover) { .guide-footer a:hover { color:#111; text-decoration:underline; text-underline-offset:4px; } .pixel-guide .guide-cta:hover { outline:2px solid #d6ff00; outline-offset:2px; } }
 @media(width < 900px) { .guide-footer ul { grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 24px; } }
 @media(width < 600px) { .guide-footer ul { grid-template-columns:1fr; } .pixel-guide { padding:28px 24px; } .pixel-guide h1 { letter-spacing:-.025em; } }

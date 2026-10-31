@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {guides,sources,origin,guideDate} from './data/pixel-guides.mjs';
 const root=new URL('../',import.meta.url),esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-const css='<link rel="stylesheet" href="/guides.css?v=20261031-2">';
+const css='<link rel="stylesheet" href="/guides.css?v=20261031-3">';
 const footer=`<!-- pixel-guides:start --><footer class="guide-footer"><nav aria-label="Pixel font guides"><h2>Pixel font guides</h2><ul>${guides.map(g=>`<li><a href="/${g.slug}/">${esc(g.question)}</a></li>`).join('')}</ul></nav></footer><!-- pixel-guides:end -->`;
 for(const g of guides){
  const url=`${origin}/${g.slug}/`,image=`${origin}/og-image-20260623.png`;
