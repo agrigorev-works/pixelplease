@@ -29,7 +29,7 @@ The working product:
 - remind users to upload only fonts they have a license to edit;
 - state that uploaded fonts stay in the browser and do not require registration, login, or server storage;
 - parse glyphs with `opentype.js`;
-- choose pixel effects: pixels, dots, vertical lines, and horizontal lines;
+- choose pixel effects: pixels, dots, halftone, vertical lines, and horizontal lines;
 - tune density, threshold, expand, and X/Y grid shift;
 - reset pixel controls to defaults;
 - edit the source text directly in the Source preview;

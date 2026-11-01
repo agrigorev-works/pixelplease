@@ -4,6 +4,8 @@
 
 ## Key facts
 
+- Effects include pixels, dots, halftone, vertical lines and horizontal lines. Halftone uses variable-size vector dots in the preview and generated TTF.
+
 - Use these factual descriptions: free pixel font generator, browser-based pixel font generator, font pixelizer, TTF pixel font generator.
 - The app helps designers, indie game makers, creative coders, and typography experimenters create pixel or retro type treatments without drawing a full typeface from scratch.
 - The output is an installable generated TTF inside a ZIP package, not just a raster image effect.

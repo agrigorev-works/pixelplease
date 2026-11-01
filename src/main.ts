@@ -11,7 +11,7 @@ import {
   type PixelizeOptions,
   type PixelShape,
 } from "./font-pixelizer";
-import { createCellMaskFromImageData, expandCellMask, isCellFilled } from "./pixel-grid";
+import { createCellMaskFromImageData, expandCellMask, isCellFilled, getHalftoneRadius } from "./pixel-grid";
 import {
   buildNoticeText,
   createDownloadPackage,
@@ -1209,6 +1209,7 @@ function applyInterfaceCopy(): void {
   pixelEffectSelect.setAttribute("aria-label", UI_COPY.controls.pixelEffect);
   setPixelEffectOptionCopy("square", UI_COPY.controls.squarePixels);
   setPixelEffectOptionCopy("round", UI_COPY.controls.roundPixels);
+  setPixelEffectOptionCopy("halftone", UI_COPY.controls.halftone);
   setPixelEffectOptionCopy("vertical-lines", UI_COPY.controls.verticalLines);
   setPixelEffectOptionCopy("horizontal-lines", UI_COPY.controls.horizontalLines);
   resetButton.textContent = UI_COPY.controls.resetDefaults;
@@ -1262,11 +1263,16 @@ async function initializeLogoFont(): Promise<void> {
 async function updateLogoFontForCurrentShape(): Promise<void> {
   const sourceFont = logoSourceFont;
   const pixelShape = getPixelShape();
-  if (!sourceFont || renderedLogoPixelShape === pixelShape) {
+  if (!sourceFont) {
     return;
   }
 
+  // Invalidate pending work even when returning to the already installed effect.
   const runId = (logoFontRunId += 1);
+  if (renderedLogoPixelShape === pixelShape) {
+    logoTitle.dataset.logoFont = "ready";
+    return;
+  }
   logoTitle.dataset.logoFont = "loading";
 
   try {
@@ -1732,7 +1738,7 @@ function getPixelShape(): PixelShape {
 function getPixelsPerEmLabel(): string {
   const pixelShape = getPixelShape();
 
-  if (pixelShape === "round") {
+  if (pixelShape === "round" || pixelShape === "halftone") {
     return UI_COPY.controls.dotsPerEm;
   }
 
@@ -1744,7 +1750,7 @@ function getPixelsPerEmLabel(): string {
 }
 
 function isPixelShape(value: string): value is PixelShape {
-  return value === "square" || value === "round" || value === "vertical-lines" || value === "horizontal-lines";
+  return value === "square" || value === "round" || value === "halftone" || value === "vertical-lines" || value === "horizontal-lines";
 }
 
 function setPixelEffectOptionCopy(value: PixelShape, label: string): void {
@@ -1887,7 +1893,8 @@ function renderDemoPreview(): void {
 
   sourceContext.fillStyle = "#ffffff";
   sourceContext.fillRect(0, 0, width, contentHeight);
-  sourceContext.fillStyle = "#111111";
+  // Measure black ink coverage, independent of the display ink color.
+  sourceContext.fillStyle = options.pixelShape === "halftone" ? "#000000" : "#111111";
   sourceContext.font = previewFont;
   sourceContext.textBaseline = "top";
 
@@ -1913,7 +1920,8 @@ function renderDemoPreview(): void {
   for (let row = 0; row < expanded.rows; row += 1) {
     for (let col = 0; col < expanded.cols; col += 1) {
       if (isCellFilled(expanded, col, row)) {
-        drawPreviewPixelCell(context, options.pixelShape ?? "square", col * cellSize, row * cellSize, cellSize);
+        drawPreviewPixelCell(context, options.pixelShape ?? "square", col * cellSize, row * cellSize, cellSize,
+          options.pixelShape === "halftone" ? getHalftoneRadius(expanded, col, row, cellSize) : undefined);
       }
     }
   }
@@ -1925,11 +1933,13 @@ function drawPreviewPixelCell(
   x: number,
   y: number,
   size: number,
+  halftoneRadius?: number,
 ): void {
-  if (pixelShape === "round") {
-    const radius = size / 2;
+  if (pixelShape === "round" || pixelShape === "halftone") {
+    const radius = halftoneRadius ?? size / 2;
+    if (radius <= 0) return;
     context.beginPath();
-    context.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+    context.arc(x + size / 2, y + size / 2, radius, 0, Math.PI * 2);
     context.fill();
     return;
   }

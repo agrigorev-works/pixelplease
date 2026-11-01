@@ -23,9 +23,10 @@ Current first-screen structure:
 
 Keep only controls that change the current algorithm in obvious ways:
 
-- `effect`: pixels, dots, vertical lines, or horizontal lines.
+- `effect`: pixels, dots, halftone, vertical lines, or horizontal lines.
 - `pixels-per-em`, `dots-per-em`, or `lines-per-em`: grid density for the selected effect.
 - `threshold`: fill cutoff.
+- `halftone`: circular dots whose area follows local ink coverage; smaller edge dots and larger interior dots. `dots-per-em` changes density; threshold rejects faint cells, expand spreads the strongest retained coverage, and X/Y shift moves the sampling grid. This geometry is used in both the preview and exported font.
 - `expand`: grow filled cells for heavier output.
 - `shift-x`: horizontal sampling grid offset.
 - `shift-y`: vertical sampling grid offset.

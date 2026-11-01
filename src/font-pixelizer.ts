@@ -3,6 +3,7 @@ import {
   createCellMaskFromImageData,
   expandCellMask,
   isCellFilled,
+  getHalftoneRadius,
   type CellMask,
 } from "./pixel-grid";
 
@@ -17,7 +18,7 @@ export type PixelizeOptions = {
   pixelShape?: PixelShape;
 };
 
-export type PixelShape = "square" | "round" | "vertical-lines" | "horizontal-lines";
+export type PixelShape = "square" | "round" | "halftone" | "vertical-lines" | "horizontal-lines";
 
 export type FontMetrics = {
   unitsPerEm: number;
@@ -198,8 +199,8 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
   const path = new opentype.Path();
   const cellSize = getCellSize(metrics, options);
 
-  if (options.pixelShape === "round") {
-    addRoundCellsToPath(path, mask, metrics, cellSize);
+  if (options.pixelShape === "round" || options.pixelShape === "halftone") {
+    addRoundCellsToPath(path, mask, metrics, cellSize, options.pixelShape === "halftone");
     return path;
   }
 
@@ -237,18 +238,18 @@ export function cellsToPath(mask: CellMask, metrics: FontMetrics, options: Pixel
   return path;
 }
 
-function addRoundCellsToPath(path: opentype.Path, mask: CellMask, metrics: FontMetrics, cellSize: number): void {
+function addRoundCellsToPath(path: opentype.Path, mask: CellMask, metrics: FontMetrics, cellSize: number, halftone = false): void {
   for (let row = 0; row < mask.rows; row += 1) {
     for (let col = 0; col < mask.cols; col += 1) {
       if (!isCellFilled(mask, col, row)) {
         continue;
       }
 
-      const x0 = col * cellSize;
-      const x1 = x0 + cellSize;
-      const yTop = metrics.ascender - row * cellSize;
-      const yBottom = yTop - cellSize;
-      addEllipse(path, x0, yBottom, x1, yTop);
+      const radius = halftone ? getHalftoneRadius(mask, col, row, cellSize) : cellSize / 2;
+      if (radius <= 0) continue;
+      const cx = (col + 0.5) * cellSize;
+      const cy = metrics.ascender - (row + 0.5) * cellSize;
+      addEllipse(path, cx - radius, cy - radius, cx + radius, cy + radius);
     }
   }
 }

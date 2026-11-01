@@ -19,6 +19,66 @@ test.beforeAll(async () => {
   await fs.writeFile(sourcePath, Buffer.from(fixture.toArrayBuffer()));
 });
 
+test("halftone previews variable dots and exports a usable licensed font", async ({page}) => {
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady);
+  await expect(page.locator('#pixel-effect-select option[value="halftone"]')).toHaveCount(1);
+  const previous = await getGeneratedFontUrl(page);
+  await page.locator("#pixel-effect-field .custom-select-trigger").click();
+  await page.locator("#pixel-effect-field .custom-select-option").filter({hasText:/^halftone$/}).click();
+  await expect(page.locator("#pixel-effect-select")).toHaveValue("halftone");
+  await expect(page.locator(".control-stack > .field > span").first()).toHaveText(UI_COPY.controls.dotsPerEm);
+  await expect.poll(async()=>{const url=await getGeneratedFontUrl(page);return Boolean(url && url!==previous);}).toBe(true);
+  await expectPixelCanvasHasInk(page);
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape","halftone");
+  const downloadPromise=page.waitForEvent("download");await page.locator("#download-link").click();
+  const download=await downloadPromise;
+  const entries=readStoredZip(await fs.readFile((await download.path())!));
+  expect(new TextDecoder().decode(entries["NOTICE.txt"])).toContain("Merriweather");
+  expect(Object.keys(entries).some(name=>name.startsWith("licenses/"))).toBe(true);
+  const [,bytes]=getSingleTtfEntry(entries);
+  const font=opentype.parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));
+  const widths:number[]=[];let contour=new opentype.Path();
+  for(const cmd of font.charToGlyph("A").path.commands){
+    contour.commands.push(cmd);
+    if(cmd.type==='Z'){const box=contour.getBoundingBox();widths.push(box.x2-box.x1);contour=new opentype.Path();}
+  }
+  expect(widths.length).toBeGreaterThan(5);
+  expect(new Set(widths.map(w=>Math.round(w))).size).toBeGreaterThan(1);
+  expect(font.charToGlyph("A").path.commands.some(c=>c.type==='C')).toBe(true);
+  expect(await page.evaluate(async url=>{const face=new FontFace("HalftoneExport",`url(${url})`);await face.load();document.fonts.add(face);return document.fonts.check('32px "HalftoneExport"','ABC 123');},await getGeneratedFontUrl(page))).toBe(true);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+  for (const [id,value] of [["threshold","12"],["expand","1"],["shift-x","0.25"]]) {
+    const previousUrl=await getGeneratedFontUrl(page);
+    await page.locator(`#${id}`).fill(value);
+    await expect.poll(async()=>{const url=await getGeneratedFontUrl(page);return Boolean(url&&url!==previousUrl);}).toBe(true);
+    await expectPixelCanvasHasInk(page);
+  }
+  const signature=await getPixelCanvasSignature(page);
+  const beforeRoundUrl=await getGeneratedFontUrl(page);
+  await page.locator("#pixel-effect-select").selectOption("round");
+  await expect.poll(async()=>{const url=await getGeneratedFontUrl(page);return Boolean(url&&url!==beforeRoundUrl);}).toBe(true);
+  await expect.poll(async()=> (await getPixelCanvasSignature(page)).hash).not.toBe(signature.hash);
+  await page.getByRole("button",{name:UI_COPY.controls.resetDefaults}).click();
+  await expect(page.locator("#pixel-effect-select")).toHaveValue("square");
+});
+
+test("keeps logo on the latest effect after a rapid halftone reset",async({page})=>{
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady);
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape","square");
+  const before=await getGeneratedFontUrl(page);
+  await page.evaluate(()=>{
+    const select=document.querySelector<HTMLSelectElement>("#pixel-effect-select")!;
+    for(const value of ["halftone","square"]){select.value=value;select.dispatchEvent(new Event("change",{bubbles:true}));}
+  });
+  await expect.poll(async()=>{const url=await getGeneratedFontUrl(page);return Boolean(url&&url!==before);}).toBe(true);
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady);
+  await expect(page.locator("#logo-title")).toHaveAttribute("data-logo-pixel-shape","square");
+  expect(await getInstalledFontGlyphCommandTypes(page,"PixelpleaseLogoFont","p")).not.toContain("C");
+});
+
 test("Bangers generates locally and exports its source license", async ({ page }) => {
   const externalRequests: string[] = [];
   page.on("request", (request) => {
@@ -355,8 +415,8 @@ test("renders the SEO FAQ below the working app", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Make a usable pixel font" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Start from a basic font" })).toBeVisible();
   await expect(page.getByText("custom pixel-style font")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Tune pixels, dots, and lines" })).toBeVisible();
-  await expect(page.getByText("square pixels, dots, vertical lines")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tune pixels and halftone" })).toBeVisible();
+  await expect(page.getByText("square pixels, dots, halftone, vertical lines")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Download an installable TTF" })).toBeVisible();
   await expect(page.getByText("not just a bitmap text effect")).toBeVisible();
 
@@ -1439,6 +1499,7 @@ test("switches between pixel effects for preview and generated font", async ({ p
   await expect(effectSelect.locator("option")).toHaveText([
     UI_COPY.controls.squarePixels,
     UI_COPY.controls.roundPixels,
+    UI_COPY.controls.halftone,
     UI_COPY.controls.verticalLines,
     UI_COPY.controls.horizontalLines,
   ]);
@@ -1473,10 +1534,21 @@ test("switches between pixel effects for preview and generated font", async ({ p
   await expect(effectSelect).toHaveValue("round");
   await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.roundPixels);
   await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.dotsPerEm);
+  const beforeSquareUrl = await getGeneratedFontUrl(page);
   await effectSelect.selectOption("square");
   await expect(effectSelectTrigger).toHaveText(UI_COPY.controls.squarePixels);
   await expect(pixelsPerEmLabel).toHaveText(UI_COPY.controls.pixelsPerEm);
+  // Generation is debounced: WebKit can still show the previous round preview here.
+  await expect.poll(async () => {
+    const url = await getGeneratedFontUrl(page);
+    return Boolean(url && url !== beforeSquareUrl);
+  }).toBe(true);
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady);
 
+  // WebKit rasterizes 2px circles identically to squares; compare at a visible dot size.
+  for (let step = 0; step < 20; step += 1) {
+    await page.locator("#output-size-increase").click();
+  }
   const squareSignature = await getPixelCanvasSignature(page);
   const squareGeneratedUrl = await getGeneratedFontUrl(page);
   const squareLogoCommands = await getInstalledFontGlyphCommandTypes(page, "PixelpleaseLogoFont", "p");

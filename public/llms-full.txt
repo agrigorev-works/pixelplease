@@ -8,7 +8,7 @@ The product is useful for graphic designers, interface designers, indie game mak
 
 - Starts from bundled permissive Google Fonts or a user-uploaded TTF/OTF file.
 - Lets users tune pixel grid density, threshold, weight expansion, X/Y shift, and pixel effect style.
-- Supports pixel effects named pixels, dots, vertical lines, and horizontal lines.
+- Supports pixel effects named pixels, dots, halftone, vertical lines, and horizontal lines. Halftone dot area follows local ink coverage; it is exported as vector outlines, not a raster overlay.
 - Shows a live source preview and generated pixel output preview.
 - Exports a ZIP package with a generated pixel-style TTF and notice files.
 - Runs font parsing and generated font creation in the browser.

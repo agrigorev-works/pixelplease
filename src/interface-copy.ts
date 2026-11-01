@@ -48,6 +48,7 @@ export const UI_COPY = {
     pixelEffect: "effect",
     squarePixels: "pixels",
     roundPixels: "dots",
+    halftone: "halftone",
     verticalLines: "vertical lines",
     horizontalLines: "horizontal lines",
     shiftX: "shift-x",

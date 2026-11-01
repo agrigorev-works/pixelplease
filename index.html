@@ -68,7 +68,7 @@
         },
         "featureList": [
           "Convert a basic TTF, OTF, or bundled Google Font into a generated pixel-style TTF package",
-          "Tune pixel grid, threshold, weight expansion, shift, and effects for pixels, dots, and lines",
+          "Tune pixel grid, threshold, weight expansion, shift, and effects for pixels, dots, halftone, and lines",
           "Preview generated pixel font output in the browser",
           "Download a ZIP package with a generated TTF and notice files",
           "Process uploaded fonts locally in the browser without server upload"
@@ -232,6 +232,7 @@
                 <select id="pixel-effect-select" class="preview-effect-select" aria-label="">
                   <option value="square" selected></option>
                   <option value="round"></option>
+                  <option value="halftone"></option>
                   <option value="vertical-lines"></option>
                   <option value="horizontal-lines"></option>
                 </select>
@@ -294,10 +295,11 @@
           </div>
 
           <div class="seo-content-block">
-            <h3>Tune pixels, dots, and lines</h3>
+            <h3>Tune pixels and halftone</h3>
             <p>
-              Adjust grid size, threshold, expand, shift, and choose square pixels, dots, vertical lines, or
-              horizontal lines while previewing the result.
+              Adjust grid size, threshold, expand, shift, and choose square pixels, dots, halftone, vertical lines, or
+              horizontal lines while previewing the result. Halftone varies dot size with ink coverage and keeps
+              the pattern in the downloaded font.
             </p>
           </div>
 

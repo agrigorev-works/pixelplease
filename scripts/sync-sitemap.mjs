@@ -24,7 +24,7 @@ const existing=await readFile(sitemapPath,'utf8');
 const oldDates=new Map([...existing.matchAll(/<url>([\s\S]*?)<\/url>/g)].map(m=>[m[1].match(/<loc>(.*?)<\/loc>/)?.[1],m[1].match(/<lastmod>(.*?)<\/lastmod>/)?.[1]]));
 for(const g of guides)if(!urls.some(p=>p.loc===`${origin}/${g.slug}/`))urls.push({loc:`${origin}/${g.slug}/`,changefreq:'monthly',priority:'0.8'});
 // Content dates, not the build clock. Preserve existing family-example dates.
-const modificationDate=loc=>loc.endsWith('/pixel-inter/')||loc.endsWith('/pixel-merriweather/')?oldDates.get(loc)||'2026-07-12':lastmod;
+const modificationDate=loc=>loc===`${origin}/`?(process.env.PIXELPLEASE_SITEMAP_LASTMOD ?? "2026-11-01"):loc.endsWith('/pixel-inter/')||loc.endsWith('/pixel-merriweather/')?oldDates.get(loc)||'2026-07-12':lastmod;
 const body = urls
   .map(
     ({ loc, changefreq, priority }) => `  <url>
