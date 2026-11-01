@@ -34,6 +34,7 @@ The working product:
 - reset pixel controls to defaults;
 - edit the source text directly in the Source preview;
 - compare Source and Pixel Output at matching preview size/line-height;
+- click preview size +/− for a 2 px step, or hold with mouse/touch for continuous adjustment (350 ms delay, 65 ms repeat); releasing, cancelling, or leaving the window stops repetition;
 - generate automatically after Google Font selection, local upload, effect selection, and control changes;
 - preview before/after sample text;
 - download a uniquely named `.zip` package containing the generated `.ttf`, `NOTICE.txt`, and bundled source license material when applicable;

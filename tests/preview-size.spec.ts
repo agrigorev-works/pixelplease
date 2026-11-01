@@ -135,3 +135,94 @@ test("gives preview size controls accessible labels and desktop hover feedback",
   await decreaseOutput.hover();
   await expect(decreaseOutput).toHaveCSS("background-color", "rgb(245, 245, 245)");
 });
+
+for (const preview of ["source", "output"] as const) {
+  for (const direction of ["increase", "decrease"] as const) {
+    test(`holds ${preview} ${direction} to repeat and stops on release`, async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+      const readSize = () => preview === "source" ? getSourceFontSize(page) : getRenderFontSize(page);
+      const button = page.locator(`#${preview}-size-${direction}`);
+      const sign = direction === "increase" ? 1 : -1;
+      const initial = await readSize();
+      await button.click();
+      expect(await readSize()).toBe(Math.round(initial) + sign * 2);
+      await button.hover();
+      await page.mouse.down();
+      await page.waitForTimeout(650);
+      const held = await readSize();
+      expect((held - initial) * sign).toBeGreaterThan(4);
+      // Sample at release itself: a repeat can legitimately occur between a
+      // separate read and the browser receiving mouse.up (especially WebKit).
+      await page.evaluate((preview) => {
+        window.addEventListener("pointerup", () => {
+          const size = preview === "source"
+            ? parseFloat(getComputedStyle(document.querySelector("#sample-text")!).fontSize)
+            : Number((document.querySelector("#demo-preview-canvas") as HTMLCanvasElement).dataset.renderFontSize);
+          document.body.dataset.sizeAtRelease = String(size);
+        }, { once: true, capture: true });
+      }, preview);
+      await page.mouse.up();
+      const released = await readSize();
+      expect(released).toBe(Number(await page.locator("body").getAttribute("data-size-at-release")));
+      await page.waitForTimeout(180);
+      expect(await readSize()).toBe(released);
+      await button.click();
+      expect(await readSize()).toBe(released + sign * 2);
+    });
+  }
+}
+
+test("touch hold stops on cancellation and keyboard activation stays single-step", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  const button = page.locator("#source-size-increase");
+  const initial = await getSourceFontSize(page);
+  await button.dispatchEvent("pointerdown", { pointerId: 7, pointerType: "touch", button: 0, isPrimary: true });
+  await page.waitForTimeout(650);
+  expect(await getSourceFontSize(page)).toBeGreaterThan(initial + 2);
+  await button.dispatchEvent("pointercancel", { pointerId: 7, pointerType: "touch" });
+  const cancelled = await getSourceFontSize(page);
+  await page.waitForTimeout(180);
+  expect(await getSourceFontSize(page)).toBe(cancelled);
+  await button.focus();
+  await page.keyboard.press("Space");
+  expect(await getSourceFontSize(page)).toBe(cancelled + 2);
+});
+
+test("stops held controls at size limits and when the window loses focus", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  const decrease = page.locator("#output-size-decrease");
+  await decrease.hover();
+  await page.mouse.down();
+  await expect(decrease).toBeDisabled({ timeout: 4000 });
+  expect(await getRenderFontSize(page)).toBe(16);
+  await page.mouse.up();
+  const increase = page.locator("#output-size-increase");
+  await increase.click();
+  expect(await getRenderFontSize(page)).toBe(18);
+  await increase.hover();
+  await page.mouse.down();
+  await page.waitForTimeout(450);
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  const blurred = await getRenderFontSize(page);
+  await page.waitForTimeout(180);
+  expect(await getRenderFontSize(page)).toBe(blurred);
+  await page.mouse.up();
+  expect(await getRenderFontSize(page)).toBe(blurred);
+});
+
+test("releasing outside a held button stops repetition", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#app-status")).toHaveText(UI_COPY.status.generatedReady, { timeout: 20_000 });
+  await page.locator("#source-size-increase").hover();
+  await page.mouse.down();
+  await page.waitForTimeout(450);
+  await page.mouse.move(2, 2);
+  await page.mouse.up();
+  const released = await getSourceFontSize(page);
+  await page.waitForTimeout(180);
+  expect(await getSourceFontSize(page)).toBe(released);
+});

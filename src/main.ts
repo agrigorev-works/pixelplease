@@ -1,4 +1,5 @@
 import "./interface-styles.css";
+import { bindHoldButton } from "./hold-button";
 import { initializeAnalytics } from "./analytics";
 import {
   getFontFamilyName,
@@ -735,10 +736,10 @@ expand.addEventListener("input", handleControlInput);
 pixelEffectSelect.addEventListener("change", handleControlInput);
 shiftX.addEventListener("input", handleControlInput);
 shiftY.addEventListener("input", handleControlInput);
-sourceSizeDecrease.addEventListener("click", () => adjustSourcePreviewSize(-PREVIEW_FONT_SIZE_STEP));
-sourceSizeIncrease.addEventListener("click", () => adjustSourcePreviewSize(PREVIEW_FONT_SIZE_STEP));
-outputSizeDecrease.addEventListener("click", () => adjustOutputPreviewSize(-PREVIEW_FONT_SIZE_STEP));
-outputSizeIncrease.addEventListener("click", () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
+bindHoldButton(sourceSizeDecrease, () => adjustSourcePreviewSize(-PREVIEW_FONT_SIZE_STEP));
+bindHoldButton(sourceSizeIncrease, () => adjustSourcePreviewSize(PREVIEW_FONT_SIZE_STEP));
+bindHoldButton(outputSizeDecrease, () => adjustOutputPreviewSize(-PREVIEW_FONT_SIZE_STEP));
+bindHoldButton(outputSizeIncrease, () => adjustOutputPreviewSize(PREVIEW_FONT_SIZE_STEP));
 window.addEventListener("resize", syncPreviewSizes);
 window.addEventListener("pointerover", handleCustomCursorMove, { passive: true });
 window.addEventListener("pointermove", handleCustomCursorMove, { passive: true });
